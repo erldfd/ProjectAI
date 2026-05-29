@@ -11,23 +11,20 @@ namespace PortalBroke.GameModes
     {
         protected override void OnGameModeStart()
         {
-            Debug.Log("[LobbyGameMode] 로비 씬 게임 모드 초기화 완료.");
+            // 로비는 오프라인 상태에서 작동하는 UI가 대부분이므로 여기서 초기화합니다.
+            Debug.Log("[LobbyGameMode] 로비 씬 오프라인 초기화 완료.");
         }
 
-        // 임시 UI 버튼과 연결될 테스트용 메서드
         public void StartHost()
         {
             if (GameStatics.NetworkManager != null)
             {
                 GameStatics.NetworkManager.StartHost();
                 Debug.Log("[LobbyGameMode] 호스트로 서버를 시작했습니다.");
-                
-                // 호스트가 되면 던전 씬으로 씬을 전환합니다.
                 GameStatics.NetworkManager.SceneManager.LoadScene("DungeonScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
             }
         }
 
-        // 임시 UI 버튼과 연결될 테스트용 메서드
         public void StartClient()
         {
             if (GameStatics.NetworkManager != null)
