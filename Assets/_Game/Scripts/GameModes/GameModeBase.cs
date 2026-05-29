@@ -12,18 +12,31 @@ namespace PortalBroke.GameModes
     {
         protected virtual void Awake()
         {
-            // 씬이 켜질 때 자신을 전역 Gateway에 등록
+            // 씬이 켜질 때 자신을 전역 Gateway에 즉시 등록하여 접근성을 보장합니다.
             GameStatics.RegisterMode(this);
         }
 
         protected virtual void Start()
         {
+            // 유니티 기본 Start 주기 (네트워크 오프라인 상태에서도 실행됨)
             OnGameModeStart();
         }
 
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            // 네트워크 연결이 완료된 직후 실행됨
+            OnGameModeNetworkSpawn();
+        }
+
         /// <summary>
-        /// 자식 클래스들이 Start() 대신 구현해야 하는 초기화 메서드입니다.
+        /// 로컬/오프라인 초기화용 가상 메서드입니다. (로비 UI 세팅 등에 적합)
         /// </summary>
-        protected abstract void OnGameModeStart();
+        protected virtual void OnGameModeStart() { }
+
+        /// <summary>
+        /// 네트워크/온라인 초기화용 가상 메서드입니다. (서버 권한 로직, 몬스터 스폰 등에 적합)
+        /// </summary>
+        protected virtual void OnGameModeNetworkSpawn() { }
     }
 }
