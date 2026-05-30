@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7549203637897625750, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 1307223744
+      value: 3657358095
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -62,14 +62,14 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7624983720133401658}
+      addedObject: {fileID: 7993161565623532568}
   m_SourcePrefab: {fileID: 100100000, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
 --- !u!1 &8394131999265860841 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
   m_PrefabInstance: {fileID: 7662515079116566948}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7624983720133401658
+--- !u!114 &7993161565623532568
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -78,7 +78,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8394131999265860841}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab1d7c9dd0af57a4bbffd498f0816d4b, type: 3}
+  m_Script: {fileID: 11500000, guid: 76836e9ba8b798846b5fd2dc750cf1f2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.GameModes.DungeonGameMode
+  m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.GameModes.NetDungeonGameMode
   ShowTopMostFoldoutHeaderGroup: 1
