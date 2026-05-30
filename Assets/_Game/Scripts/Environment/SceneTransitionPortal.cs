@@ -1,0 +1,41 @@
+using UnityEngine;
+using PortalBroke.Core;
+using PortalBroke.Core.Enums;
+
+namespace PortalBroke.Environment
+{
+    /// <summary>
+    /// 상호작용 시 파티 전체를 지정된 씬으로 이동시키는 구체적인 씬 이동 포탈입니다.
+    /// </summary>
+    public class SceneTransitionPortal : APortalInteractable
+    {
+        [Tooltip("이동할 대상 씬")]
+        [SerializeField]
+        private ESceneType targetScene = ESceneType.Dungeon;
+
+        [Header("Spawn Settings")]
+        [Tooltip("이동한 씬에서 착지할 특정 스폰 포인트의 ID (이 값이 있으면 좌표보다 우선합니다)")]
+        [SerializeField]
+        private string targetSpawnPointID = "";
+
+        [Tooltip("체크 시 아래의 쌩 좌표(Raw)로 직접 이동합니다 (targetSpawnPointID가 비워져 있어야 작동)")]
+        [SerializeField]
+        private bool useRawCoordinates = false;
+
+        [Tooltip("직접 이동할 목표 월드 좌표 (Vector2)")]
+        [SerializeField]
+        private Vector2 rawTargetPosition = Vector2.zero;
+
+        #region Protected Methods
+        protected override void ExecutePortal(GameObject interactor)
+        {
+            SceneTransitionData.NextSpawnPointID = targetSpawnPointID;
+            SceneTransitionData.UseRawCoordinates = useRawCoordinates;
+            SceneTransitionData.RawTargetPosition = rawTargetPosition;
+
+            string sceneName = targetScene.ToString();
+            GameStatics.NetworkManager.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+        }
+        #endregion
+    }
+}

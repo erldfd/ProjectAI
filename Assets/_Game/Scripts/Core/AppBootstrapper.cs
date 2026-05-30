@@ -8,6 +8,8 @@ namespace PortalBroke.Core
     /// </summary>
     public static class AppBootstrapper
     {
+        private const string GAME_MANAGER_PATH = "Prefabs/GameManager";
+
         // 씬이 로드되기 직전(BeforeSceneLoad)에 무조건 1회 실행됩니다.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Bootstrap()
@@ -22,8 +24,7 @@ namespace PortalBroke.Core
             }
 
             // Resources 폴더에서 GameManager 프리팹을 불러옵니다.
-            GameObject prefab = Resources.Load<GameObject>("GameManager");
-            
+            GameObject prefab = Resources.Load<GameObject>(GAME_MANAGER_PATH);
             if (prefab == null)
             {
                 Debug.LogError("[AppBootstrapper] Resources/GameManager.prefab을 찾을 수 없습니다! 프리팹을 확인해 주세요.");
