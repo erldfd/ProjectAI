@@ -1,14 +1,12 @@
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-// using Netcode.Transports.Facepunch; // Facepunch Transport 네임스페이스를 나중에 추가할 예정입니다.
+using System.Threading.Tasks;
 
 namespace PortalBroke.Network
 {
     public class MultiplayerServiceManager : MonoBehaviour
     {
-        public static MultiplayerServiceManager Instance { get; private set; }
-
         [Header("Settings")]
         [Tooltip("사용할 멀티플레이 모드를 선택합니다. (Relay 또는 Steamworks)")]
         [SerializeField]
@@ -16,18 +14,6 @@ namespace PortalBroke.Network
 
         public MultiplayerMode CurrentMode { get; private set; }
         public IMatchmakingService MatchmakingService { get; private set; }
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
 
         private void Start()
         {
@@ -38,8 +24,53 @@ namespace PortalBroke.Network
         {
             CurrentMode = targetMode;
 
-            // TODO: 현재 모드(CurrentMode)에 따라 알맞은 Transport 교체 및 Service(MatchmakingService) 할당 로직 작성
+            if (CurrentMode == MultiplayerMode.Relay)
+            {
+                MatchmakingService = new RelayMatchmakingService();
+                
+                if (NetworkManager.Singleton != null)
+                {
+                    UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+                    if (transport != null)
+                    {
+                        NetworkManager.Singleton.NetworkConfig.NetworkTransport = transport;
+                    }
+                    else
+                    {
+                        Debug.LogError("[MultiplayerServiceManager] UnityTransport component is missing on NetworkManager.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[MultiplayerServiceManager] NetworkManager.Singleton is null. Cannot set NetworkTransport.");
+                }
+            }
+            else if (CurrentMode == MultiplayerMode.Steamworks)
+            {
+                // TODO: 3단계에서 SteamMatchmakingService 할당 로직 추가 예정
+            }
+
             Debug.Log($"[MultiplayerServiceManager] Initialized with mode: {CurrentMode}");
+        }
+
+        public async Task<bool> StartHost()
+        {
+            if (MatchmakingService == null) return false;
+            return await MatchmakingService.StartHostAsync();
+        }
+
+        public async Task<bool> StartClient(string joinData)
+        {
+            if (MatchmakingService == null) return false;
+            return await MatchmakingService.StartClientAsync(joinData);
+        }
+
+        public void LeaveGame()
+        {
+            if (MatchmakingService != null)
+            {
+                MatchmakingService.LeaveGame();
+            }
         }
     }
 }

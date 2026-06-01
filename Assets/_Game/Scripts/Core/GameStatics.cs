@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using PortalBroke.GameModes;
+using PortalBroke.Network;
 
 namespace PortalBroke.Core
 {
@@ -10,6 +11,19 @@ namespace PortalBroke.Core
         public static ANetGameModeBase CurrentMode { get; private set; }
 
         public static NetworkManager NetworkManager => NetworkManager.Singleton;
+
+        private static MultiplayerServiceManager _multiplayerManager;
+        public static MultiplayerServiceManager MultiplayerManager
+        {
+            get
+            {
+                if (_multiplayerManager == null && GameManager != null)
+                {
+                    _multiplayerManager = GameManager.GetComponent<MultiplayerServiceManager>();
+                }
+                return _multiplayerManager;
+            }
+        }
 
         public static void RegisterManager(GameManager manager)
         {
