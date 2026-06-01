@@ -5,6 +5,10 @@ using PortalBroke.Core;
 
 namespace PortalBroke.GameModes
 {
+    /// <summary>
+    /// 네트워크 게임 모드의 기본 베이스 클래스입니다.
+    /// 스폰 및 시작 로직을 공통으로 처리합니다.
+    /// </summary>
     public abstract class ANetGameModeBase : NetworkBehaviour
     {
         #region Unity Lifecycle
@@ -15,7 +19,7 @@ namespace PortalBroke.GameModes
 
         protected virtual void Start()
         {
-            StartCoroutine(AutoStartHostRoutine());
+            AutoStartHostAsync();
             OnGameModeStart();
         }
 
@@ -29,6 +33,12 @@ namespace PortalBroke.GameModes
             }
 
             OnGameModeNetworkSpawn();
+        }
+
+        public override void OnDestroy()
+        {
+            GameStatics.UnregisterGameMode(this);
+            base.OnDestroy();
         }
         #endregion
 
@@ -53,7 +63,7 @@ namespace PortalBroke.GameModes
                 PlayerStart[] allStarts = FindObjectsByType<PlayerStart>(FindObjectsSortMode.None);
                 PlayerStart targetStart = null;
                 
-                foreach (var start in allStarts)
+                foreach (PlayerStart start in allStarts)
                 {
                     if (start.SpawnPointID == SceneTransitionData.NextSpawnPointID)
                     {
@@ -77,9 +87,13 @@ namespace PortalBroke.GameModes
             // 3. 목적지를 찾았으면 실제 텔레포트 수행
             if (isSpawnPositionFound && GameStatics.NetworkManager != null)
             {
-                foreach (var client in GameStatics.NetworkManager.ConnectedClientsList)
+                foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
                 {
-                    if (client.PlayerObject == null) continue;
+                    if (client.PlayerObject == null)
+                    {
+                        continue;
+                    }
+
                     client.PlayerObject.transform.position = finalSpawnPosition;
                 }
             }
@@ -91,21 +105,30 @@ namespace PortalBroke.GameModes
         #endregion
 
         #region Private Methods
-        private IEnumerator AutoStartHostRoutine()
+        private async void AutoStartHostAsync()
         {
-            yield return null;
-
-            if (GameStatics.NetworkManager == null)
+            try
             {
-                yield break;
-            }
+                // 1프레임 대기 (기존 코루틴의 yield return null 역할)
+                await System.Threading.Tasks.Task.Yield();
 
-            if (GameStatics.NetworkManager.IsClient || GameStatics.NetworkManager.IsServer)
+                if (GameStatics.NetworkManager == null)
+                {
+                    return;
+                }
+
+                if (GameStatics.NetworkManager.IsClient || GameStatics.NetworkManager.IsServer)
+                {
+                    return;
+                }
+
+                UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager가 없습니다. 비정상적인 상태입니다.");
+                await GameStatics.MultiplayerManager.StartHost();
+            }
+            catch (System.Exception e)
             {
-                yield break;
+                Debug.LogError($"[ANetGameModeBase] AutoStartHostAsync 실행 중 오류 발생: {e}");
             }
-
-            GameStatics.NetworkManager.StartHost();
         }
         #endregion
     }

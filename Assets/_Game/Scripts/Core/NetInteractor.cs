@@ -78,7 +78,7 @@ namespace PortalBroke.Core
                 return;
             }
 
-            if (!((Component)closestInteractable).TryGetComponent<NetworkObject>(out var netObj))
+            if (closestInteractable is not Component component || component.TryGetComponent(out NetworkObject netObj) == false)
             {
                 return;
             }
