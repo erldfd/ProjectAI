@@ -29,5 +29,13 @@ namespace PortalBroke.Core
         {
             CurrentMode = mode;
         }
+
+        public static void UnregisterGameMode(ANetGameModeBase mode)
+        {
+            if (CurrentMode == mode)
+            {
+                CurrentMode = null;
+            }
+        }
     }
 }

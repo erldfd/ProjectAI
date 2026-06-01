@@ -94,10 +94,11 @@ namespace PortalBroke.Network
                     {
                         try
                         {
-                            while (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+                            while (NetworkManager.Singleton != null && 
+                                   (NetworkManager.Singleton.IsListening || NetworkManager.Singleton.ShutdownInProgress))
                             {
                                 // 매 프레임마다 취소 신호가 왔는지(3초가 지났는지) 확인합니다.
-                                // 만약 3초가 지났다면 즉시 OperationCanceledException 에러를 던져 루프를 탈출합니다.
+                                // 만약 3초가 지났다면 즉시 OperationCanceledException 에러를 던져 루프 탈출합니다.
                                 cts.Token.ThrowIfCancellationRequested();
                                 await System.Threading.Tasks.Task.Yield();
                             }

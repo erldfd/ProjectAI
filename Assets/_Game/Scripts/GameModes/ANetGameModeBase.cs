@@ -34,6 +34,12 @@ namespace PortalBroke.GameModes
 
             OnGameModeNetworkSpawn();
         }
+
+        public override void OnDestroy()
+        {
+            GameStatics.UnregisterGameMode(this);
+            base.OnDestroy();
+        }
         #endregion
 
         #region Protected Methods
@@ -101,21 +107,28 @@ namespace PortalBroke.GameModes
         #region Private Methods
         private async void AutoStartHostAsync()
         {
-            // 1프레임 대기 (기존 코루틴의 yield return null 역할)
-            await System.Threading.Tasks.Task.Yield();
-
-            if (GameStatics.NetworkManager == null)
+            try
             {
-                return;
-            }
+                // 1프레임 대기 (기존 코루틴의 yield return null 역할)
+                await System.Threading.Tasks.Task.Yield();
 
-            if (GameStatics.NetworkManager.IsClient || GameStatics.NetworkManager.IsServer)
+                if (GameStatics.NetworkManager == null)
+                {
+                    return;
+                }
+
+                if (GameStatics.NetworkManager.IsClient || GameStatics.NetworkManager.IsServer)
+                {
+                    return;
+                }
+
+                UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager가 없습니다. 비정상적인 상태입니다.");
+                await GameStatics.MultiplayerManager.StartHost();
+            }
+            catch (System.Exception e)
             {
-                return;
+                Debug.LogError($"[ANetGameModeBase] AutoStartHostAsync 실행 중 오류 발생: {e}");
             }
-
-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager가 없습니다. 비정상적인 상태입니다.");
-            await GameStatics.MultiplayerManager.StartHost();
         }
         #endregion
     }
