@@ -15,7 +15,7 @@ namespace PortalBroke.GameModes
 
         protected virtual void Start()
         {
-            StartCoroutine(AutoStartHostRoutine());
+            AutoStartHostAsync();
             OnGameModeStart();
         }
 
@@ -91,21 +91,23 @@ namespace PortalBroke.GameModes
         #endregion
 
         #region Private Methods
-        private IEnumerator AutoStartHostRoutine()
+        private async void AutoStartHostAsync()
         {
-            yield return null;
+            // 1프레임 대기 (기존 코루틴의 yield return null 역할)
+            await System.Threading.Tasks.Task.Yield();
 
             if (GameStatics.NetworkManager == null)
             {
-                yield break;
+                return;
             }
 
             if (GameStatics.NetworkManager.IsClient || GameStatics.NetworkManager.IsServer)
             {
-                yield break;
+                return;
             }
 
-            GameStatics.NetworkManager.StartHost();
+            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager가 없습니다. 비정상적인 상태입니다.");
+            await GameStatics.MultiplayerManager.StartHost();
         }
         #endregion
     }

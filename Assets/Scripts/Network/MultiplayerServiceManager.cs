@@ -14,6 +14,7 @@ namespace PortalBroke.Network
 
         public MultiplayerMode CurrentMode { get; private set; }
         public IMatchmakingService MatchmakingService { get; private set; }
+        public string LastJoinCode { get; private set; } // 발급된 코드 저장용
 
         private void Start()
         {
@@ -53,15 +54,24 @@ namespace PortalBroke.Network
             Debug.Log($"[MultiplayerServiceManager] Initialized with mode: {CurrentMode}");
         }
 
-        public async Task<bool> StartHost()
+        public async Task<string> StartHost()
         {
-            if (MatchmakingService == null) return false;
-            return await MatchmakingService.StartHostAsync();
+            if (MatchmakingService == null)
+            {
+                return null;
+            }
+
+            LastJoinCode = await MatchmakingService.StartHostAsync();
+            return LastJoinCode;
         }
 
         public async Task<bool> StartClient(string joinData)
         {
-            if (MatchmakingService == null) return false;
+            if (MatchmakingService == null)
+            {
+                return false;
+            }
+
             return await MatchmakingService.StartClientAsync(joinData);
         }
 

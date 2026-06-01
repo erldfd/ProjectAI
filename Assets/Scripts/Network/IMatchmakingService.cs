@@ -4,7 +4,7 @@ namespace PortalBroke.Network
 {
     public interface IMatchmakingService
     {
-        Task<bool> StartHostAsync();
+        Task<string> StartHostAsync();
         Task<bool> StartClientAsync(string joinData);
         void LeaveGame();
     }
