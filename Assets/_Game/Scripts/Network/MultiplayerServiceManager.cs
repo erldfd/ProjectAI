@@ -5,14 +5,26 @@ using System.Threading.Tasks;
 
 namespace PortalBroke.Network
 {
+    /// <summary>
+    /// 지원하는 멀티플레이 연결 모드의 종류를 정의합니다.
+    /// </summary>
+    public enum EMultiplayerMode
+    {
+        Relay,
+        Steamworks
+    }
+
+    /// <summary>
+    /// 현재 활성화된 매치메이킹 서비스(Relay, Steam 등)를 생성 및 관리하는 래퍼 매니저입니다.
+    /// </summary>
     public class MultiplayerServiceManager : MonoBehaviour
     {
         [Header("Settings")]
         [Tooltip("사용할 멀티플레이 모드를 선택합니다. (Relay 또는 Steamworks)")]
         [SerializeField]
-        private MultiplayerMode targetMode = MultiplayerMode.Relay;
+        private EMultiplayerMode targetMode = EMultiplayerMode.Relay;
 
-        public MultiplayerMode CurrentMode { get; private set; }
+        public EMultiplayerMode CurrentMode { get; private set; }
         public IMatchmakingService MatchmakingService { get; private set; }
         public string LastJoinCode { get; private set; } // 발급된 코드 저장용
 
@@ -25,7 +37,7 @@ namespace PortalBroke.Network
         {
             CurrentMode = targetMode;
 
-            if (CurrentMode == MultiplayerMode.Relay)
+            if (CurrentMode == EMultiplayerMode.Relay)
             {
                 MatchmakingService = new RelayMatchmakingService();
                 
@@ -46,7 +58,7 @@ namespace PortalBroke.Network
                     Debug.LogWarning("[MultiplayerServiceManager] NetworkManager.Singleton is null. Cannot set NetworkTransport.");
                 }
             }
-            else if (CurrentMode == MultiplayerMode.Steamworks)
+            else if (CurrentMode == EMultiplayerMode.Steamworks)
             {
                 // TODO: 3단계에서 SteamMatchmakingService 할당 로직 추가 예정
             }

@@ -5,6 +5,10 @@ using PortalBroke.Core;
 
 namespace PortalBroke.GameModes
 {
+    /// <summary>
+    /// 네트워크 게임 모드의 기본 베이스 클래스입니다.
+    /// 스폰 및 시작 로직을 공통으로 처리합니다.
+    /// </summary>
     public abstract class ANetGameModeBase : NetworkBehaviour
     {
         #region Unity Lifecycle
@@ -53,7 +57,7 @@ namespace PortalBroke.GameModes
                 PlayerStart[] allStarts = FindObjectsByType<PlayerStart>(FindObjectsSortMode.None);
                 PlayerStart targetStart = null;
                 
-                foreach (var start in allStarts)
+                foreach (PlayerStart start in allStarts)
                 {
                     if (start.SpawnPointID == SceneTransitionData.NextSpawnPointID)
                     {
@@ -77,9 +81,13 @@ namespace PortalBroke.GameModes
             // 3. 목적지를 찾았으면 실제 텔레포트 수행
             if (isSpawnPositionFound && GameStatics.NetworkManager != null)
             {
-                foreach (var client in GameStatics.NetworkManager.ConnectedClientsList)
+                foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
                 {
-                    if (client.PlayerObject == null) continue;
+                    if (client.PlayerObject == null)
+                    {
+                        continue;
+                    }
+
                     client.PlayerObject.transform.position = finalSpawnPosition;
                 }
             }

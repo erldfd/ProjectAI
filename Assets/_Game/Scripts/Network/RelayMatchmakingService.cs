@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace PortalBroke.Network
 {
+    /// <summary>
+    /// Unity Relay 서버를 통해 호스트 생성 및 클라이언트 접속을 처리하는 실제 서비스 구현체입니다.
+    /// </summary>
     public class RelayMatchmakingService : IMatchmakingService
     {
         private const int MaxPlayers = 4; // 호스트 포함 최대 인원
