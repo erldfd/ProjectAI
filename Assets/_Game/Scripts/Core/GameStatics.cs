@@ -12,18 +12,7 @@ namespace PortalBroke.Core
 
         public static NetworkManager NetworkManager => NetworkManager.Singleton;
 
-        private static MultiplayerServiceManager _multiplayerManager;
-        public static MultiplayerServiceManager MultiplayerManager
-        {
-            get
-            {
-                if (_multiplayerManager == null && GameManager != null)
-                {
-                    _multiplayerManager = GameManager.GetComponent<MultiplayerServiceManager>();
-                }
-                return _multiplayerManager;
-            }
-        }
+        public static MultiplayerServiceManager MultiplayerManager => GameManager != null ? GameManager.MultiplayerService : null;
 
         public static void RegisterManager(GameManager manager)
         {

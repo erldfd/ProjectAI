@@ -1,4 +1,5 @@
 using UnityEngine;
+using PortalBroke.Network;
 
 namespace PortalBroke.Core
 {
@@ -7,6 +8,8 @@ namespace PortalBroke.Core
     /// </summary>
     public class GameManager : MonoBehaviour
     {
+        public MultiplayerServiceManager MultiplayerService { get; private set; }
+
         private void Awake()
         {
             // 이미 씬에 활성화된 GameManager가 있다면 중복 생성을 막고 스스로 파괴합니다.
@@ -21,6 +24,9 @@ namespace PortalBroke.Core
 
             // 최초 생성 시 GameStatics Gateway의 안전한 메서드를 통해 자신을 등록합니다.
             GameStatics.RegisterManager(this);
+            
+            MultiplayerService = GetComponent<MultiplayerServiceManager>();
+            UnityEngine.Assertions.Assert.IsNotNull(MultiplayerService, "[GameManager] MultiplayerServiceManager 컴포넌트가 부착되어 있지 않습니다. 필수 컴포넌트입니다.");
             
             // 씬을 전환해도 이 객체(및 부착된 네트워크 매니저)가 삭제되지 않도록 보호합니다.
             DontDestroyOnLoad(gameObject);
