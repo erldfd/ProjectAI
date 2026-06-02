@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5492215015462340555}
   - component: {fileID: 5685368766082622782}
+  - component: {fileID: 603659602711010670}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -91,6 +92,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &603659602711010670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364007198314449804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20de1c88b53f1b64e81efbafda2d605b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.VisualInterpolator
+  returnSpeed: 15
 --- !u!1 &3626505526009901997
 GameObject:
   m_ObjectHideFlags: 0
@@ -101,6 +115,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2025237631764657180}
   - component: {fileID: 8509348528092201170}
+  - component: {fileID: 4505519427039758495}
   - component: {fileID: 1911014795776420748}
   - component: {fileID: 2460281810773283459}
   - component: {fileID: 2487151314506950054}
@@ -157,7 +172,44 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
+--- !u!70 &4505519427039758495
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.5, y: 1}
+  m_Direction: 0
 --- !u!114 &1911014795776420748
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,6 +264,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.NetPlayerMovement
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
+  verySmallReconciliationThreshold: 0.01
 --- !u!114 &7826379961964236550
 MonoBehaviour:
   m_ObjectHideFlags: 0
