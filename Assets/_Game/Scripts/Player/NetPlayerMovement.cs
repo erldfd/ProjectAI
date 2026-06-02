@@ -63,10 +63,6 @@ namespace PortalBroke.Player
         // [SerializeField]
         // private float largeReconciliationThreshold = 2.0f;
 
-        [Tooltip("중간 오차 시 보간(Lerp) 비율")]
-        [SerializeField]
-        private float reconciliationLerpSpeed = 10f;
-
         private SInputPayload[] clientInputBuffer = new SInputPayload[BUFFER_SIZE];
         private SStatePayload[] clientStateBuffer = new SStatePayload[BUFFER_SIZE];
 
@@ -193,8 +189,9 @@ namespace PortalBroke.Player
 
         private void HandleObserverTick()
         {
-            // MovePosition 후 속도를 0으로 만들면 물리 스텝이 꼬여 버벅일 수 있으므로 직접 position 덮어쓰기 사용
-            rb.position = Vector2.Lerp(rb.position, observerTargetPosition, Time.fixedDeltaTime * reconciliationLerpSpeed);
+            // 시각적 보간은 자식의 VisualInterpolator가 전담하므로,
+            // 물리 객체(콜라이더)는 서버가 알려준 최신 위치로 즉시 동기화(Snap).
+            rb.position = observerTargetPosition;
             rb.linearVelocity = Vector2.zero; // 옵저버는 자체 물리 이동 금지
         }
 
@@ -219,9 +216,8 @@ namespace PortalBroke.Player
                 return;
             }
             
-            // TODO: 시각적 객체 분리. 현재는 물리 객체만 있으므로 모두 Snap 처리.
-            // 중간 오차 발생 시 물리 객체는 서버 위치로 즉시 강제 이동(Snap)시키고,
-            // 그래픽 모델 객체(Transform)만 분리하여 Lerp로 부드럽게 이동시키도록 구현할 것.
+            // 시각적 객체(VisualBody)가 분리되었으므로, 물리 객체는
+            // 오차 발생 시 무조건 서버 위치로 즉시 강제 이동(Snap)시킴.
             rb.position = statePayload.Position;
             rb.linearVelocity = statePayload.Velocity;
             
