@@ -8,7 +8,7 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 
-namespace PortalBroke.Network
+namespace ProjectAI.Network
 {
     /// <summary>
     /// Unity Relay 서버를 통해 호스트 생성 및 클라이언트 접속을 처리하는 실제 서비스 구현체입니다.

@@ -1,4 +1,4 @@
-namespace PortalBroke.Core
+namespace ProjectAI.Core
 {
     /// <summary>
     /// 씬 이동 간에 서버(방장)가 임시로 보관해야 할 메타데이터를 담는 정적 클래스입니다.

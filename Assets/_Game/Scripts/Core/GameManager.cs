@@ -1,7 +1,7 @@
 using UnityEngine;
-using PortalBroke.Network;
+using ProjectAI.Network;
 
-namespace PortalBroke.Core
+namespace ProjectAI.Core
 {
     /// <summary>
     /// 게임 전체의 생명주기를 관리하고 씬 전환 간에 파괴되지 않는 전역 매니저입니다.

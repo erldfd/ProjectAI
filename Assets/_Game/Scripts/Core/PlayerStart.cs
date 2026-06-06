@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace PortalBroke.Core
+namespace ProjectAI.Core
 {
     public class PlayerStart : MonoBehaviour
     {

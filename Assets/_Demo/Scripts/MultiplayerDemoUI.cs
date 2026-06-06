@@ -1,8 +1,8 @@
 #if UNITY_EDITOR
 using UnityEngine;
-using PortalBroke.Core;
+using ProjectAI.Core;
 
-namespace PortalBroke.Network
+namespace ProjectAI.Network
 {
     /// <summary>
     /// 개발 중 방 생성(Host) 및 조인 코드(Join Code) 입력 테스트를 위한 임시 GUI 컴포넌트입니다.

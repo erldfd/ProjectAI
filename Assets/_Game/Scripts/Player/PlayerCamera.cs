@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Cinemachine;
 
-namespace PortalBroke.Player
+namespace ProjectAI.Player
 {
     /// <summary>
     /// 플레이어의 카메라 연출(조준 오프셋 등)을 시네머신과 연동하여 중앙 통제하는 클래스입니다.

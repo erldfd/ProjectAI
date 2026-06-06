@@ -1,9 +1,9 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
-using PortalBroke.Core.Interfaces;
+using ProjectAI.Core.Interfaces;
 
-namespace PortalBroke.Core
+namespace ProjectAI.Core
 {
     /// <summary>
     /// 반경 내의 IInteractable 오브젝트를 찾아 상호작용을 실행하는 범용 네트워크 컴포넌트입니다.

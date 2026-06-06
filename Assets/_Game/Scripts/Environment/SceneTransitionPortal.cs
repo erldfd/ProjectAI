@@ -1,8 +1,8 @@
 using UnityEngine;
-using PortalBroke.Core;
-using PortalBroke.Core.Enums;
+using ProjectAI.Core;
+using ProjectAI.Core.Enums;
 
-namespace PortalBroke.Environment
+namespace ProjectAI.Environment
 {
     /// <summary>
     /// 상호작용 시 파티 전체를 지정된 씬으로 이동시키는 구체적인 씬 이동 포탈입니다.

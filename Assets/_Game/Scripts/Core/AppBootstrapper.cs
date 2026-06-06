@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace PortalBroke.Core
+namespace ProjectAI.Core
 {
     /// <summary>
     /// 게임 시작 시 또는 에디터에서 씬을 재생할 때 전역 매니저 프리팹을 자동으로 주입하는 클래스입니다.

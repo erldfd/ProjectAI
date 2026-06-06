@@ -1,7 +1,7 @@
 using UnityEngine;
-using PortalBroke.Core;
+using ProjectAI.Core;
 
-namespace PortalBroke.GameModes
+namespace ProjectAI.GameModes
 {
     public class NetDungeonGameMode : ANetGameModeBase
     {
