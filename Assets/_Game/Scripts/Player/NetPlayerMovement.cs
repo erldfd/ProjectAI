@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 
-namespace PortalBroke.Player
+namespace ProjectAI.Player
 {
     /// <summary>
     /// 클라이언트에서 서버로 보내는 입력 데이터 페이로드

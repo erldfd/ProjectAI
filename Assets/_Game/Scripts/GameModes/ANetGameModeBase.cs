@@ -1,9 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
-using PortalBroke.Core;
+using ProjectAI.Core;
 
-namespace PortalBroke.GameModes
+namespace ProjectAI.GameModes
 {
     /// <summary>
     /// 네트워크 게임 모드의 기본 베이스 클래스입니다.

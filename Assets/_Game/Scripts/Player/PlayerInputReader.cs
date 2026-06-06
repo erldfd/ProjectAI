@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace PortalBroke.Player
+namespace ProjectAI.Player
 {
     /// <summary>
     /// 플레이어의 키보드/마우스 입력을 읽어 이벤트를 발생시키는 클래스입니다.

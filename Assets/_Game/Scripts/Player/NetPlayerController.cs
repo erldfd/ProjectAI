@@ -1,8 +1,8 @@
 using UnityEngine;
 using Unity.Netcode;
-using PortalBroke.Core;
+using ProjectAI.Core;
 
-namespace PortalBroke.Player
+namespace ProjectAI.Player
 {
     /// <summary>
     /// 플레이어의 입력, 이동, 카메라 등의 컴포넌트를 조율하는 로컬 플레이어 전용 뇌(Brain) 컨트롤러입니다.

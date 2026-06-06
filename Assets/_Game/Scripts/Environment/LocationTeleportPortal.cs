@@ -1,7 +1,7 @@
 using UnityEngine;
-using PortalBroke.Core;
+using ProjectAI.Core;
 
-namespace PortalBroke.Environment
+namespace ProjectAI.Environment
 {
     /// <summary>
     /// 같은 씬 내부에서 특정 위치로 순간이동시켜 주는 장소 이동 전용 포탈입니다.

@@ -1,9 +1,9 @@
 using Unity.Netcode;
 using UnityEngine;
-using PortalBroke.GameModes;
-using PortalBroke.Network;
+using ProjectAI.GameModes;
+using ProjectAI.Network;
 
-namespace PortalBroke.Core
+namespace ProjectAI.Core
 {
     public static class GameStatics
     {

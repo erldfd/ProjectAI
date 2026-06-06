@@ -1,8 +1,8 @@
 using NUnit.Framework;
 using UnityEngine;
-using PortalBroke.Player;
+using ProjectAI.Player;
 
-namespace PortalBroke.Player.Tests
+namespace ProjectAI.Player.Tests
 {
     public class NetPlayerMovementTests
     {

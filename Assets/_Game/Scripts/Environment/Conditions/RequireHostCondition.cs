@@ -1,8 +1,8 @@
 using UnityEngine;
-using PortalBroke.Core;
-using PortalBroke.Core.Interfaces;
+using ProjectAI.Core;
+using ProjectAI.Core.Interfaces;
 
-namespace PortalBroke.Environment.Conditions
+namespace ProjectAI.Environment.Conditions
 {
     /// <summary>
     /// 방장(Host) 권한이 있어야만 상호작용을 허용하는 조건 컴포넌트입니다.

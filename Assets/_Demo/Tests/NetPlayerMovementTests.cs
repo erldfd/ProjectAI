@@ -3,7 +3,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Reflection;
 
-namespace PortalBroke.Player.Tests
+namespace ProjectAI.Player.Tests
 {
     /// <summary>
     /// NetPlayerMovement의 핵심 로직을 검증하기 위한 EditMode 기반의 정적/단위 테스트입니다.

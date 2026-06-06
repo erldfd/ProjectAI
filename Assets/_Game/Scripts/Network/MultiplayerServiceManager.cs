@@ -3,7 +3,7 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using System.Threading.Tasks;
 
-namespace PortalBroke.Network
+namespace ProjectAI.Network
 {
     /// <summary>
     /// 지원하는 멀티플레이 연결 모드의 종류를 정의합니다.

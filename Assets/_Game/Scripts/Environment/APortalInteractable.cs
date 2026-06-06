@@ -1,8 +1,8 @@
 using UnityEngine;
 using Unity.Netcode;
-using PortalBroke.Core.Interfaces;
+using ProjectAI.Core.Interfaces;
 
-namespace PortalBroke.Environment
+namespace ProjectAI.Environment
 {
     /// <summary>
     /// 조건 검사(IInteractionCondition)와 실제 이동 로직(ExecutePortal)의 흐름을 통제하는 포탈 부모 클래스입니다.
