@@ -1,0 +1,341 @@
+fileFormatVersion: 2
+guid: 6e8b4679198b4f74a8dd7f6668522f2c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -380181154791917987
+    second: MagicBall_Idle_0
+  - first:
+      213: -1917220135390257068
+    second: MagicBall_Idle_1
+  - first:
+      213: -8343606403441621394
+    second: MagicBall_Idle_2
+  - first:
+      213: -9108324645901964576
+    second: MagicBall_Idle_3
+  - first:
+      213: 3359215735666545499
+    second: MagicBall_Idle_4
+  - first:
+      213: -3054617763011954770
+    second: MagicBall_Idle_5
+  - first:
+      213: -17635332588207009
+    second: MagicBall_Idle_6
+  - first:
+      213: 2292606951908599271
+    second: MagicBall_Idle_7
+  - first:
+      213: 1468348658442331011
+    second: MagicBall_Idle_8
+  - first:
+      213: 4249967694055220522
+    second: MagicBall_Idle_9
+  - first:
+      213: 3442569537417379846
+    second: MagicBall_Idle_10
+  - first:
+      213: 2181284613344969585
+    second: MagicBall_Idle_11
+  - first:
+      213: 7043298101625247904
+    second: MagicBall_Idle_12
+  - first:
+      213: 3438523060416881394
+    second: MagicBall_Idle_13
+  - first:
+      213: -3907327744110091033
+    second: MagicBall_Idle_14
+  - first:
+      213: 2728993137622567037
+    second: MagicBall_Idle_15
+  - first:
+      213: -5722203477073079170
+    second: MagicBall_Idle_16
+  - first:
+      213: 22615230402867658
+    second: MagicBall_Idle_17
+  - first:
+      213: 7711092731668547062
+    second: MagicBall_Idle_18
+  - first:
+      213: -1082515754441724949
+    second: MagicBall_Idle_19
+  - first:
+      213: 2789367885820672198
+    second: MagicBall_Idle_20
+  - first:
+      213: -7608261459525249925
+    second: MagicBall_Idle_21
+  - first:
+      213: 7922204759923758405
+    second: MagicBall_Idle_22
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: MagicBall_Idle_2
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 1308
+        width: 150
+        height: 151
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e660031be2e853c80800000000000000
+      internalID: -8343606403441621394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MagicBall_Idle_4
+      rect:
+        serializedVersion: 2
+        x: 474
+        y: 1287
+        width: 180
+        height: 180
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b539e48e9e45e9e20800000000000000
+      internalID: 3359215735666545499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MagicBall_Idle_7
+      rect:
+        serializedVersion: 2
+        x: 795
+        y: 1290
+        width: 230
+        height: 218
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e56a1240e9f0df10800000000000000
+      internalID: 2292606951908599271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MagicBall_Idle_14
+      rect:
+        serializedVersion: 2
+        x: 1217
+        y: 1282
+        width: 218
+        height: 216
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e42a4f5e1266c9c0800000000000000
+      internalID: -3907327744110091033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MagicBall_Idle_18
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 948
+        width: 178
+        height: 191
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f5433dfbfd430b60800000000000000
+      internalID: 7711092731668547062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MagicBall_Idle_20
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 973
+        width: 150
+        height: 149
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c8393e3053d5b620800000000000000
+      internalID: 2789367885820672198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: d9302fa7014ba2344b0c204eca118b4b
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      MagicBall_Idle_0: -380181154791917987
+      MagicBall_Idle_1: -1917220135390257068
+      MagicBall_Idle_10: 3442569537417379846
+      MagicBall_Idle_11: 2181284613344969585
+      MagicBall_Idle_12: 7043298101625247904
+      MagicBall_Idle_13: 3438523060416881394
+      MagicBall_Idle_14: -3907327744110091033
+      MagicBall_Idle_15: 2728993137622567037
+      MagicBall_Idle_16: -5722203477073079170
+      MagicBall_Idle_17: 22615230402867658
+      MagicBall_Idle_18: 7711092731668547062
+      MagicBall_Idle_19: -1082515754441724949
+      MagicBall_Idle_2: -8343606403441621394
+      MagicBall_Idle_20: 2789367885820672198
+      MagicBall_Idle_21: -7608261459525249925
+      MagicBall_Idle_22: 7922204759923758405
+      MagicBall_Idle_3: -9108324645901964576
+      MagicBall_Idle_4: 3359215735666545499
+      MagicBall_Idle_5: -3054617763011954770
+      MagicBall_Idle_6: -17635332588207009
+      MagicBall_Idle_7: 2292606951908599271
+      MagicBall_Idle_8: 1468348658442331011
+      MagicBall_Idle_9: 4249967694055220522
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

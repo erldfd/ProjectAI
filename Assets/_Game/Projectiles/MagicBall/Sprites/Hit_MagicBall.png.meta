@@ -1,0 +1,432 @@
+fileFormatVersion: 2
+guid: 85541eed781af5648894570346fa7ebc
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8862517671791262286
+    second: MagicBall_Hit_0
+  - first:
+      213: 801169141188953611
+    second: MagicBall_Hit_1
+  - first:
+      213: -8357319654624342317
+    second: MagicBall_Hit_2
+  - first:
+      213: 7428480160387631421
+    second: MagicBall_Hit_3
+  - first:
+      213: 2577068588928791424
+    second: MagicBall_Hit_4
+  - first:
+      213: -4729220149047733284
+    second: MagicBall_Hit_5
+  - first:
+      213: -7569700543051425462
+    second: MagicBall_Hit_6
+  - first:
+      213: -6204964921619911387
+    second: MagicBall_Hit_7
+  - first:
+      213: -1629567315801023093
+    second: MagicBall_Hit_8
+  - first:
+      213: 4679941175081060280
+    second: MagicBall_Hit_9
+  - first:
+      213: 4912064521408034587
+    second: MagicBall_Hit_10
+  - first:
+      213: -7844051154525289689
+    second: MagicBall_Hit_11
+  - first:
+      213: 754358216216867896
+    second: MagicBall_Hit_12
+  - first:
+      213: -6483108403871448625
+    second: MagicBall_Hit_13
+  - first:
+      213: -5376985939337385884
+    second: MagicBall_Hit_14
+  - first:
+      213: -6955272447084228087
+    second: MagicBall_Hit_15
+  - first:
+      213: 3133604843582885501
+    second: MagicBall_Hit_16
+  - first:
+      213: -8661943001436990251
+    second: MagicBall_Hit_17
+  - first:
+      213: -1748220467837876206
+    second: MagicBall_Hit_18
+  - first:
+      213: 5600971043649466028
+    second: MagicBall_Hit_19
+  - first:
+      213: 2338515626365030542
+    second: MagicBall_Hit_20
+  - first:
+      213: -7539471878948932453
+    second: MagicBall_Hit_21
+  - first:
+      213: 8391159893315568898
+    second: MagicBall_Hit_22
+  - first:
+      213: 8680392003232144871
+    second: MagicBall_Hit_23
+  - first:
+      213: 3998756289276346743
+    second: MagicBall_Hit_24
+  - first:
+      213: -6130172021335346061
+    second: MagicBall_Hit_25
+  - first:
+      213: 8557373189441477652
+    second: MagicBall_Hit_26
+  - first:
+      213: -2943828010131509499
+    second: MagicBall_Hit_27
+  - first:
+      213: -9171138785996433660
+    second: MagicBall_Hit_28
+  - first:
+      213: 2111534545232167273
+    second: MagicBall_Hit_29
+  - first:
+      213: -6765662033234744322
+    second: MagicBall_Hit_30
+  - first:
+      213: -7051008274157432403
+    second: MagicBall_Hit_31
+  - first:
+      213: 8708400311259865390
+    second: MagicBall_Hit_32
+  - first:
+      213: 8903913997504696248
+    second: MagicBall_Hit_33
+  - first:
+      213: -8211083538880462554
+    second: MagicBall_Hit_34
+  - first:
+      213: 5889533310971724942
+    second: MagicBall_Hit_35
+  - first:
+      213: -5695018296715750720
+    second: MagicBall_Hit_36
+  - first:
+      213: 8394788185530597997
+    second: MagicBall_Hit_37
+  - first:
+      213: -233401563219107244
+    second: MagicBall_Hit_38
+  - first:
+      213: 2964588696747125521
+    second: MagicBall_Hit_39
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Hit_MagicBall_2
+      rect:
+        serializedVersion: 2
+        x: 996
+        y: 1097
+        width: 513
+        height: 507
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b068291d6135e1b00800000000000000
+      internalID: 801169141188953611
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Hit_MagicBall_0
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 1260
+        width: 142
+        height: 153
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 083faec4a3693c320800000000000000
+      internalID: 2577068588928791424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Hit_MagicBall_1
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 1204
+        width: 272
+        height: 284
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd3d367b45f6e5eb0800000000000000
+      internalID: -4729220149047733284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Hit_MagicBall_3
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 599
+        width: 382
+        height: 391
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d4daaeabb89ac780800000000000000
+      internalID: -8661943001436990251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Hit_MagicBall_4
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 616
+        width: 349
+        height: 344
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e80103b7293147020800000000000000
+      internalID: 2338515626365030542
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Hit_MagicBall_5
+      rect:
+        serializedVersion: 2
+        x: 1114
+        y: 742
+        width: 110
+        height: 114
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40710ea6dd199b080800000000000000
+      internalID: -9171138785996433660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Hit_MagicBall_6
+      rect:
+        serializedVersion: 2
+        x: 1438
+        y: 733
+        width: 112
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 68ae7e8566c71fa49b0bc0f8ececf6cd
+      internalID: -1952560589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: c4ea745ceda9b374cbf4b10d603e7e1f
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Hit_MagicBall_0: 2577068588928791424
+      Hit_MagicBall_1: -4729220149047733284
+      Hit_MagicBall_2: 801169141188953611
+      Hit_MagicBall_3: -8661943001436990251
+      Hit_MagicBall_4: 2338515626365030542
+      Hit_MagicBall_5: -9171138785996433660
+      Hit_MagicBall_6: -1952560589
+      MagicBall_Hit_0: 8862517671791262286
+      MagicBall_Hit_10: 4912064521408034587
+      MagicBall_Hit_11: -7844051154525289689
+      MagicBall_Hit_12: 754358216216867896
+      MagicBall_Hit_13: -6483108403871448625
+      MagicBall_Hit_14: -5376985939337385884
+      MagicBall_Hit_15: -6955272447084228087
+      MagicBall_Hit_16: 3133604843582885501
+      MagicBall_Hit_18: -1748220467837876206
+      MagicBall_Hit_19: 5600971043649466028
+      MagicBall_Hit_2: -8357319654624342317
+      MagicBall_Hit_21: -7539471878948932453
+      MagicBall_Hit_22: 8391159893315568898
+      MagicBall_Hit_23: 8680392003232144871
+      MagicBall_Hit_24: 3998756289276346743
+      MagicBall_Hit_25: -6130172021335346061
+      MagicBall_Hit_26: 8557373189441477652
+      MagicBall_Hit_27: -2943828010131509499
+      MagicBall_Hit_29: 2111534545232167273
+      MagicBall_Hit_3: 7428480160387631421
+      MagicBall_Hit_30: -6765662033234744322
+      MagicBall_Hit_31: -7051008274157432403
+      MagicBall_Hit_32: 8708400311259865390
+      MagicBall_Hit_33: 8903913997504696248
+      MagicBall_Hit_34: -8211083538880462554
+      MagicBall_Hit_35: 5889533310971724942
+      MagicBall_Hit_36: -5695018296715750720
+      MagicBall_Hit_37: 8394788185530597997
+      MagicBall_Hit_38: -233401563219107244
+      MagicBall_Hit_39: 2964588696747125521
+      MagicBall_Hit_6: -7569700543051425462
+      MagicBall_Hit_7: -6204964921619911387
+      MagicBall_Hit_8: -1629567315801023093
+      MagicBall_Hit_9: 4679941175081060280
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
