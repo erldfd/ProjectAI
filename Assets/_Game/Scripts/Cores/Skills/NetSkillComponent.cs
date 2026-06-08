@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core;
+using ProjectAI.Core.Entities;
 
 namespace ProjectAI.Core.Skills
 {
@@ -10,100 +11,138 @@ namespace ProjectAI.Core.Skills
     [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Players", "Assembly-CSharp", "NetPlayerCombat")]
     public class NetSkillComponent : NetworkBehaviour
     {
-        [Header("Combat Settings")]
-        [Tooltip("마법탄 프리팹 (서버에만 있어도 되지만, 클라이언트 시뮬레이션을 위해 공용)")]
-        [SerializeField]
-        private GameObject projectilePrefab;
+        [Header("Skill Settings")]
+        [Tooltip("이 캐릭터가 사용할 수 있는 스킬 목록")]
+        public System.Collections.Generic.List<ESkillType> OwnedSkills = new System.Collections.Generic.List<ESkillType>();
 
-        [Tooltip("마법탄이 발사될 위치 (Muzzle)")]
+        [Tooltip("마법탄 등이 발사될 기준 위치 (없으면 자신 Transform 중심)")]
         [SerializeField]
         private Transform firePoint;
+        public Transform FirePoint => firePoint;
 
-        [Tooltip("공격 쿨타임 (초)")]
-        [SerializeField]
-        private float attackCooldown = 0.5f;
+        /// <summary>
+        /// 캐릭터의 현재 상태를 비트마스크로 동기화합니다.
+        /// </summary>
+        public NetworkVariable<int> ActiveStates = new NetworkVariable<int>(
+            0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
 
-        private float lastAttackTime = -999f;
-        private float serverLastAttackTime = -999f;
-        private ProjectAI.Movements.ANetMovement entityMovement;
+        // 로컬/서버 공용 쿨타임 추적용 딕셔너리
+        private System.Collections.Generic.Dictionary<ESkillType, double> lastActivationTimes = new System.Collections.Generic.Dictionary<ESkillType, double>();
+
+        private EntityEvents entityEvents;
 
         private void Awake()
         {
-            entityMovement = GetComponentInChildren<ProjectAI.Movements.ANetMovement>();
-            UnityEngine.Assertions.Assert.IsNotNull(entityMovement, "ANetMovement is missing for SkillComponent.");
+            entityEvents = GetComponentInParent<EntityEvents>();
+            if (entityEvents == null)
+            {
+                entityEvents = GetComponentInChildren<EntityEvents>();
+            }
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            if (entityEvents != null && base.IsOwner)
+            {
+                entityEvents.OnSkillTriggered += TryActivateSkill;
+            }
         }
 
         public override void OnNetworkDespawn()
         {
             base.OnNetworkDespawn();
+
+            if (entityEvents != null)
+            {
+                entityEvents.OnSkillTriggered -= TryActivateSkill;
+            }
         }
 
-        public void SetAttackInput(bool isAttacking)
+        public double GetLastActivationTime(ESkillType type)
         {
-            if (!isAttacking)
+            if (lastActivationTimes.TryGetValue(type, out double time))
+            {
+                return time;
+            }
+            return -999.0;
+        }
+
+        public void SetLastActivationTime(ESkillType type, double time)
+        {
+            lastActivationTimes[type] = time;
+        }
+
+        public bool HasState(EStateTag tag)
+        {
+            return (ActiveStates.Value & (int)tag) != 0;
+        }
+
+        public void AddState(EStateTag tag)
+        {
+            if (base.IsServer)
+            {
+                ActiveStates.Value |= (int)tag;
+            }
+        }
+
+        public void RemoveState(EStateTag tag)
+        {
+            if (base.IsServer)
+            {
+                ActiveStates.Value &= ~(int)tag;
+            }
+        }
+
+        /// <summary>
+        /// 클라이언트(컨트롤러)에서 특정 스킬 사용을 시도합니다.
+        /// </summary>
+        public void TryActivateSkill(ESkillType skillType)
+        {
+            if (!OwnedSkills.Contains(skillType))
             {
                 return;
             }
 
-            if (Time.time < lastAttackTime + attackCooldown)
+            // 로컬 단위 클라이언트 예측(쿨타임, 상태 검사) 로직
+            if (GameStatics.SkillManager != null)
             {
-                return; // 쿨타임 대기 중
+                SSkillConfig config = GameStatics.SkillManager.GetConfig(skillType);
+                if (NetworkManager.Singleton != null && NetworkManager.Singleton.ServerTime.Time < GetLastActivationTime(skillType) + config.BaseCooldown)
+                {
+                    return; // 쿨타임 대기 중
+                }
+
+                if (HasState(EStateTag.Silenced) || HasState(EStateTag.Stunned))
+                {
+                    return; // 상태 이상으로 시전 불가
+                }
             }
 
-            lastAttackTime = Time.time;
-
-            // 현재 캐릭터가 바라보는 좌/우 방향 확인
-            bool isFacingRight = true;
-            if (entityMovement != null)
+            // 클라이언트 전용(호스트 제외) 쿨타임을 미리 돌림 (예측)
+            if (NetworkManager.Singleton != null && !base.IsServer)
             {
-                isFacingRight = entityMovement.NetIsFacingRight.Value;
+                SetLastActivationTime(skillType, NetworkManager.Singleton.ServerTime.Time);
             }
 
-            Vector2 direction = isFacingRight ? Vector2.right : Vector2.left;
-
-            RequestFireServerRpc(direction);
+            RequestActivateSkillServerRpc(skillType);
         }
 
         [Rpc(SendTo.Server)]
-        private void RequestFireServerRpc(Vector2 direction)
+        private void RequestActivateSkillServerRpc(ESkillType skillType)
         {
-            if (Time.time < serverLastAttackTime + attackCooldown)
+            if (!OwnedSkills.Contains(skillType))
             {
-                Debug.LogWarning("[NetSkillComponent] RPC Attack too fast. Ignoring.");
-                return;
-            }
-            serverLastAttackTime = Time.time;
-
-            if (projectilePrefab == null)
-            {
-                Debug.LogWarning("[NetSkillComponent] Projectile Prefab is missing!");
                 return;
             }
 
-            // 서버 권한으로 투사체 스폰 (클라이언트 조작 불가하게 서버에서 위치 직접 결정)
-            Vector2 origin = firePoint != null ? (Vector2)firePoint.position : (Vector2)transform.position;
-            GameObject projectileObj = Instantiate(projectilePrefab, origin, Quaternion.identity);
-            
-            // 발사 방향으로 회전 적용
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            projectileObj.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-
-            if (projectileObj.TryGetComponent(out NetworkObject netObj))
+            if (GameStatics.SkillManager != null)
             {
-                // 소유권 없이(서버 소유) 스폰.
-                // 투사체는 서버가 직접 물리/충돌 연산을 담당함.
-                netObj.Spawn();
-            }
-
-            // 투사체의 이동 컴포넌트를 초기화
-            if (projectileObj.TryGetComponent(out ProjectAI.Projectiles.NetProjectile projectile))
-            {
-                projectile.Initialize(direction, base.OwnerClientId);
+                GameStatics.SkillManager.ExecuteSkill(skillType, this);
             }
         }
     }

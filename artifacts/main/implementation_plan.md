@@ -1,65 +1,43 @@
-# [A급 작업: 체력, 피해 및 스탯 시스템 구조 구축]
+# [Enum 기반 경량화 스킬 & 상태 관리 시스템 도입]
 
-모든 개체(플레이어, 몬스터 등)가 공통으로 사용할 스탯(Stat), 체력(Health), 피해(Damage) 처리 시스템을 구축합니다. 서버 권한(Server Auth)을 유지하며, RPC를 통한 정확한 피격 연출 동기화를 보장합니다.
-
-## User Review Required
+무거운 ScriptableObject(데이터 주도) 방식 대신, 코드 기반(Enum & Manager)으로 빠르고 직관적으로 통제할 수 있는 실용적인 모듈화 설계입니다. NGO 환경에서 Enum은 직렬화가 매우 가벼우므로 네트워크 통신에도 최적화된 좋은 접근입니다.
 
 > [!IMPORTANT]
-> **GameStatics를 통한 데미지 파이프라인 중앙 집중화**
-> 무기나 스킬이 대상을 직접 때리는 대신 `GameStatics.ApplyDamage(GameObject target, int amount)`를 호출하는 파이프라인을 구축합니다. 이를 통해 방어력 차감, 크리티컬 계산, 스탯 기반 데미지 증폭 공식을 `GameStatics` 한 곳에서 깔끔하게 통제할 수 있습니다.
+> **User Review Required**
+> 제안하신 방식(Enum + SkillManager + State Enum)을 바탕으로 구체적인 구조를 잡았습니다. 이 설계대로 코드를 작성할지 확인 부탁드립니다.
 
-> [!IMPORTANT]
-> **스탯과 체력의 분리 구조 (StatComponent vs HealthComponent)**
-> 스탯(최대 체력, 공격력, 이동 속도 등)을 관리하는 `NetStatComponent`와, 현재 체력 및 피격 로직을 담당하는 `NetworkHealthComponent`를 분리합니다.
+## Proposed Changes
 
-## Proposed Architecture
+### 1. 전역 Enum 정의
+**[NEW] `Assets/_Game/Scripts/Cores/Skills/SkillEnums.cs`**
+- `ESkillType`: 스킬 식별자 (예: `BasicAttack`, `Dash`, `Fireball`)
+- `EStateTag`: 캐릭터의 상태 (예: `None`, `Casting`, `Silenced`, `Stunned`, `Invincible`)
+  - 상태는 여러 개가 중첩될 수 있으므로 `[Flags]` 속성을 부여하여 비트마스크(Bitmask)로 활용하거나 `NetworkList`로 관리합니다.
 
-```mermaid
-classDiagram
-    class GameStatics {
-        <<static>>
-        +ApplyDamage(GameObject target, int damage)
-    }
+### 2. 스킬 로직 인터페이스 및 매니저
+**[NEW] `Assets/_Game/Scripts/Cores/Skills/ISkillLogic.cs`**
+- `void Execute(NetSkillComponent caster);`
+- `bool CanExecute(NetSkillComponent caster);` (쿨타임, 상태 체크 등)
 
-    class IDamageable {
-        <<interface>>
-        +TakeDamage(int damage)
-    }
-    
-    class NetStatComponent {
-        +NetworkVariable~int~ MaxHealth
-        +NetworkVariable~int~ AttackPower
-        +NetworkVariable~float~ MoveSpeed
-    }
+**[NEW] `Assets/_Game/Scripts/Cores/Skills/SkillManager.cs`**
+- 싱글톤 패턴으로 구현.
+- 게임 시작 시 모든 `ESkillType`에 매칭되는 `ISkillLogic` 구현체들을 Dictionary에 미리 할당해 둡니다.
+- `Execute(ESkillType type, NetSkillComponent caster)` 호출 시 해당 로직을 실행합니다.
 
-    class NetworkHealthComponent {
-        -NetStatComponent statComponent
-        +NetworkVariable~int~ CurrentHealth
-        +TakeDamage(int damage)
-    }
+### 3. NetSkillComponent 구조 개편
+**[MODIFY] `Assets/_Game/Scripts/Cores/Skills/NetSkillComponent.cs`**
+- **보유 스킬**: `List<ESkillType> ownedSkills` (자신이 쓸 수 있는 스킬 목록)
+- **상태 관리**: `NetworkVariable<int> ActiveStates` (비트마스크를 이용해 현재 상태 동기화)
+- **작동 흐름**:
+  1. 클라이언트 컨트롤러가 `TryActivateSkill(ESkillType.BasicAttack)` 호출.
+  2. `ownedSkills`에 있는지, 현재 상태가 스킬 사용을 막고 있지 않은지(`Silenced` 등) 클라이언트 단에서 1차 검사.
+  3. `ServerRpcActivateSkill(ESkillType.BasicAttack)` 호출.
+  4. 서버에서 2차 검증 후 `SkillManager.Instance.Execute(skill, this)` 호출.
 
-    GameStatics ..> IDamageable : 타겟의 컴포넌트 탐색 및 호출
-    NetworkHealthComponent ..|> IDamageable
-    NetworkHealthComponent --> NetStatComponent : 참조 (MaxHealth 제한 등)
-```
+### 4. 스킬 구현체 분리
+**[NEW] `Assets/_Game/Scripts/Cores/Skills/Abilities/BasicAttackLogic.cs`**
+- `ISkillLogic`을 구현하며, 매니저에 의해 실행될 때 실질적인 투사체(마법탄) 생성 코드를 담당합니다.
 
-### 1. `GameStatics.cs` (전역 데미지 게이트웨이 추가)
-- **추가 메서드**: `public static void ApplyDamage(GameObject target, int baseDamage)` (추후 타격 주체 매개변수도 추가 가능)
-- **역할**: 전역 데미지 공식을 관장합니다. 들어온 `target`에서 `IDamageable`과 `NetStatComponent`를 찾아 방어력을 뺀 최종 데미지를 계산하고, `TakeDamage`를 호출해 줍니다. 
-
-### 2. `NetStatComponent.cs` (스탯 데이터 센터)
-캐릭터의 영구적/가변적 기본 스탯을 모두 쥐고 있는 컴포넌트입니다.
-- **역할**: 최대 체력, 이동 속도, 방어력, 공격력 등 데이터 제공.
-
-### 3. `NetworkHealthComponent.cs` (피격/체력 로직 전담)
-오직 '현재 체력'과 '피격/사망 연출'만 관리합니다.
-- **역할**: `TakeDamage`가 들어오면 `CurrentHealth` 차감, 0 이하 시 사망 처리. 피격/사망 시 `ClientRpc` 발송.
-- **상호작용**: 초기화 및 회복 시 `NetStatComponent.MaxHealth`를 초과하지 않도록 제한.
-
-### 4. `IDamageable.cs` (피해 인터페이스)
-- **역할**: `TakeDamage(int damage)` 시그니처를 제공.
-
-## Verification Plan
-1. 에디터에서 빈 오브젝트에 `NetStatComponent`와 `NetworkHealthComponent` 부착.
-2. 테스트 스크립트에서 `GameStatics.ApplyDamage(obj, 10)` 호출.
-3. `GameStatics`가 객체의 `IDamageable`을 찾아 데미지를 먹이고, 최종적으로 체력이 깎이며 RPC가 터지는지 확인.
+## Validation Plan
+1. 상태 부여 테스트: 스킬 로직 안에서 컴포넌트의 상태를 `EStateTag.Casting`으로 변경해보고, 다른 스킬이 막히는지 확인.
+2. 매니저 연동: `SkillManager`가 올바르게 로직을 라우팅하여 마법탄이 정상적으로 발사되는지 확인.

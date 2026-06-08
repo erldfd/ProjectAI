@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Assertions;
+using ProjectAI.Movements;
 
 namespace ProjectAI.Core.Entities
 {
@@ -10,11 +11,18 @@ namespace ProjectAI.Core.Entities
     public class NetEntity : Unity.Netcode.NetworkBehaviour
     {
         public EntityEvents Events { get; private set; }
+        
+        /// <summary>
+        /// 물리 이동/동기화를 담당하는 컴포넌트입니다. 투사체 등 이동이 없는 엔티티의 경우 null일 수 있습니다.
+        /// </summary>
+        public ANetMovement Movement { get; private set; }
 
         protected virtual void Awake()
         {
             Events = GetComponentInChildren<EntityEvents>();
             Assert.IsNotNull(Events, "NetEntity는 EntityEvents 오너가 필요합니다.");
+            
+            Movement = GetComponentInChildren<ANetMovement>();
         }
     }
 }

@@ -1,7 +1,8 @@
-- `[x]` 기획 및 구조 검토
-- `[x]` IDamageable 인터페이스 생성
-- `[x]` NetStatComponent 구현
-- `[x]` NetworkHealthComponent 구현
-- `[x]` GameStatics 데미지 전역 파이프라인 구축
-- `[x]` 리뷰어(reviewer) 에이전트 검토 (피드백 반영 완료)
-- `[x]` 검증 및 완료 보고
+# 스킬 시스템 모듈화 작업 진행도
+
+- [x] 1. 전역 Enum 생성 (`SkillEnums.cs`)
+- [x] 2. 스킬 로직 인터페이스 생성 (`ISkillLogic.cs`)
+- [x] 3. 스킬 매니저 싱글톤 생성 (`SkillManager.cs`)
+- [x] 4. 기본 공격 스킬 로직 구현 (`BasicAttackLogic.cs`)
+- [x] 5. `NetSkillComponent` 리팩토링 (상태 관리, Enum 기반 RPC 등)
+- [x] 6. `NetPlayerController`에서 기본 공격 트리거 방식 변경

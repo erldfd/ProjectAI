@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using ProjectAI.Core.Skills;
 
 namespace ProjectAI.Core.Entities
 {
@@ -15,9 +16,16 @@ namespace ProjectAI.Core.Entities
         public event Action<Vector2> OnVelocityChanged;
         
         private event Action<float> onMoveSpeedModifierChanged;
+        
+        private float cachedMoveSpeedModifier = 1f;
 
         private bool cachedIsFacingRight = true;
         private event Action<bool> onFacingDirectionChanged;
+
+        /// <summary>
+        /// 외부(뇌)에서 특정 스킬의 발동을 요청했을 때 발생하는 이벤트
+        /// </summary>
+        public event Action<ESkillType> OnSkillTriggered;
 
         /// <summary>
         /// 구독 시점에 즉시 최신 값을 한 번 내려줍니다. (Late Subscriber 버그 방지)
@@ -70,6 +78,11 @@ namespace ProjectAI.Core.Entities
         {
             cachedIsFacingRight = isFacingRight;
             onFacingDirectionChanged?.Invoke(isFacingRight);
+        }
+
+        public void InvokeSkillTriggered(ESkillType skillType)
+        {
+            OnSkillTriggered?.Invoke(skillType);
         }
     }
 }

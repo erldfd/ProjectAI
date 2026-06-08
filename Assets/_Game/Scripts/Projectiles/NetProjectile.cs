@@ -1,6 +1,8 @@
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core;
+using ProjectAI.Core.Entities;
+using ProjectAI.Core.Stats;
 
 namespace ProjectAI.Projectiles
 {
@@ -8,29 +10,21 @@ namespace ProjectAI.Projectiles
     /// 마법탄 등 투사체의 이동 및 충돌 판정을 처리하는 서버 주도형 컴포넌트입니다.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class NetProjectile : Entity
+    public class NetProjectile : NetEntity
     {
         [Header("Projectile Settings")]
-        [Tooltip("투사체 비행 속도")]
-        [SerializeField]
-        private float speed = 15f;
-
-        [Tooltip("투사체가 줄 데미지량")]
-        [SerializeField]
-        private int damage = 10;
-
         [Tooltip("발사 후 자동 파괴될 때까지의 생존 시간 (초)")]
         [SerializeField]
         private float lifeTime = 5f;
 
-        private Vector2 moveDirection;
         private ulong ownerPlayerId;
-        private Rigidbody2D rb;
+        private NetStatComponent statComponent;
 
         protected override void Awake()
         {
             base.Awake();
-            rb = GetComponent<Rigidbody2D>();
+            statComponent = GetComponentInChildren<NetStatComponent>();
+            UnityEngine.Assertions.Assert.IsNotNull(statComponent, "NetProjectile은 데미지 처리를 위해 NetStatComponent가 필수입니다.");
         }
 
         public override void OnNetworkSpawn()
@@ -59,24 +53,17 @@ namespace ProjectAI.Projectiles
         /// </summary>
         public void Initialize(Vector2 direction, ulong playerId)
         {
-            moveDirection = direction.normalized;
-            ownerPlayerId = playerId;
-            
-            // 초기 속도 적용 (NetServerMovement를 상속하지 않고 자체 리지드바디 제어)
-            rb.linearVelocity = moveDirection * speed;
-        }
-
-        private void FixedUpdate()
-        {
-            // 투사체의 물리 이동은 서버에서만 제어하며, 클라이언트는 NetworkTransform(또는 Rigidbody 동기화)를 통해 수신받습니다.
             if (!base.IsServer)
             {
                 return;
             }
 
-            // Rigidbody.linearVelocity가 이미 값을 가지고 있으므로 지속적인 갱신은 불필요할 수 있지만, 
-            // 안전을 위해 속도를 유지시켜 줍니다.
-            rb.linearVelocity = moveDirection * speed;
+            ownerPlayerId = playerId;
+            
+            if (base.Movement is ProjectAI.Movements.NetServerMovement serverMovement)
+            {
+                serverMovement.SetDirection(direction);
+            }
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -101,7 +88,7 @@ namespace ProjectAI.Projectiles
                     return;
                 }
 
-                GameStatics.ApplyDamage(collision.gameObject, damage);
+                GameStatics.ApplyDamage(collision.gameObject, statComponent.AttackPower.Value);
                 DestroyProjectile();
             }
             else
