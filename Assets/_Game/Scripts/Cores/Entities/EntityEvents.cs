@@ -14,8 +14,10 @@ namespace ProjectAI.Core.Entities
         /// </summary>
         public event Action<Vector2> OnVelocityChanged;
         
-        private float cachedMoveSpeedModifier = 1f;
         private event Action<float> onMoveSpeedModifierChanged;
+
+        private bool cachedIsFacingRight = true;
+        private event Action<bool> onFacingDirectionChanged;
 
         /// <summary>
         /// 구독 시점에 즉시 최신 값을 한 번 내려줍니다. (Late Subscriber 버그 방지)
@@ -25,11 +27,31 @@ namespace ProjectAI.Core.Entities
             add
             {
                 onMoveSpeedModifierChanged += value;
+                // value는 방금 이 이벤트를 구독(+=)하려고 전달된 델리게이트 단 하나를 의미함.
+                // 구독하는 즉시 캐싱된 최신 값을 해당 델리게이트에게만 1회 강제 호출해 줌.
                 value?.Invoke(cachedMoveSpeedModifier);
             }
             remove
             {
                 onMoveSpeedModifierChanged -= value;
+            }
+        }
+
+        /// <summary>
+        /// 캐릭터가 바라보는 방향이 변경되었을 때 (또는 후참여자 구독 시) 발생하는 이벤트
+        /// </summary>
+        public event Action<bool> OnFacingDirectionChanged
+        {
+            add
+            {
+                onFacingDirectionChanged += value;
+                // value는 방금 이 이벤트를 구독(+=)하려고 전달된 델리게이트 단 하나를 의미함.
+                // 구독하는 즉시 캐싱된 최신 값을 해당 델리게이트에게만 1회 강제 호출해 줌.
+                value?.Invoke(cachedIsFacingRight);
+            }
+            remove
+            {
+                onFacingDirectionChanged -= value;
             }
         }
 
@@ -42,6 +64,12 @@ namespace ProjectAI.Core.Entities
         {
             cachedMoveSpeedModifier = modifier;
             onMoveSpeedModifierChanged?.Invoke(modifier);
+        }
+
+        public void InvokeFacingDirectionChanged(bool isFacingRight)
+        {
+            cachedIsFacingRight = isFacingRight;
+            onFacingDirectionChanged?.Invoke(isFacingRight);
         }
     }
 }

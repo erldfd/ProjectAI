@@ -269,6 +269,16 @@ namespace ProjectAI.Movements
                 input.Normalize();
             }
 
+            // 좌우 이동에 따른 바라보는 방향 갱신 (위/아래 이동시는 기존 방향 유지)
+            if (input.x > 0.01f)
+            {
+                base.NetIsFacingRight.Value = true;
+            }
+            else if (input.x < -0.01f)
+            {
+                base.NetIsFacingRight.Value = false;
+            }
+
             currentMoveInput = input;
             base.NetAnimVelocity.Value = input * (moveSpeed * currentMoveSpeedModifier);
         }
