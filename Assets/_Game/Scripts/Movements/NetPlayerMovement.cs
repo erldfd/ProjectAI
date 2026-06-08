@@ -263,6 +263,7 @@ namespace ProjectAI.Movements
                 return;
             }
 
+            // 스피드핵(비정상적으로 큰 입력값 주입) 및 대각선 가속(루트 2 배속) 방지용 안전장치
             if (input.sqrMagnitude > 1f)
             {
                 input.Normalize();
