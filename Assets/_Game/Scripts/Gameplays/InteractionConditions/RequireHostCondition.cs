@@ -12,12 +12,13 @@ namespace ProjectAI.Environment.Conditions
         #region Public Methods
         public bool CheckCondition(GameObject interactor)
         {
-            if (GameStatics.NetworkManager == null)
+            Unity.Netcode.NetworkObject netObj = interactor.GetComponentInParent<Unity.Netcode.NetworkObject>();
+            if (netObj != null)
             {
-                return false;
+                return netObj.OwnerClientId == Unity.Netcode.NetworkManager.ServerClientId;
             }
 
-            return GameStatics.NetworkManager.IsServer;
+            return false;
         }
 
         public string GetFailedMessage()

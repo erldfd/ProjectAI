@@ -35,11 +35,19 @@ namespace ProjectAI.Environment
                 // 1. 파티 전체 강제 이동
                 if (GameStatics.NetworkManager != null)
                 {
-                    foreach (var client in GameStatics.NetworkManager.ConnectedClientsList)
+                    foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
                     {
                         if (client.PlayerObject != null)
                         {
-                            client.PlayerObject.transform.position = destPos;
+                            Rigidbody2D rb = client.PlayerObject.GetComponentInChildren<Rigidbody2D>();
+                            if (rb != null)
+                            {
+                                rb.position = destPos;
+                            }
+                            else
+                            {
+                                client.PlayerObject.transform.position = destPos;
+                            }
                         }
                     }
                 }
@@ -49,7 +57,15 @@ namespace ProjectAI.Environment
                 // 2. 상호작용한 개인만 이동
                 if (interactor != null)
                 {
-                    interactor.transform.position = destPos;
+                    Rigidbody2D rb = interactor.GetComponentInChildren<Rigidbody2D>();
+                    if (rb != null)
+                    {
+                        rb.position = destPos;
+                    }
+                    else
+                    {
+                        interactor.transform.position = destPos;
+                    }
                 }
             }
         }

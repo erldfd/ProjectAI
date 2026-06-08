@@ -33,7 +33,7 @@ namespace ProjectAI.Environment
         #region Protected Methods
         protected virtual bool CanInteract(GameObject interactor)
         {
-            foreach (var condition in conditions)
+            foreach (IInteractionCondition condition in conditions)
             {
                 if (!condition.CheckCondition(interactor))
                 {

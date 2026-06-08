@@ -1,8 +1,9 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
+using UnityEngine.Assertions;
 
-namespace ProjectAI.Player
+namespace ProjectAI.Movements
 {
     /// <summary>
     /// 클라이언트에서 서버로 보내는 입력 데이터 페이로드
@@ -39,8 +40,8 @@ namespace ProjectAI.Player
     /// <summary>
     /// Rigidbody2D를 사용한 캐릭터의 물리적 이동을 전담하는 클래스입니다.
     /// </summary>
-    [RequireComponent(typeof(Rigidbody2D))]
-    public class NetPlayerMovement : NetworkBehaviour
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Player", "Assembly-CSharp", "NetPlayerMovement")]
+    public class NetPlayerMovement : ANetMovement
     {
         private const int BUFFER_SIZE = 1024;
 
@@ -70,40 +71,45 @@ namespace ProjectAI.Player
 
         private int currentSequenceId = 0;
 
-        // 옵저버 보간용 변수
-        private Vector2 observerTargetPosition;
-        // private Vector2 observerTargetVelocity; // 향후 옵저버 외삽(Extrapolation) 기능 구현 시 사용 예정
-
         private Rigidbody2D rb;
         private Vector2 currentMoveInput;
+        private float currentMoveSpeedModifier = 1f;
+
+        public override Vector2 Velocity => rb.linearVelocity;
 
         #region Unity Lifecycle
-        private void Awake()
+        protected override void Awake()
         {
-            rb = GetComponent<Rigidbody2D>();
+            base.Awake();
+            rb = GetComponentInParent<Rigidbody2D>();
+            Assert.IsNotNull(rb, "Rigidbody2D component is missing in parent.");
         }
 
-        public override void OnNetworkSpawn()
+        private void OnEnable()
         {
-            base.OnNetworkSpawn();
-            // 첫 RPC 수신 전까지 옵저버가 (0,0)으로 이동하는 현상 방지
-            observerTargetPosition = rb.position;
+            base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
+        }
+
+        private void OnDisable()
+        {
+            base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
+        }
+
+        private void HandleMoveSpeedModifierChanged(float modifier)
+        {
+            currentMoveSpeedModifier = modifier;
         }
 
         private void FixedUpdate()
         {
-            if (IsServer)
+            if (base.IsServer)
             {
                 HandleServerTick();
             }
 
-            if (IsOwner)
+            if (base.IsOwner)
             {
                 HandleClientTick();
-            }
-            else if (!IsServer)
-            {
-                HandleObserverTick();
             }
 
             currentSequenceId++;
@@ -154,7 +160,7 @@ namespace ProjectAI.Player
             {
                 SInputPayload inputPayload = serverInputQueue.Dequeue();
                 
-                if (processedCount > 0 && !IsOwner)
+                if (processedCount > 0 && !base.IsOwner)
                 {
                     // 이전 패킷의 속도를 수동으로 적용하여 중간 프레임 누락 방지
                     // TODO: 수동 가산 시 물리 벽 뚫림 방지를 위해 향후 Raycast(또는 BoxCast) 기반 충돌 검사 로직 추가 필요
@@ -164,7 +170,7 @@ namespace ProjectAI.Player
                 int bufferIndex = (inputPayload.SequenceId % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
                 clientInputBuffer[bufferIndex] = inputPayload;
                 
-                if (!IsOwner)
+                if (!base.IsOwner)
                 {
                     ApplyPhysics(inputPayload.InputVector);
                 }
@@ -187,21 +193,15 @@ namespace ProjectAI.Player
             }
         }
 
-        private void HandleObserverTick()
-        {
-            // 시각적 보간은 자식의 VisualInterpolator가 전담하므로,
-            // 물리 객체(콜라이더)는 서버가 알려준 최신 위치로 즉시 동기화(Snap).
-            rb.position = observerTargetPosition;
-            rb.linearVelocity = Vector2.zero; // 옵저버는 자체 물리 이동 금지
-        }
-
         [Rpc(SendTo.NotServer, Delivery = RpcDelivery.Unreliable)]
         private void SendStateClientRpc(SStatePayload statePayload)
         {
-            if (!IsOwner)
+            if (!base.IsOwner)
             {
-                observerTargetPosition = statePayload.Position;
-                // observerTargetVelocity = statePayload.Velocity;
+                // 옵저버 처리: 서버 상태를 수신하는 즉시 적용.
+                // 이후 FixedUpdate 사이클 동안 물리 엔진이 선형 속도를 기반으로 자연스럽게 외삽(Dead Reckoning)함.
+                rb.position = statePayload.Position;
+                rb.linearVelocity = statePayload.Velocity;
                 return;
             }
 
@@ -258,14 +258,25 @@ namespace ProjectAI.Player
         #region Public Methods
         public void SetMoveInput(Vector2 input)
         {
+            if (!base.IsOwner)
+            {
+                return;
+            }
+
+            if (input.sqrMagnitude > 1f)
+            {
+                input.Normalize();
+            }
+
             currentMoveInput = input;
+            base.NetAnimVelocity.Value = input * (moveSpeed * currentMoveSpeedModifier);
         }
         #endregion
 
         #region Private Methods
         private void ApplyPhysics(Vector2 inputVector)
         {
-            rb.linearVelocity = inputVector * moveSpeed;
+            rb.linearVelocity = inputVector * (moveSpeed * currentMoveSpeedModifier);
         }
         #endregion
     }
