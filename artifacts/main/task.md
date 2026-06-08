@@ -1,0 +1,7 @@
+- `[x]` 기획 및 구조 검토
+- `[x]` IDamageable 인터페이스 생성
+- `[x]` NetStatComponent 구현
+- `[x]` NetworkHealthComponent 구현
+- `[x]` GameStatics 데미지 전역 파이프라인 구축
+- `[x]` 리뷰어(reviewer) 에이전트 검토 (피드백 반영 완료)
+- `[x]` 검증 및 완료 보고

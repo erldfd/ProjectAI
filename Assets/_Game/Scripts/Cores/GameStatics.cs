@@ -2,6 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using ProjectAI.GameModes;
 using ProjectAI.Network;
+using ProjectAI.Core.Combat;
 
 namespace ProjectAI.Core
 {
@@ -13,6 +14,36 @@ namespace ProjectAI.Core
         public static NetworkManager NetworkManager => NetworkManager.Singleton;
 
         public static MultiplayerServiceManager MultiplayerManager => GameManager != null ? GameManager.MultiplayerService : null;
+
+        /// <summary>
+        /// 전역 데미지 파이프라인입니다.
+        /// 방어력 차감, 크리티컬 등 복잡한 데미지 계산 공식이 추가될 경우 여기서 중앙 통제합니다.
+        /// </summary>
+        /// <param name="target">피격을 받을 대상 오브젝트</param>
+        /// <param name="baseDamage">기본 타격 데미지</param>
+        public static void ApplyDamage(GameObject target, int baseDamage)
+        {
+            UnityEngine.Assertions.Assert.IsNotNull(target, "[GameStatics] ApplyDamage: target 오브젝트가 null입니다!");
+
+            if (NetworkManager != null && !NetworkManager.IsServer)
+            {
+                Debug.LogWarning("[GameStatics] ApplyDamage는 서버에서만 호출되어야 합니다.");
+                return;
+            }
+
+            IDamageable damageable = target.GetComponent<IDamageable>();
+            
+            if (damageable != null)
+            {
+                int finalDamage = baseDamage;
+
+                // TODO: 방어력, 상태이상 공식 등 추가 (예: target.GetComponent<NetStatComponent>())
+                // int armor = ...
+                // finalDamage = Mathf.Max(1, baseDamage - armor);
+
+                damageable.TakeDamage(finalDamage);
+            }
+        }
 
         public static void RegisterManager(GameManager manager)
         {

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Assertions;
+using ProjectAI.Core.Combat;
 
 namespace ProjectAI.Characters
 {
@@ -14,6 +15,7 @@ namespace ProjectAI.Characters
         private void Awake()
         {
             Events = GetComponent<CharacterEvents>();
+            Assert.IsNotNull(Events, "Character는 CharacterEvents 오너가 필요합니다.");
         }
     }
 }

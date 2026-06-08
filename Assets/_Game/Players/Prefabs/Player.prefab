@@ -163,6 +163,8 @@ GameObject:
   - component: {fileID: 4921892585005609114}
   - component: {fileID: 7424043328323526500}
   - component: {fileID: 6194315204317671579}
+  - component: {fileID: 4803151117738015024}
+  - component: {fileID: 526399561214384078}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -278,7 +280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 386762368
+  GlobalObjectIdHash: 3084379672
   InScenePlacedSourceGlobalObjectIdHash: 386762368
   DeferredDespawnTick: 0
   Ownership: 1
@@ -381,6 +383,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bb2bd897588cda4d83b3333e795f050, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
+--- !u!114 &4803151117738015024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59ac64f989d7e0c4bbd1b3d544c63157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Combat.NetHealthComponent
+  ShowTopMostFoldoutHeaderGroup: 1
+  CurrentHealth:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 100
+--- !u!114 &526399561214384078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0eca5b8612e2a1545934bd7facaadb3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Combat.NetStatComponent
+  ShowTopMostFoldoutHeaderGroup: 1
+  healthComponent: {fileID: 4803151117738015024}
+  MaxHealth:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 100
+  AttackPower:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 10
+  MoveSpeed:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 5
 --- !u!1 &8595777563588518843
 GameObject:
   m_ObjectHideFlags: 0
