@@ -8,37 +8,22 @@ namespace ProjectAI.Players
     /// </summary>
     public class PlayerCamera : MonoBehaviour
     {
-        [Header("References")]
-        [SerializeField]
-        private PlayerInputReader inputReader;
-
         [SerializeField]
         private Transform targetTransform;
-
-        [Header("Aim Offset Settings")]
-        [SerializeField]
-        private float maxOffsetDistance = 3f;
-        
-        [SerializeField]
-        private float offsetMultiplier = 0.5f;
 
         private CinemachineCamera cinemachineCamera;
 
         #region Unity Lifecycle
         private void Update()
         {
-            if (inputReader == null || targetTransform == null)
+            if (targetTransform == null)
             {
-                Debug.Log($"input Reader : {inputReader == null}, targetTransfrom : {targetTransform == null}");
                 return;
             }
 
-            Vector2 mousePos = inputReader.MouseWorldPosition;
-            Vector2 myPos = transform.position;
-            Vector2 direction = mousePos - myPos;
-
-            Vector2 offset = Vector2.ClampMagnitude(direction * offsetMultiplier, maxOffsetDistance);
-            targetTransform.localPosition = offset;
+            // 마우스 기반 오프셋 로직은 제거되었습니다.
+            // 필요 시 향후 캐릭터가 바라보는 방향 기반 오프셋으로 교체할 수 있습니다.
+            targetTransform.localPosition = Vector2.zero;
         }
         #endregion
 

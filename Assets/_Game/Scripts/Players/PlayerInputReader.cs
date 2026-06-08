@@ -14,43 +14,22 @@ namespace ProjectAI.Players
         [SerializeField]
         private InputActionReference moveAction;
         
-        [Tooltip("마우스 포인터 위치에 매핑된 액션 (새 인풋 시스템)")]
-        [SerializeField]
-        private InputActionReference aimAction;
 
         [Tooltip("상호작용(E키)에 매핑된 액션")]
         [SerializeField]
         private InputActionReference interactAction;
 
+        [Tooltip("공격(마우스 좌클릭)에 매핑된 액션")]
+        [SerializeField]
+        private InputActionReference attackAction;
+
         public event Action<Vector2> OnMoveInputChanged;
         public event Action<bool> OnInteractInputChanged;
+        public event Action<bool> OnAttackInputChanged;
         
-        private Vector2 currentScreenPosition;
-        private Camera mainCamera;
-
-        public Vector2 MouseWorldPosition 
-        { 
-            get 
-            {
-                if (mainCamera == null)
-                {
-                    mainCamera = Camera.main;
-                }
-                
-                if (mainCamera != null)
-                {
-                    return mainCamera.ScreenToWorldPoint(currentScreenPosition);
-                }
-                
-                return Vector2.zero;
-            }
-        }
 
         #region Unity Lifecycle
-        private void Awake()
-        {
-            mainCamera = Camera.main;
-        }
+        // 마우스 관련 초기화 제거됨
         #endregion
 
         #region Public Methods
@@ -63,19 +42,19 @@ namespace ProjectAI.Players
                 moveAction.action.canceled += HandleMoveInput;
             }
 
-            if (aimAction != null && aimAction.action != null)
-            {
-                aimAction.action.Enable();
-                aimAction.action.performed += HandleAimInput;
-                aimAction.action.canceled += HandleAimInput;
-            }
 
             if (interactAction != null && interactAction.action != null)
             {
-                Debug.Log("Interaction Bindings");
                 interactAction.action.Enable();
                 interactAction.action.performed += HandleInteractInput;
                 interactAction.action.canceled += HandleInteractInput;
+            }
+
+            if (attackAction != null && attackAction.action != null)
+            {
+                attackAction.action.Enable();
+                attackAction.action.performed += HandleAttackInput;
+                attackAction.action.canceled += HandleAttackInput;
             }
         }
 
@@ -88,18 +67,19 @@ namespace ProjectAI.Players
                 moveAction.action.Disable();
             }
 
-            if (aimAction != null && aimAction.action != null)
-            {
-                aimAction.action.performed -= HandleAimInput;
-                aimAction.action.canceled -= HandleAimInput;
-                aimAction.action.Disable();
-            }
 
             if (interactAction != null && interactAction.action != null)
             {
                 interactAction.action.performed -= HandleInteractInput;
                 interactAction.action.canceled -= HandleInteractInput;
                 interactAction.action.Disable();
+            }
+
+            if (attackAction != null && attackAction.action != null)
+            {
+                attackAction.action.performed -= HandleAttackInput;
+                attackAction.action.canceled -= HandleAttackInput;
+                attackAction.action.Disable();
             }
         }
         #endregion
@@ -111,21 +91,28 @@ namespace ProjectAI.Players
             OnMoveInputChanged?.Invoke(moveInput);
         }
 
-        private void HandleAimInput(InputAction.CallbackContext context)
-        {
-            currentScreenPosition = context.ReadValue<Vector2>();
-        }
 
         private void HandleInteractInput(InputAction.CallbackContext context)
         {
             if (context.performed)
             {
-                Debug.Log("Interaction Start");
                 OnInteractInputChanged?.Invoke(true);
             }
             else if (context.canceled)
             {
                 OnInteractInputChanged?.Invoke(false);
+            }
+        }
+
+        private void HandleAttackInput(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnAttackInputChanged?.Invoke(true);
+            }
+            else if (context.canceled)
+            {
+                OnAttackInputChanged?.Invoke(false);
             }
         }
         #endregion

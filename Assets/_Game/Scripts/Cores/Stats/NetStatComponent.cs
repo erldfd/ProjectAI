@@ -56,7 +56,6 @@ namespace ProjectAI.Core.Stats
                 entityEvents = GetComponentInParent<EntityEvents>();
             }
 
-            UnityEngine.Assertions.Assert.IsNotNull(healthComponent, "NetStatComponent는 NetHealthComponent가 필요합니다.");
             UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "NetStatComponent는 EntityEvents가 필요합니다.");
         }
 
@@ -66,7 +65,7 @@ namespace ProjectAI.Core.Stats
 
             MoveSpeedModifier.OnValueChanged += HandleMoveSpeedModifierChanged;
 
-            if (base.IsServer)
+            if (base.IsServer && healthComponent != null)
             {
                 // 스폰 완료 시, 오너로서 하위 체력 컴포넌트를 하향식으로 초기화
                 healthComponent.InitializeHealth(MaxHealth.Value);

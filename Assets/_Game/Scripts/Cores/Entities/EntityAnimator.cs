@@ -40,26 +40,24 @@ namespace ProjectAI.Core.Entities
         private void OnEnable()
         {
             entityEvents.OnVelocityChanged += HandleVelocityChanged;
+            entityEvents.OnFacingDirectionChanged += HandleFacingDirectionChanged;
         }
 
         private void OnDisable()
         {
             entityEvents.OnVelocityChanged -= HandleVelocityChanged;
+            entityEvents.OnFacingDirectionChanged -= HandleFacingDirectionChanged;
         }
 
         private void HandleVelocityChanged(Vector2 velocity)
         {
             animator.SetFloat(hashMoveSpeed, velocity.magnitude);
+        }
 
-            // 기본 방향이 오른쪽이므로, 왼쪽 이동 시(음수) flipX를 켬
-            if (velocity.x < -0.01f)
-            {
-                spriteRenderer.flipX = true;
-            }
-            else if (velocity.x > 0.01f)
-            {
-                spriteRenderer.flipX = false;
-            }
+        private void HandleFacingDirectionChanged(bool isFacingRight)
+        {
+            // 오른쪽을 보면 flipX = false, 왼쪽을 보면 flipX = true
+            spriteRenderer.flipX = !isFacingRight;
         }
     }
 }

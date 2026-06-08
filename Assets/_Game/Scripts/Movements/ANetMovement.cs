@@ -24,6 +24,15 @@ namespace ProjectAI.Movements
         );
 
         /// <summary>
+        /// 캐릭터가 현재 오른쪽을 바라보고 있는지 여부입니다. (공격 방향 등에 사용)
+        /// </summary>
+        public NetworkVariable<bool> NetIsFacingRight = new NetworkVariable<bool>(
+            true,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Owner
+        );
+
+        /// <summary>
         /// 물리 연산 등에서 참조할 실제 물리/이동 속도
         /// </summary>
         public abstract Vector2 Velocity { get; }
@@ -38,14 +47,17 @@ namespace ProjectAI.Movements
         {
             base.OnNetworkSpawn();
             NetAnimVelocity.OnValueChanged += HandleVelocityChanged;
+            NetIsFacingRight.OnValueChanged += HandleFacingDirectionChanged;
             
             // 구독 직후, 이미 값이 존재할 수 있으므로 초기 상태 동기화 수동 호출
             HandleVelocityChanged(Vector2.zero, NetAnimVelocity.Value);
+            HandleFacingDirectionChanged(true, NetIsFacingRight.Value);
         }
 
         public override void OnNetworkDespawn()
         {
             NetAnimVelocity.OnValueChanged -= HandleVelocityChanged;
+            NetIsFacingRight.OnValueChanged -= HandleFacingDirectionChanged;
             base.OnNetworkDespawn();
         }
 
@@ -53,6 +65,12 @@ namespace ProjectAI.Movements
         {
             Assert.IsNotNull(_entityEvents);
             _entityEvents.InvokeVelocityChanged(newValue);
+        }
+
+        private void HandleFacingDirectionChanged(bool previousValue, bool newValue)
+        {
+            Assert.IsNotNull(_entityEvents);
+            _entityEvents.InvokeFacingDirectionChanged(newValue);
         }
 
         // TODO: 향후 넉백 등 공통 피격/이동 로직 추가

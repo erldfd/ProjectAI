@@ -3,6 +3,7 @@ using UnityEngine;
 using ProjectAI.GameModes;
 using ProjectAI.Network;
 using ProjectAI.Core.Stats;
+using ProjectAI.Core.Skills;
 
 namespace ProjectAI.Core
 {
@@ -10,6 +11,7 @@ namespace ProjectAI.Core
     {
         public static GameManager GameManager { get; private set; }
         public static ANetGameModeBase CurrentMode { get; private set; }
+        public static SkillManager SkillManager { get; private set; }
 
         public static NetworkManager NetworkManager => NetworkManager.Singleton;
 
@@ -32,17 +34,19 @@ namespace ProjectAI.Core
             }
 
             IDamageable damageable = target.GetComponentInParent<IDamageable>();
-            
-            if (damageable != null)
+
+            if (damageable == null)
             {
-                int finalDamage = baseDamage;
-
-                // TODO: 방어력, 상태이상 공식 등 추가 (예: target.GetComponent<NetStatComponent>())
-                // int armor = ...
-                // finalDamage = Mathf.Max(1, baseDamage - armor);
-
-                damageable.TakeDamage(finalDamage);
+                return;
             }
+
+            int finalDamage = baseDamage;
+
+            // TODO: 방어력, 상태이상 공식 등 추가 (예: target.GetComponent<NetStatComponent>())
+            // int armor = ...
+            // finalDamage = Mathf.Max(1, baseDamage - armor);
+
+            damageable.TakeDamage(finalDamage);
         }
 
         public static void RegisterManager(GameManager manager)
@@ -66,6 +70,19 @@ namespace ProjectAI.Core
             if (CurrentMode == mode)
             {
                 CurrentMode = null;
+            }
+        }
+
+        public static void RegisterSkillManager(SkillManager manager)
+        {
+            SkillManager = manager;
+        }
+
+        public static void UnregisterSkillManager(SkillManager manager)
+        {
+            if (SkillManager == manager)
+            {
+                SkillManager = null;
             }
         }
     }

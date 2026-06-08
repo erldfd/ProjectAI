@@ -10,7 +10,14 @@ namespace ProjectAI.Movements
     [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "NetCharacterMovement")]
     public class NetServerMovement : ANetMovement
     {
+        [Header("Movement Settings")]
+        [Tooltip("기본 이동 속도")]
+        [SerializeField]
+        private float baseSpeed = 15f;
+
         private Rigidbody2D rb;
+        private Vector2 currentDirection = Vector2.zero;
+        private float currentSpeedModifier = 1f;
 
         public override Vector2 Velocity => rb.linearVelocity;
 
@@ -19,6 +26,49 @@ namespace ProjectAI.Movements
             base.Awake();
             rb = GetComponentInParent<Rigidbody2D>();
             UnityEngine.Assertions.Assert.IsNotNull(rb, "Rigidbody2D component is missing in parent.");
+        }
+
+        private void OnEnable()
+        {
+            if (base._entityEvents != null)
+            {
+                base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (base._entityEvents != null)
+            {
+                base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
+            }
+        }
+
+        private void HandleMoveSpeedModifierChanged(float modifier)
+        {
+            currentSpeedModifier = modifier;
+            UpdateVelocity();
+        }
+
+        /// <summary>
+        /// 이동 방향을 설정하고 즉시 속도를 갱신합니다.
+        /// </summary>
+        public void SetDirection(Vector2 direction)
+        {
+            currentDirection = direction.normalized;
+            UpdateVelocity();
+        }
+
+        private void UpdateVelocity()
+        {
+            if (!base.IsServer)
+            {
+                return;
+            }
+
+            rb.linearVelocity = currentDirection * (baseSpeed * currentSpeedModifier);
+            // 네트워크 애니메이션 및 공통 이벤트 중계 트리거
+            base.NetAnimVelocity.Value = rb.linearVelocity;
         }
     }
 }

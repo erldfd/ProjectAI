@@ -242,7 +242,7 @@ GameObject:
   - component: {fileID: 4331196854782625124}
   - component: {fileID: 4921892585005609114}
   - component: {fileID: 7424043328323526500}
-  - component: {fileID: 6194315204317671579}
+  - component: {fileID: 9116605749001047819}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -345,7 +345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3084379672
+  GlobalObjectIdHash: 386762368
   InScenePlacedSourceGlobalObjectIdHash: 386762368
   DeferredDespawnTick: 0
   Ownership: 1
@@ -371,8 +371,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.PlayerInputReader
   moveAction: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  aimAction: {fileID: -5922951518269948194, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   interactAction: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  attackAction: {fileID: 1120369429361536294, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
 --- !u!114 &7826379961964236550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -398,10 +398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 312c86dcbf568c848996041fc7cf240e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.PlayerCamera
-  inputReader: {fileID: 1911014795776420748}
   targetTransform: {fileID: 3341739915210019796}
-  maxOffsetDistance: 3
-  offsetMultiplier: 0.5
 --- !u!114 &4921892585005609114
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -431,7 +428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b53ddb035f55264980604c635141650, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterEvents
---- !u!114 &6194315204317671579
+--- !u!114 &9116605749001047819
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -440,9 +437,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3626505526009901997}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0bb2bd897588cda4d83b3333e795f050, type: 3}
+  m_Script: {fileID: 11500000, guid: 9cd0239c95db3ad46bf8c9a05d529252, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.NetPlayerCharacter
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &7368630293233674342
 GameObject:
   m_ObjectHideFlags: 0
@@ -493,6 +491,11 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: {x: 0, y: 0}
+  NetIsFacingRight:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 1
   moveSpeed: 5
   verySmallReconciliationThreshold: 0.01
 --- !u!1 &8595777563588518843
