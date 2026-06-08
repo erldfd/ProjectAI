@@ -15,14 +15,5 @@ namespace ProjectAI.Characters
         {
             Events = GetComponent<CharacterEvents>();
         }
-
-        /// <summary>
-        /// 외부 이동 컴포넌트에서 호출하여 캐릭터의 속도를 갱신합니다.
-        /// </summary>
-        public void SetVelocity(Vector2 velocity)
-        {
-            Assert.IsNotNull(Events);
-            Events.InvokeVelocityChanged(velocity);
-        }
     }
 }

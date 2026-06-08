@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5685368766082622782}
   - component: {fileID: 2012573263100061475}
   - component: {fileID: 603659602711010670}
+  - component: {fileID: 7392090773525951533}
   m_Layer: 0
   m_Name: Renderer
   m_TagString: Untagged
@@ -128,6 +129,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.VisualInterpolator
   returnSpeed: 15
+--- !u!114 &7392090773525951533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364007198314449804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
+  characterEvents: {fileID: 7424043328323526500}
+  animator: {fileID: 2012573263100061475}
+  spriteRenderer: {fileID: 5685368766082622782}
 --- !u!1 &3626505526009901997
 GameObject:
   m_ObjectHideFlags: 0
@@ -145,6 +161,8 @@ GameObject:
   - component: {fileID: 7826379961964236550}
   - component: {fileID: 4331196854782625124}
   - component: {fileID: 4921892585005609114}
+  - component: {fileID: 7424043328323526500}
+  - component: {fileID: 6194315204317671579}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -260,7 +278,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3574050414
+  GlobalObjectIdHash: 386762368
   InScenePlacedSourceGlobalObjectIdHash: 386762368
   DeferredDespawnTick: 0
   Ownership: 1
@@ -286,6 +304,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.NetPlayerMovement
   ShowTopMostFoldoutHeaderGroup: 1
+  NetAnimVelocity:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: {x: 0, y: 0}
   moveSpeed: 5
   verySmallReconciliationThreshold: 0.01
 --- !u!114 &7826379961964236550
@@ -334,6 +357,30 @@ MonoBehaviour:
   interactLayer:
     serializedVersion: 2
     m_Bits: 8
+--- !u!114 &7424043328323526500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b53ddb035f55264980604c635141650, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterEvents
+--- !u!114 &6194315204317671579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bb2bd897588cda4d83b3333e795f050, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
 --- !u!1 &8595777563588518843
 GameObject:
   m_ObjectHideFlags: 0

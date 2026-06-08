@@ -42,7 +42,7 @@ namespace ProjectAI.Player
     /// Rigidbody2D를 사용한 캐릭터의 물리적 이동을 전담하는 클래스입니다.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class NetPlayerMovement : NetworkBehaviour
+    public class NetPlayerMovement : ANetMovement
     {
         private const int BUFFER_SIZE = 1024;
 
@@ -72,26 +72,16 @@ namespace ProjectAI.Player
 
         private int currentSequenceId = 0;
 
-        // 옵저버 보간용 변수
-        private Vector2 observerTargetPosition;
-        private Vector2 observerTargetVelocity;
-
         private Rigidbody2D rb;
-        private Character character;
         private Vector2 currentMoveInput;
 
-        #region Unity Lifecycle
-        private void Awake()
-        {
-            rb = GetComponent<Rigidbody2D>();
-            character = GetComponentInParent<Character>();
-        }
+        public override Vector2 Velocity => rb.linearVelocity;
 
-        public override void OnNetworkSpawn()
+        #region Unity Lifecycle
+        protected override void Awake()
         {
-            base.OnNetworkSpawn();
-            // 첫 RPC 수신 전까지 옵저버가 (0,0)으로 이동하는 현상 방지
-            observerTargetPosition = rb.position;
+            base.Awake();
+            rb = GetComponent<Rigidbody2D>();
         }
 
         private void FixedUpdate()
@@ -104,10 +94,6 @@ namespace ProjectAI.Player
             if (IsOwner)
             {
                 HandleClientTick();
-            }
-            else if (!IsServer)
-            {
-                HandleObserverTick();
             }
 
             currentSequenceId++;
@@ -191,24 +177,15 @@ namespace ProjectAI.Player
             }
         }
 
-        private void HandleObserverTick()
-        {
-            // 시각적 보간은 자식의 VisualInterpolator가 전담하므로,
-            // 물리 객체(콜라이더)는 서버가 알려준 최신 위치로 즉시 동기화(Snap).
-            rb.position = observerTargetPosition;
-            rb.linearVelocity = Vector2.zero; // 옵저버는 자체 물리 이동 금지
-
-            Assert.IsNotNull(character);
-            character.SetVelocity(observerTargetVelocity);
-        }
-
         [Rpc(SendTo.NotServer, Delivery = RpcDelivery.Unreliable)]
         private void SendStateClientRpc(SStatePayload statePayload)
         {
             if (!IsOwner)
             {
-                observerTargetPosition = statePayload.Position;
-                observerTargetVelocity = statePayload.Velocity;
+                // 옵저버 처리: 서버 상태를 수신하는 즉시 적용.
+                // 이후 FixedUpdate 사이클 동안 물리 엔진이 선형 속도를 기반으로 자연스럽게 외삽(Dead Reckoning)함.
+                rb.position = statePayload.Position;
+                rb.linearVelocity = statePayload.Velocity;
                 return;
             }
 
@@ -265,7 +242,13 @@ namespace ProjectAI.Player
         #region Public Methods
         public void SetMoveInput(Vector2 input)
         {
+            if (!IsOwner)
+            {
+                return;
+            }
+
             currentMoveInput = input;
+            NetAnimVelocity.Value = input * moveSpeed;
         }
         #endregion
 
@@ -273,9 +256,6 @@ namespace ProjectAI.Player
         private void ApplyPhysics(Vector2 inputVector)
         {
             rb.linearVelocity = inputVector * moveSpeed;
-
-            Assert.IsNotNull(character);
-            character.SetVelocity(rb.linearVelocity);
         }
         #endregion
     }
