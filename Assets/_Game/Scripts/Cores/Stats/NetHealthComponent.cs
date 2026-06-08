@@ -3,7 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-using ProjectAI.Characters;
+using ProjectAI.Core.Entities;
 
 namespace ProjectAI.Core.Stats
 {
@@ -95,13 +95,13 @@ namespace ProjectAI.Core.Stats
             }
         }
 
-        [Rpc(SendTo.Everyone, Delivery = RpcDelivery.Reliable)]
+        [Rpc(SendTo.ClientsAndHost, Delivery = RpcDelivery.Reliable)]
         private void HitClientRpc(int damage, int remainingHealth)
         {
             OnHit?.Invoke(damage, remainingHealth);
         }
 
-        [Rpc(SendTo.Everyone, Delivery = RpcDelivery.Reliable)]
+        [Rpc(SendTo.ClientsAndHost, Delivery = RpcDelivery.Reliable)]
         private void DieClientRpc()
         {
             OnDeath?.Invoke();

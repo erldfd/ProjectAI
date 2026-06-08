@@ -1,16 +1,18 @@
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
+using ProjectAI.Core.Entities;
 
-namespace ProjectAI.Characters
+namespace ProjectAI.Movements
 {
     /// <summary>
-    /// 모든 네트워크 캐릭터(플레이어, 몬스터 등) 이동 컴포넌트의 추상 기반 클래스입니다.
-    /// 공통 기능(넉백 등) 및 애니메이터와 통신하기 위한 허브 역할을 합니다.
+    /// 모든 네트워크 엔티티(플레이어, 몬스터, 투사체 등) 이동 컴포넌트의 추상 기반 클래스입니다.
+    /// 공통 기능(넉백 등) 및 상태 이벤트(EntityEvents)와 통신하기 위한 허브 역할을 합니다.
     /// </summary>
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "ANetMovement")]
     public abstract class ANetMovement : NetworkBehaviour
     {
-        protected CharacterEvents _characterEvents;
+        protected EntityEvents _entityEvents;
 
         /// <summary>
         /// 애니메이션 갱신을 위한 네트워크 동기화 속도입니다.
@@ -28,14 +30,17 @@ namespace ProjectAI.Characters
 
         protected virtual void Awake()
         {
-            _characterEvents = GetComponentInParent<CharacterEvents>();
-            Assert.IsNotNull(_characterEvents, "CharacterEvents component is missing.");
+            _entityEvents = GetComponentInParent<EntityEvents>();
+            Assert.IsNotNull(_entityEvents, "EntityEvents component is missing.");
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
             NetAnimVelocity.OnValueChanged += HandleVelocityChanged;
+            
+            // 구독 직후, 이미 값이 존재할 수 있으므로 초기 상태 동기화 수동 호출
+            HandleVelocityChanged(Vector2.zero, NetAnimVelocity.Value);
         }
 
         public override void OnNetworkDespawn()
@@ -46,8 +51,8 @@ namespace ProjectAI.Characters
 
         private void HandleVelocityChanged(Vector2 previousValue, Vector2 newValue)
         {
-            Assert.IsNotNull(_characterEvents);
-            _characterEvents.InvokeVelocityChanged(newValue);
+            Assert.IsNotNull(_entityEvents);
+            _entityEvents.InvokeVelocityChanged(newValue);
         }
 
         // TODO: 향후 넉백 등 공통 피격/이동 로직 추가

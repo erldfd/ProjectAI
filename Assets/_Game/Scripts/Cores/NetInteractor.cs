@@ -96,7 +96,8 @@ namespace ProjectAI.Core
                 return;
             }
 
-            if (!targetObj.TryGetComponent<IInteractable>(out var interactable))
+            IInteractable interactable = targetObj.GetComponentInChildren<IInteractable>();
+            if (interactable == null)
             {
                 return;
             }

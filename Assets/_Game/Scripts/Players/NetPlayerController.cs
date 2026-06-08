@@ -1,16 +1,13 @@
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core;
+using ProjectAI.Movements;
 
-namespace ProjectAI.Player
+namespace ProjectAI.Players
 {
     /// <summary>
     /// 플레이어의 입력, 이동, 카메라 등의 컴포넌트를 조율하는 로컬 플레이어 전용 뇌(Brain) 컨트롤러입니다.
     /// </summary>
-    [RequireComponent(typeof(PlayerInputReader))]
-    [RequireComponent(typeof(NetPlayerMovement))]
-    [RequireComponent(typeof(PlayerCamera))]
-    [RequireComponent(typeof(NetInteractor))]
     public class NetPlayerController : NetworkBehaviour
     {
         private PlayerInputReader inputReader;
@@ -21,15 +18,22 @@ namespace ProjectAI.Player
         #region Unity Lifecycle
         private void Awake()
         {
-            inputReader = GetComponent<PlayerInputReader>();
-            playerMovement = GetComponent<NetPlayerMovement>();
-            playerCamera = GetComponent<PlayerCamera>();
-            netInteractor = GetComponent<NetInteractor>();
+            inputReader = GetComponentInChildren<PlayerInputReader>();
+            playerMovement = GetComponentInChildren<NetPlayerMovement>();
+            playerCamera = GetComponentInChildren<PlayerCamera>();
+            netInteractor = GetComponentInChildren<NetInteractor>();
+            
+            UnityEngine.Assertions.Assert.IsNotNull(inputReader, "PlayerInputReader is missing.");
+            UnityEngine.Assertions.Assert.IsNotNull(playerMovement, "NetPlayerMovement is missing.");
+            UnityEngine.Assertions.Assert.IsNotNull(playerCamera, "PlayerCamera is missing.");
+            UnityEngine.Assertions.Assert.IsNotNull(netInteractor, "NetInteractor is missing.");
         }
 
         public override void OnNetworkSpawn()
         {
-            if (!IsOwner)
+            base.OnNetworkSpawn();
+
+            if (!base.IsOwner)
             {
                 return;
             }
@@ -40,15 +44,17 @@ namespace ProjectAI.Player
             
             playerCamera.InitCamera();
             
-            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
-            {
-                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
-            }
+            UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton, "NetworkManager must exist.");
+            UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton.SceneManager, "NetworkSceneManager must exist.");
+            
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
         }
 
         public override void OnNetworkDespawn()
         {
-            if (!IsOwner)
+            base.OnNetworkDespawn();
+
+            if (!base.IsOwner)
             {
                 return;
             }
@@ -57,10 +63,10 @@ namespace ProjectAI.Player
             inputReader.OnInteractInputChanged -= HandleInteractInputChanged;
             inputReader.DisableInput();
             
-            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
-            {
-                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
-            }
+            UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton, "NetworkManager must exist.");
+            UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton.SceneManager, "NetworkSceneManager must exist.");
+            
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
         }
         #endregion
 

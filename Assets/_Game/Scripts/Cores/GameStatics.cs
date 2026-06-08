@@ -31,7 +31,7 @@ namespace ProjectAI.Core
                 return;
             }
 
-            IDamageable damageable = target.GetComponent<IDamageable>();
+            IDamageable damageable = target.GetComponentInParent<IDamageable>();
             
             if (damageable != null)
             {

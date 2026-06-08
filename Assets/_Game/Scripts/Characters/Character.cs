@@ -1,21 +1,15 @@
-using UnityEngine;
-using UnityEngine.Assertions;
-using ProjectAI.Core.Combat;
+using ProjectAI.Core.Entities;
 
 namespace ProjectAI.Characters
 {
     /// <summary>
-    /// 캐릭터의 상태 데이터 및 핵심 로직을 연결하는 허브 컴포넌트입니다.
+    /// 플레이어나 NPC 등 생명체 캐릭터의 핵심 로직을 연결하는 허브 컴포넌트입니다.
     /// </summary>
-    [RequireComponent(typeof(CharacterEvents))]
-    public class Character : MonoBehaviour
+    public class Character : Entity
     {
-        public CharacterEvents Events { get; private set; }
-
-        private void Awake()
+        protected override void Awake()
         {
-            Events = GetComponent<CharacterEvents>();
-            Assert.IsNotNull(Events, "Character는 CharacterEvents 오너가 필요합니다.");
+            base.Awake();
         }
     }
 }

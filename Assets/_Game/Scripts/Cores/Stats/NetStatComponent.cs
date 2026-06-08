@@ -1,17 +1,19 @@
 using Unity.Netcode;
 using UnityEngine;
-using ProjectAI.Characters;
+using ProjectAI.Core.Entities;
 
 namespace ProjectAI.Core.Stats
 {
     /// <summary>
     /// 캐릭터의 영구적/가변적 주요 스탯(최대 체력, 공격력, 이동 속도 등)을 통제합니다.
     /// </summary>
-    [RequireComponent(typeof(NetHealthComponent))]
     public class NetStatComponent : NetworkBehaviour
     {
         [SerializeField]
         private NetHealthComponent healthComponent;
+
+        [SerializeField]
+        private EntityEvents entityEvents;
 
         /// <summary>
         /// 최대 체력
@@ -33,10 +35,11 @@ namespace ProjectAI.Core.Stats
         );
 
         /// <summary>
-        /// 이동 속도
+        /// 이동 속도 배율 (기본 1.0)
+        /// 버프/디버프에 따라 변동되며, 이동 컴포넌트(Movement)가 이 배율을 곱하여 최종 속도를 결정합니다.
         /// </summary>
-        public NetworkVariable<float> MoveSpeed = new NetworkVariable<float>(
-            5f,
+        public NetworkVariable<float> MoveSpeedModifier = new NetworkVariable<float>(
+            1f,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
@@ -45,21 +48,42 @@ namespace ProjectAI.Core.Stats
         {
             if (healthComponent == null)
             {
-                healthComponent = GetComponent<NetHealthComponent>();
+                healthComponent = GetComponentInChildren<NetHealthComponent>();
+            }
+
+            if (entityEvents == null)
+            {
+                entityEvents = GetComponentInParent<EntityEvents>();
             }
 
             UnityEngine.Assertions.Assert.IsNotNull(healthComponent, "NetStatComponent는 NetHealthComponent가 필요합니다.");
+            UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "NetStatComponent는 EntityEvents가 필요합니다.");
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            if (IsServer)
+            MoveSpeedModifier.OnValueChanged += HandleMoveSpeedModifierChanged;
+
+            if (base.IsServer)
             {
                 // 스폰 완료 시, 오너로서 하위 체력 컴포넌트를 하향식으로 초기화
                 healthComponent.InitializeHealth(MaxHealth.Value);
             }
+
+            entityEvents.InvokeMoveSpeedModifierChanged(MoveSpeedModifier.Value);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            MoveSpeedModifier.OnValueChanged -= HandleMoveSpeedModifierChanged;
+        }
+
+        private void HandleMoveSpeedModifierChanged(float previousValue, float newValue)
+        {
+            entityEvents.InvokeMoveSpeedModifierChanged(newValue);
         }
 
         // TODO: 향후 레벨업, 아이템 장착, 버프에 따른 스탯 변동 로직(수정자) 추가 예정
