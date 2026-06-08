@@ -1,6 +1,8 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
+using ProjectAI.Characters;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Player
 {
@@ -72,15 +74,17 @@ namespace ProjectAI.Player
 
         // 옵저버 보간용 변수
         private Vector2 observerTargetPosition;
-        // private Vector2 observerTargetVelocity; // 향후 옵저버 외삽(Extrapolation) 기능 구현 시 사용 예정
+        private Vector2 observerTargetVelocity;
 
         private Rigidbody2D rb;
+        private Character character;
         private Vector2 currentMoveInput;
 
         #region Unity Lifecycle
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            character = GetComponentInParent<Character>();
         }
 
         public override void OnNetworkSpawn()
@@ -193,6 +197,9 @@ namespace ProjectAI.Player
             // 물리 객체(콜라이더)는 서버가 알려준 최신 위치로 즉시 동기화(Snap).
             rb.position = observerTargetPosition;
             rb.linearVelocity = Vector2.zero; // 옵저버는 자체 물리 이동 금지
+
+            Assert.IsNotNull(character);
+            character.SetVelocity(observerTargetVelocity);
         }
 
         [Rpc(SendTo.NotServer, Delivery = RpcDelivery.Unreliable)]
@@ -201,7 +208,7 @@ namespace ProjectAI.Player
             if (!IsOwner)
             {
                 observerTargetPosition = statePayload.Position;
-                // observerTargetVelocity = statePayload.Velocity;
+                observerTargetVelocity = statePayload.Velocity;
                 return;
             }
 
@@ -266,6 +273,9 @@ namespace ProjectAI.Player
         private void ApplyPhysics(Vector2 inputVector)
         {
             rb.linearVelocity = inputVector * moveSpeed;
+
+            Assert.IsNotNull(character);
+            character.SetVelocity(rb.linearVelocity);
         }
         #endregion
     }
