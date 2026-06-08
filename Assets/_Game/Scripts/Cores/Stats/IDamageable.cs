@@ -1,4 +1,4 @@
-namespace ProjectAI.Core.Combat
+namespace ProjectAI.Core.Stats
 {
     /// <summary>
     /// 공격을 받을 수 있는 모든 객체가 구현해야 하는 피해(Damage) 처리 인터페이스입니다.

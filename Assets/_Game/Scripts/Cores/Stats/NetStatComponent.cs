@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using ProjectAI.Characters;
 
-namespace ProjectAI.Core.Combat
+namespace ProjectAI.Core.Stats
 {
     /// <summary>
     /// 캐릭터의 영구적/가변적 주요 스탯(최대 체력, 공격력, 이동 속도 등)을 통제합니다.

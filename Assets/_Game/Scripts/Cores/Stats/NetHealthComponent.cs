@@ -5,7 +5,7 @@ using UnityEngine.Assertions;
 
 using ProjectAI.Characters;
 
-namespace ProjectAI.Core.Combat
+namespace ProjectAI.Core.Stats
 {
     /// <summary>
     /// 개체의 현재 체력과 피격/사망 연출을 관리하는 단일 책임 컴포넌트입니다.

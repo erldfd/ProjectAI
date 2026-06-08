@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using ProjectAI.GameModes;
 using ProjectAI.Network;
-using ProjectAI.Core.Combat;
+using ProjectAI.Core.Stats;
 
 namespace ProjectAI.Core
 {
