@@ -13,6 +13,7 @@ namespace ProjectAI.Core.Entities
         /// <summary>
         /// 캐릭터의 이동 속도가 변경되었을 때 발생하는 이벤트
         /// </summary>
+        /// <param name="velocity">현재 프레임의 이동 속도 벡터</param>
         public event Action<Vector2> OnVelocityChanged;
         
         private event Action<float> onMoveSpeedModifierChanged;
@@ -25,11 +26,21 @@ namespace ProjectAI.Core.Entities
         /// <summary>
         /// 외부(뇌)에서 특정 스킬의 발동을 요청했을 때 발생하는 이벤트
         /// </summary>
+        /// <param name="skillType">발동을 요청할 스킬의 종류</param>
         public event Action<ESkillType> OnSkillTriggered;
+
+        /// <summary>
+        /// 강제로 특정 애니메이션 상태를 재생하라고 지시할 때 발생하는 이벤트
+        /// </summary>
+        /// <param name="stateHash">재생할 애니메이션 상태의 해시(Hash) 값</param>
+        /// <param name="transitionDuration">애니메이션 블렌딩(CrossFade) 소요 시간 (0이면 즉시 재생)</param>
+        /// <param name="layer">애니메이터의 레이어 인덱스 (기본값 0)</param>
+        public event Action<int, float, int> OnPlayAnimation;
 
         /// <summary>
         /// 구독 시점에 즉시 최신 값을 한 번 내려줍니다. (Late Subscriber 버그 방지)
         /// </summary>
+        /// <param name="modifier">적용 중인 이동 속도 배율 (1f가 기본)</param>
         public event Action<float> OnMoveSpeedModifierChanged
         {
             add
@@ -48,6 +59,7 @@ namespace ProjectAI.Core.Entities
         /// <summary>
         /// 캐릭터가 바라보는 방향이 변경되었을 때 (또는 후참여자 구독 시) 발생하는 이벤트
         /// </summary>
+        /// <param name="isFacingRight">오른쪽을 바라보면 true, 왼쪽이면 false</param>
         public event Action<bool> OnFacingDirectionChanged
         {
             add
@@ -83,6 +95,17 @@ namespace ProjectAI.Core.Entities
         public void InvokeSkillTriggered(ESkillType skillType)
         {
             OnSkillTriggered?.Invoke(skillType);
+        }
+
+        /// <summary>
+        /// 강제로 특정 애니메이션 상태를 재생하도록 이벤트를 발생시킵니다.
+        /// </summary>
+        /// <param name="stateHash">재생할 애니메이션 상태의 해시(Hash) 값</param>
+        /// <param name="transitionDuration">애니메이션 블렌딩(CrossFade) 소요 시간 (0이면 즉시 재생)</param>
+        /// <param name="layer">애니메이터의 레이어 인덱스 (기본값 0)</param>
+        public void InvokePlayAnimation(int stateHash, float transitionDuration = 0f, int layer = 0)
+        {
+            OnPlayAnimation?.Invoke(stateHash, transitionDuration, layer);
         }
     }
 }

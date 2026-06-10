@@ -47,8 +47,9 @@ namespace ProjectAI.Core.Skills
         {
             base.OnNetworkSpawn();
 
-            if (entityEvents != null && base.IsOwner)
+            if (base.IsOwner)
             {
+                UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
                 entityEvents.OnSkillTriggered += TryActivateSkill;
             }
         }
@@ -57,10 +58,8 @@ namespace ProjectAI.Core.Skills
         {
             base.OnNetworkDespawn();
 
-            if (entityEvents != null)
-            {
-                entityEvents.OnSkillTriggered -= TryActivateSkill;
-            }
+            UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            entityEvents.OnSkillTriggered -= TryActivateSkill;
         }
 
         public double GetLastActivationTime(ESkillType type)
@@ -144,6 +143,16 @@ namespace ProjectAI.Core.Skills
             {
                 GameStatics.SkillManager.ExecuteSkill(skillType, this);
             }
+        }
+
+        /// <summary>
+        /// 서버가 스킬 발동/로직 실행 후 관련된 애니메이션 재생을 모든 클라이언트에게 지시합니다.
+        /// </summary>
+        [Rpc(SendTo.ClientsAndHost)]
+        public void BroadcastPlayAnimationClientRpc(int stateHash, float transitionDuration)
+        {
+            UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            entityEvents.InvokePlayAnimation(stateHash, transitionDuration, 0);
         }
     }
 }

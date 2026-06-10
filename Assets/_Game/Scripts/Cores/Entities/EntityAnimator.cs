@@ -39,14 +39,18 @@ namespace ProjectAI.Core.Entities
 
         private void OnEnable()
         {
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
             entityEvents.OnVelocityChanged += HandleVelocityChanged;
             entityEvents.OnFacingDirectionChanged += HandleFacingDirectionChanged;
+            entityEvents.OnPlayAnimation += HandlePlayAnimation;
         }
 
         private void OnDisable()
         {
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
             entityEvents.OnVelocityChanged -= HandleVelocityChanged;
             entityEvents.OnFacingDirectionChanged -= HandleFacingDirectionChanged;
+            entityEvents.OnPlayAnimation -= HandlePlayAnimation;
         }
 
         private void HandleVelocityChanged(Vector2 velocity)
@@ -58,6 +62,16 @@ namespace ProjectAI.Core.Entities
         {
             // 오른쪽을 보면 flipX = false, 왼쪽을 보면 flipX = true
             spriteRenderer.flipX = !isFacingRight;
+        }
+
+        private void HandlePlayAnimation(int stateHash, float transitionDuration, int layer)
+        {
+            if (stateHash == 0)
+            {
+                return;
+            }
+
+            animator.CrossFade(stateHash, transitionDuration, layer, 0f);
         }
     }
 }
