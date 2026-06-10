@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 2903177497797824953}
   - component: {fileID: 8851523879730136227}
   - component: {fileID: 9205784597414881130}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: MemoryShardBug
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2961203071
+  GlobalObjectIdHash: 1303697169
   InScenePlacedSourceGlobalObjectIdHash: 797668309
   DeferredDespawnTick: 0
   Ownership: 1
@@ -238,7 +238,7 @@ GameObject:
   - component: {fileID: 5572053124777933895}
   - component: {fileID: 3807347638555274319}
   - component: {fileID: 2217390204013615999}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Stat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -318,7 +318,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9062293682125781210}
   - component: {fileID: 6334227907611799112}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Movement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -376,7 +376,7 @@ GameObject:
   - component: {fileID: 7566194960662532988}
   - component: {fileID: 756817395569927855}
   - component: {fileID: 5600359754324591189}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Renderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}

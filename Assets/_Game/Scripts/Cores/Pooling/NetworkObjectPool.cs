@@ -158,7 +158,9 @@ namespace ProjectAI.Core.Pooling
 
         private NetworkObject CreateInstance(NetworkObject prefab)
         {
-            NetworkObject instance = UnityEngine.Object.Instantiate(prefab, base.transform);
+            // NGO 씬 스윕 시 경고(Disabled NetworkBehaviours...) 방지를 위해
+            // 부모(base.transform)를 지정하지 않고 최상위 루트에 생성합니다.
+            NetworkObject instance = UnityEngine.Object.Instantiate(prefab);
             IPoolable poolable = instance.GetComponent<IPoolable>();
 
             if (poolable != null)
@@ -217,6 +219,14 @@ namespace ProjectAI.Core.Pooling
             return instance;
         }
 
+        /// <summary>
+        /// 서버 또는 호스트 환경에서 명시적으로 오브젝트를 풀에 반환할 때 호출합니다.
+        /// </summary>
+        public void ReturnNetworkObject(NetworkObject instance)
+        {
+            ReturnNetworkObjectInternal(instance);
+        }
+
         private void ReturnNetworkObjectInternal(NetworkObject instance)
         {
             if (instance == null)
@@ -249,8 +259,9 @@ namespace ProjectAI.Core.Pooling
                 poolable.OnDespawn();
             }
 
-            instance.gameObject.SetActive(false);
             instance.transform.SetParent(base.transform);
+
+            instance.gameObject.SetActive(false);
             poolData.Queue.Enqueue(instance);
         }
     }

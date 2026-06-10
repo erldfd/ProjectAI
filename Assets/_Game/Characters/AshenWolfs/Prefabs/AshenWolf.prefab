@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 4944438689536386590}
   - component: {fileID: 3460810399386613988}
   - component: {fileID: 9177875624014436927}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: AshenWolf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -238,7 +238,7 @@ GameObject:
   - component: {fileID: 3694894124405866562}
   - component: {fileID: 3441116121317037475}
   - component: {fileID: 5570672130675475183}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Stat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -320,7 +320,7 @@ GameObject:
   - component: {fileID: 8160027472630124071}
   - component: {fileID: 8274597395880921184}
   - component: {fileID: 3312596755178451717}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Renderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -448,7 +448,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6490210254809074349}
   - component: {fileID: 3258241605667695097}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Movement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -493,3 +493,4 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  baseSpeed: 15

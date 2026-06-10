@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using ProjectAI.Movements;
+using Unity.Netcode;
 
 namespace ProjectAI.Core.Entities
 {
@@ -8,7 +9,7 @@ namespace ProjectAI.Core.Entities
     /// 생명체(캐릭터) 및 투사체(마법탄) 등 모든 상호작용 가능한 독립 객체의 최상위 기반 클래스입니다.
     /// 공통적인 상태 이벤트(EntityEvents)를 필수로 가집니다.
     /// </summary>
-    public class NetEntity : Unity.Netcode.NetworkBehaviour
+    public class NetEntity : NetworkBehaviour
     {
         public EntityEvents Events { get; private set; }
         

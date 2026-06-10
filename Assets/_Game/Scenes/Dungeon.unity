@@ -361,6 +361,7 @@ MonoBehaviour:
   spawnInterval: 5
   spawnRadius: 5
   initialPoolSize: 10
+  maxSpawnCount: 1
 --- !u!4 &856688215
 Transform:
   m_ObjectHideFlags: 0

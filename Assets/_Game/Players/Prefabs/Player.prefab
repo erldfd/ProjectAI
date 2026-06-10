@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2012573263100061475}
   - component: {fileID: 603659602711010670}
   - component: {fileID: 7392090773525951533}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Renderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 8747926093647349720}
   - component: {fileID: 6843124876706042281}
   - component: {fileID: 7848296244897230408}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Stat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 7424043328323526500}
   - component: {fileID: 9116605749001047819}
   - component: {fileID: 7556419171413634377}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -278,7 +278,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3626505526009901997}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -472,7 +472,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2530959775932788280}
   - component: {fileID: 5657070118519653592}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Movement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -528,7 +528,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3341739915210019796}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: CameraTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}

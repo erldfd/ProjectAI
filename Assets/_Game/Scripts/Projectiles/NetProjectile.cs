@@ -18,7 +18,7 @@ namespace ProjectAI.Projectiles
         [SerializeField]
         private float lifeTime = 5f;
 
-        private ulong ownerPlayerId;
+        private ulong ownerNetworkObjectId;
         private NetStatComponent statComponent;
 
         protected override void Awake()
@@ -54,14 +54,15 @@ namespace ProjectAI.Projectiles
         /// <summary>
         /// 서버에서 투사체를 스폰할 때 초기화하는 메서드입니다.
         /// </summary>
-        public void Initialize(Vector2 direction, ulong playerId)
+        public void Initialize(Vector2 direction, ulong ownerNetObjId)
         {
             if (!base.IsServer)
             {
                 return;
             }
 
-            ownerPlayerId = playerId;
+            ownerNetworkObjectId = ownerNetObjId;
+            Debug.Log($"[NetProjectile] Initialize 호출됨. OwnerNetObjId: {ownerNetworkObjectId}, 방향: {direction}");
             
             if (base.Movement is ProjectAI.Movements.NetServerMovement serverMovement)
             {
@@ -71,6 +72,7 @@ namespace ProjectAI.Projectiles
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
+            Debug.Log($"[NetProjectile] 투사체 충돌 감지: {collision.gameObject.name}");
             // 충돌 판정은 오직 서버에서만 처리합니다.
             if (!base.IsServer)
             {
@@ -78,18 +80,19 @@ namespace ProjectAI.Projectiles
             }
 
             // 충돌 대상이 데미지를 받을 수 있는 객체인지 확인
-            IDamageable damageable = collision.GetComponentInParent<IDamageable>();
+            IDamageable damageable = collision.GetComponentInChildren<IDamageable>();
             
             if (damageable != null)
             {
-                // 자신을 쏜 주인이 아닐 때만 데미지 적용
-                // 주의: damageable.OwnerClientId를 가져오려면 NetworkObject가 필요함.
+                // 자신이 쏜 투사체에 자신이 맞는 것은 무시
                 NetworkObject targetNetObj = collision.GetComponentInParent<NetworkObject>();
-                if (targetNetObj != null && targetNetObj.OwnerClientId == ownerPlayerId)
+                if (targetNetObj != null && targetNetObj.NetworkObjectId == ownerNetworkObjectId)
                 {
-                    // 자신이 쏜 투사체에 자신이 맞는 것은 무시
+                    Debug.Log($"[NetProjectile] 팀킬/자해 무시 처리. TargetNetObjId: {targetNetObj.NetworkObjectId}");
                     return;
                 }
+
+                Debug.Log($"[NetProjectile] 데미지 적용 대상 발견: {collision.name}, 데미지량: {statComponent.AttackPower.Value}");
 
                 GameStatics.ApplyDamage(collision.gameObject, statComponent.AttackPower.Value);
                 DestroyProjectile();
@@ -107,8 +110,15 @@ namespace ProjectAI.Projectiles
 
         private void DestroyProjectile()
         {
+            Debug.Log($"[NetProjectile] 투사체 파괴(Despawn) 시도. IsServer: {base.IsServer}, NetworkObjectId: {base.NetworkObjectId}, IsSpawned: {base.NetworkObject?.IsSpawned}");
             if (base.IsServer && base.NetworkObject != null && base.NetworkObject.IsSpawned)
             {
+                if (GameStatics.ObjectPool != null)
+                {
+                    Debug.Log($"[NetProjectile] ObjectPool에 투사체 반환 호출: {base.NetworkObjectId}");
+                    GameStatics.ObjectPool.ReturnNetworkObject(base.NetworkObject);
+                }
+
                 base.NetworkObject.Despawn(false);
             }
         }

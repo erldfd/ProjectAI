@@ -79,7 +79,8 @@ namespace ProjectAI.Core.Skills.Abilities
 
                 if (projectileNetObj.TryGetComponent(out ProjectAI.Projectiles.NetProjectile projectile))
                 {
-                    projectile.Initialize(direction, caster.OwnerClientId);
+                    Debug.Log($"[BasicAttackLogic] 발사체 초기화 완료. 방향: {direction}, CasterID: {caster.NetworkObjectId}");
+                    projectile.Initialize(direction, caster.NetworkObjectId);
                 }
             }
         }
