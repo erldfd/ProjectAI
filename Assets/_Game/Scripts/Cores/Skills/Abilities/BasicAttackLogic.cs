@@ -1,13 +1,17 @@
 using UnityEngine;
 using Unity.Netcode;
+using ProjectAI.Core.Pooling;
 
 namespace ProjectAI.Core.Skills.Abilities
 {
+    /// <summary>
+    /// 기본 공격(마법탄 발사) 스킬의 쿨타임 검증 및 투사체 풀링 스폰 로직을 구현하는 클래스입니다.
+    /// </summary>
     public class BasicAttackLogic : ISkillLogic
     {
         public ESkillType SkillType => ESkillType.BasicAttack;
 
-        private GameObject projectilePrefab;
+        private NetworkObject projectilePrefab;
         private double cooldown;
 
         public void Initialize(SkillManager manager)
@@ -15,6 +19,8 @@ namespace ProjectAI.Core.Skills.Abilities
             SSkillConfig config = manager.GetConfig(SkillType);
             projectilePrefab = config.Prefab;
             cooldown = config.BaseCooldown;
+
+            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab이 누락되었습니다.");
         }
 
         public bool CanExecute(NetSkillComponent caster)
@@ -56,19 +62,25 @@ namespace ProjectAI.Core.Skills.Abilities
             // TODO: 추후 caster 내부에 발사 위치(firePoint)를 지정할 수 있는 컴포넌트 추가
 
             // 투사체 스폰 (서버 전용)
-            GameObject projectileObj = Object.Instantiate(projectilePrefab, origin, Quaternion.identity);
-            
+            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] projectilePrefab에 NetworkObject가 누락되었습니다.");
+
+            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
+
+            GameStatics.ObjectPool.SetupPool(projectilePrefab, 10, true);
+
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            projectileObj.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
-            if (projectileObj.TryGetComponent(out NetworkObject netObj))
-            {
-                netObj.Spawn();
-            }
+            NetworkObject projectileNetObj = GameStatics.ObjectPool.GetNetworkObject(projectilePrefab, origin, rotation);
 
-            if (projectileObj.TryGetComponent(out ProjectAI.Projectiles.NetProjectile projectile))
+            if (projectileNetObj != null)
             {
-                projectile.Initialize(direction, caster.OwnerClientId);
+                projectileNetObj.Spawn();
+
+                if (projectileNetObj.TryGetComponent(out ProjectAI.Projectiles.NetProjectile projectile))
+                {
+                    projectile.Initialize(direction, caster.OwnerClientId);
+                }
             }
         }
     }

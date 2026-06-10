@@ -3,6 +3,7 @@ using Unity.Netcode;
 using ProjectAI.Core;
 using ProjectAI.Core.Entities;
 using ProjectAI.Core.Stats;
+using ProjectAI.Core.Pooling;
 
 namespace ProjectAI.Projectiles
 {
@@ -10,7 +11,7 @@ namespace ProjectAI.Projectiles
     /// 마법탄 등 투사체의 이동 및 충돌 판정을 처리하는 서버 주도형 컴포넌트입니다.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class NetProjectile : NetEntity
+    public class NetProjectile : NetEntity, IPoolable
     {
         [Header("Projectile Settings")]
         [Tooltip("발사 후 자동 파괴될 때까지의 생존 시간 (초)")]
@@ -25,6 +26,8 @@ namespace ProjectAI.Projectiles
             base.Awake();
             statComponent = GetComponentInChildren<NetStatComponent>();
             UnityEngine.Assertions.Assert.IsNotNull(statComponent, "NetProjectile은 데미지 처리를 위해 NetStatComponent가 필수입니다.");
+
+            UnityEngine.Assertions.Assert.IsNotNull(base.Movement, "NetProjectile은 이동 제어를 위한 ANetMovement 컴포넌트가 필수입니다.");
         }
 
         public override void OnNetworkSpawn()
@@ -106,10 +109,23 @@ namespace ProjectAI.Projectiles
         {
             if (base.IsServer && base.NetworkObject != null && base.NetworkObject.IsSpawned)
             {
-                base.NetworkObject.Despawn();
-                // Despawn 하면 기본적으로 객체가 파괴됨. 
-                // 단, DestroyWithScene=true (기본값)인지 확인 필요.
+                base.NetworkObject.Despawn(false);
             }
+        }
+
+        public void OnSpawn()
+        {
+        }
+
+        public void OnDespawn()
+        {
+            if (base.Movement == null || base.Movement.Rb == null)
+            {
+                return;
+            }
+
+            base.Movement.Rb.linearVelocity = Vector2.zero;
+            base.Movement.Rb.angularVelocity = 0f;
         }
     }
 }

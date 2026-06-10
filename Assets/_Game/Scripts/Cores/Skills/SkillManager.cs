@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Unity.Netcode;
+using UnityEngine.Assertions;
+using ProjectAI.Core.Pooling;
 
 namespace ProjectAI.Core.Skills
 {
@@ -11,7 +14,7 @@ namespace ProjectAI.Core.Skills
     public struct SSkillConfig
     {
         public ESkillType SkillType;
-        public GameObject Prefab;
+        public NetworkObject Prefab;
         public float BaseCooldown;
     }
 
@@ -32,6 +35,11 @@ namespace ProjectAI.Core.Skills
         {
             GameStatics.RegisterSkillManager(this);
             InitializeSkills();
+        }
+
+        private void Start()
+        {
+            Assert.IsNotNull(GameStatics.ObjectPool, "[SkillManager] Start: ObjectPool이 GameStatics에 등록되어 있지 않습니다! 씬 배치를 확인하십시오.");
         }
 
         private void OnDestroy()
@@ -81,6 +89,22 @@ namespace ProjectAI.Core.Skills
                 skillLogic.Initialize(this); // 매니저 데이터 주입
                 skillLogics.Add(skillLogic.SkillType, skillLogic);
                 Debug.Log($"[SkillManager] 스킬 로직 등록 완료: {skillLogic.SkillType} -> {t.Name}");
+            }
+
+            if (GameStatics.ObjectPool == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < SkillConfigs.Count; i++)
+            {
+                NetworkObject prefab = SkillConfigs[i].Prefab;
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                GameStatics.ObjectPool.SetupPool(prefab, 10, true);
             }
         }
 

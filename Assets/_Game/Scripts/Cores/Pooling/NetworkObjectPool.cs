@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using ProjectAI.Core.Skills;
 
 namespace ProjectAI.Core.Pooling
 {
@@ -58,6 +59,23 @@ namespace ProjectAI.Core.Pooling
         private void Start()
         {
             RegisterPrefabHandlers();
+            SetupSkillProjectiles();
+        }
+
+        private void SetupSkillProjectiles()
+        {
+            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillProjectiles: SkillManager가 GameStatics에 등록되어 있지 않습니다!");
+
+            for (int i = 0; i < GameStatics.SkillManager.SkillConfigs.Count; i++)
+            {
+                NetworkObject prefab = GameStatics.SkillManager.SkillConfigs[i].Prefab;
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                SetupPool(prefab, 10, true);
+            }
         }
 
         private void OnDisable()
@@ -138,6 +156,14 @@ namespace ProjectAI.Core.Pooling
             }
 
             return instance;
+        }
+
+        /// <summary>
+        /// 풀에서 준비된 오브젝트 인스턴스를 가져옵니다. (주로 서버 스폰 시 호출)
+        /// </summary>
+        public NetworkObject GetNetworkObject(NetworkObject prefab, Vector3 position, Quaternion rotation)
+        {
+            return GetNetworkObjectInternal(prefab, position, rotation);
         }
 
         private NetworkObject GetNetworkObjectInternal(NetworkObject prefab, Vector3 position, Quaternion rotation)
