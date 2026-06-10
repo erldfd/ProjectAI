@@ -1,3 +1,5 @@
+using ProjectAI.Characters;
+
 namespace ProjectAI.Core.Skills
 {
     /// <summary>
@@ -19,12 +21,21 @@ namespace ProjectAI.Core.Skills
         /// <summary>
         /// 현재 상태에서 이 스킬을 사용할 수 있는지 검사합니다.
         /// </summary>
-        bool CanExecute(NetSkillComponent caster);
+        bool CanExecute(NetCharacter caster);
 
         /// <summary>
-        /// 스킬의 실제 로직을 서버에서 실행합니다.
-        /// (예: 투사체 스폰, 데미지 판정, 애니메이션 RPC 전송 등)
+        /// 스킬의 시전 시작 로직을 서버에서 실행합니다. (애니메이션 재생 등)
         /// </summary>
-        void Execute(NetSkillComponent caster);
+        void Execute(NetCharacter caster);
+
+        /// <summary>
+        /// 애니메이션 키프레임 이벤트 등에 맞춰 스킬의 핵심 로직(투사체 발사, 데미지 등)을 실행합니다.
+        /// </summary>
+        void Action(NetCharacter caster);
+
+        /// <summary>
+        /// 애니메이션이 끝나거나 취소될 때 호출되어 스킬 상태를 정리(쿨타임 시작 등)합니다.
+        /// </summary>
+        void End(NetCharacter caster);
     }
 }

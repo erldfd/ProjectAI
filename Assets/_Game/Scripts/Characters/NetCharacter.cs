@@ -10,9 +10,12 @@ namespace ProjectAI.Characters
     /// </summary>
     public class NetCharacter : NetEntity
     {
+        public NetSkillComponent SkillComponent { get; private set; }
+
         protected override void Awake()
         {
             base.Awake();
+            SkillComponent = GetComponentInChildren<NetSkillComponent>();
         }
 
         /// <summary>

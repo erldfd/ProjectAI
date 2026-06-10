@@ -2,6 +2,8 @@ using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Characters;
 using ProjectAI.Core.Skills;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 namespace ProjectAI.Players
 {
@@ -93,7 +95,7 @@ namespace ProjectAI.Players
             myCharacter.TryActivateSkill(ESkillType.BasicAttack);
         }
 
-        private void OnSceneLoadEventCompleted(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, System.Collections.Generic.List<ulong> clientsCompleted, System.Collections.Generic.List<ulong> clientsTimedOut)
+        private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             playerCamera.InitCamera();
         }

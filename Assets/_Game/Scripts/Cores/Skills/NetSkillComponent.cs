@@ -2,18 +2,33 @@ using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core;
 using ProjectAI.Core.Entities;
+using System.Collections.Generic;
+using UnityEngine.Scripting.APIUpdating;
+using ProjectAI.Characters;
 
 namespace ProjectAI.Core.Skills
 {
+    [System.Serializable]
+    public struct SkillAnimMapping
+    {
+        public ESkillType SkillType;
+
+        [AnimStateSelector]
+        public string AnimStateName;
+    }
+
     /// <summary>
     /// 캐릭터의 스킬(마법탄 발사 등) 입력을 처리하고 서버로 RPC를 보내는 범용 컴포넌트입니다.
     /// </summary>
-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Players", "Assembly-CSharp", "NetPlayerCombat")]
+    [MovedFrom(true, "ProjectAI.Players", "Assembly-CSharp", "NetPlayerCombat")]
     public class NetSkillComponent : NetworkBehaviour
     {
         [Header("Skill Settings")]
         [Tooltip("이 캐릭터가 사용할 수 있는 스킬 목록")]
-        public System.Collections.Generic.List<ESkillType> OwnedSkills = new System.Collections.Generic.List<ESkillType>();
+        public List<ESkillType> OwnedSkills = new List<ESkillType>();
+
+        [Tooltip("캐릭터가 스킬을 시전할 때 재생할 애니메이션 상태 매핑")]
+        public List<SkillAnimMapping> SkillAnimations = new List<SkillAnimMapping>();
 
         [Tooltip("마법탄 등이 발사될 기준 위치 (없으면 자신 Transform 중심)")]
         [SerializeField]
@@ -30,16 +45,90 @@ namespace ProjectAI.Core.Skills
         );
 
         // 로컬/서버 공용 쿨타임 추적용 딕셔너리
-        private System.Collections.Generic.Dictionary<ESkillType, double> lastActivationTimes = new System.Collections.Generic.Dictionary<ESkillType, double>();
+        private Dictionary<ESkillType, double> lastActivationTimes = new Dictionary<ESkillType, double>();
+
+        private Dictionary<ESkillType, int> animHashCache = new Dictionary<ESkillType, int>();
 
         private EntityEvents entityEvents;
+        private NetCharacter ownerCharacter;
+        private ESkillType? currentCastingSkill = null;
 
         private void Awake()
         {
+            Debug.Log($"[NetSkillComponent] Awake: Caching animation hashes for {SkillAnimations.Count} skills.");
+            foreach (SkillAnimMapping mapping in SkillAnimations)
+            {
+                if (string.IsNullOrEmpty(mapping.AnimStateName))
+                {
+                    Debug.LogWarning($"[NetSkillComponent] Awake: AnimStateName is empty for skill {mapping.SkillType}. Skipping hash caching.");
+                    continue;
+                }
+
+                Debug.Log($"[NetSkillComponent] Caching animation hash for skill {mapping.SkillType}: {mapping.AnimStateName}");
+                animHashCache[mapping.SkillType] = Animator.StringToHash(mapping.AnimStateName);
+            }
+
             entityEvents = GetComponentInParent<EntityEvents>();
             if (entityEvents == null)
             {
-                entityEvents = GetComponentInChildren<EntityEvents>();
+                Debug.LogWarning($"[NetSkillComponent] {gameObject.name}에 EntityEvents를 찾을 수 없습니다.");
+            }
+
+            ownerCharacter = GetComponentInParent<NetCharacter>();
+            UnityEngine.Assertions.Assert.IsNotNull(ownerCharacter, "[NetSkillComponent] NetCharacter를 찾을 수 없습니다.");
+        }
+
+        private void OnEnable()
+        {
+            if (entityEvents != null)
+            {
+                entityEvents.OnAnimationEventTriggered += HandleAnimationEvent;
+                entityEvents.OnAnimationStateExited += HandleAnimationStateExited;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (entityEvents != null)
+            {
+                entityEvents.OnAnimationEventTriggered -= HandleAnimationEvent;
+                entityEvents.OnAnimationStateExited -= HandleAnimationStateExited;
+            }
+        }
+
+        private void HandleAnimationEvent(EAnimationEventTag eventTag)
+        {
+            if (!IsServer || currentCastingSkill == null)
+            {
+                return;
+            }
+            
+            if (eventTag == EAnimationEventTag.Action)
+            {
+                if (GameStatics.SkillManager != null)
+                {
+                    GameStatics.SkillManager.ActionSkill(currentCastingSkill.Value, ownerCharacter);
+                }
+            }
+        }
+
+        private void HandleAnimationStateExited(int stateHash)
+        {
+            if (!IsServer || currentCastingSkill == null)
+            {
+                return;
+            }
+
+            // 현재 시전 중인 스킬의 애니메이션 해시와 일치하는지 검사
+            int expectedHash = GetSkillAnimHash(currentCastingSkill.Value);
+            if (expectedHash == stateHash)
+            {
+                if (GameStatics.SkillManager != null)
+                {
+                    GameStatics.SkillManager.EndSkill(currentCastingSkill.Value, ownerCharacter);
+                }
+
+                currentCastingSkill = null;
             }
         }
 
@@ -68,7 +157,18 @@ namespace ProjectAI.Core.Skills
             {
                 return time;
             }
+
             return -999.0;
+        }
+
+        public int GetSkillAnimHash(ESkillType type)
+        {
+            if (animHashCache.TryGetValue(type, out int hash))
+            {
+                return hash;
+            }
+
+            return 0;
         }
 
         public void SetLastActivationTime(ESkillType type, double time)
@@ -141,7 +241,10 @@ namespace ProjectAI.Core.Skills
 
             if (GameStatics.SkillManager != null)
             {
-                GameStatics.SkillManager.ExecuteSkill(skillType, this);
+                if (GameStatics.SkillManager.ExecuteSkill(skillType, ownerCharacter))
+                {
+                    currentCastingSkill = skillType;
+                }
             }
         }
 

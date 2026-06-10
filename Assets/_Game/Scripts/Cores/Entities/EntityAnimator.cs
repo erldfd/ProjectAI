@@ -73,5 +73,17 @@ namespace ProjectAI.Core.Entities
 
             animator.CrossFade(stateHash, transitionDuration, layer, 0f);
         }
+
+        /// <summary>
+        /// 애니메이션 클립의 Animation Event 창에서 이 메서드를 호출하여 스킬의 Action 타이밍을 전파합니다.
+        /// 파라미터가 없는 구체적인 메서드를 사용함으로써 매직 넘버 사용을 원천 차단합니다.
+        /// </summary>
+        public void TriggerActionAnimationEvent()
+        {
+            if (entityEvents != null)
+            {
+                entityEvents.InvokeAnimationEventTriggered(EAnimationEventTag.Action);
+            }
+        }
     }
 }

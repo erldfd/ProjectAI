@@ -38,6 +38,16 @@ namespace ProjectAI.Core.Entities
         public event Action<int, float, int> OnPlayAnimation;
 
         /// <summary>
+        /// 유니티 애니메이션 클립의 Animation Event가 트리거되었을 때 발생하는 이벤트
+        /// </summary>
+        public event Action<EAnimationEventTag> OnAnimationEventTriggered;
+
+        /// <summary>
+        /// StateMachineBehaviour를 통해 애니메이션 상태가 종료(Exit)되었을 때 발생하는 이벤트
+        /// </summary>
+        public event Action<int> OnAnimationStateExited;
+
+        /// <summary>
         /// 구독 시점에 즉시 최신 값을 한 번 내려줍니다. (Late Subscriber 버그 방지)
         /// </summary>
         /// <param name="modifier">적용 중인 이동 속도 배율 (1f가 기본)</param>
@@ -106,6 +116,16 @@ namespace ProjectAI.Core.Entities
         public void InvokePlayAnimation(int stateHash, float transitionDuration = 0f, int layer = 0)
         {
             OnPlayAnimation?.Invoke(stateHash, transitionDuration, layer);
+        }
+
+        public void InvokeAnimationEventTriggered(EAnimationEventTag eventTag)
+        {
+            OnAnimationEventTriggered?.Invoke(eventTag);
+        }
+
+        public void InvokeAnimationStateExited(int stateHash)
+        {
+            OnAnimationStateExited?.Invoke(stateHash);
         }
     }
 }
