@@ -37,12 +37,12 @@ namespace ProjectAI.Core.Pooling
 
             public NetworkObject Instantiate(ulong ownerClientId, Vector3 position, Quaternion rotation)
             {
-                return this.pool.GetNetworkObjectInternal(this.prefab, position, rotation);
+                return pool.GetNetworkObjectInternal(prefab, position, rotation);
             }
 
             public void Destroy(NetworkObject networkObject)
             {
-                this.pool.ReturnNetworkObjectInternal(networkObject);
+                pool.ReturnNetworkObjectInternal(networkObject);
             }
         }
 
@@ -54,6 +54,11 @@ namespace ProjectAI.Core.Pooling
         private void OnEnable()
         {
             GameStatics.RegisterObjectPool(this);
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnServerStarted += RegisterPrefabHandlers;
+                NetworkManager.Singleton.OnClientStarted += RegisterPrefabHandlers;
+            }
         }
 
         private void Start()
@@ -80,11 +85,17 @@ namespace ProjectAI.Core.Pooling
 
         private void OnDisable()
         {
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.PrefabHandler != null)
+            if (NetworkManager.Singleton != null)
             {
-                for (int i = 0; i < registeredPrefabs.Count; i++)
+                NetworkManager.Singleton.OnServerStarted -= RegisterPrefabHandlers;
+                NetworkManager.Singleton.OnClientStarted -= RegisterPrefabHandlers;
+
+                if (NetworkManager.Singleton.PrefabHandler != null)
                 {
-                    NetworkManager.Singleton.PrefabHandler.RemoveHandler(registeredPrefabs[i]);
+                    for (int i = 0; i < registeredPrefabs.Count; i++)
+                    {
+                        NetworkManager.Singleton.PrefabHandler.RemoveHandler(registeredPrefabs[i]);
+                    }
                 }
             }
 
@@ -168,17 +179,24 @@ namespace ProjectAI.Core.Pooling
 
         private NetworkObject GetNetworkObjectInternal(NetworkObject prefab, Vector3 position, Quaternion rotation)
         {
-            UnityEngine.Assertions.Assert.IsTrue(pools.ContainsKey(prefab), $"[NetworkObjectPool] Setup된 풀이 존재하지 않습니다: {prefab.name}");
+            if (!pools.TryGetValue(prefab, out PoolData poolData))
+            {
+                Debug.LogError($"[NetworkObjectPool] Setup된 풀이 존재하지 않습니다: {prefab.name}");
+                return null;
+            }
 
-            PoolData poolData = pools[prefab];
             NetworkObject instance = null;
 
             if (poolData.Queue.Count > 0)
             {
                 instance = poolData.Queue.Dequeue();
             }
-            else if (poolData.ShouldExpandWhenEmpty)
+            else
             {
+                if (!poolData.ShouldExpandWhenEmpty)
+                {
+                    Debug.LogWarning($"[NetworkObjectPool] 풀이 고갈되었습니다: {prefab.name}. 강제로 임시 인스턴스를 확장합니다.");
+                }
                 instance = CreateInstance(prefab);
                 instanceToPrefabMap.Add(instance, prefab);
             }
@@ -208,7 +226,10 @@ namespace ProjectAI.Core.Pooling
 
             if (!instanceToPrefabMap.TryGetValue(instance, out NetworkObject prefab))
             {
-                Destroy(instance.gameObject);
+                if (instance.gameObject != null)
+                {
+                    Destroy(instance.gameObject);
+                }
                 return;
             }
 
@@ -216,7 +237,10 @@ namespace ProjectAI.Core.Pooling
             {
                 instanceToPrefabMap.Remove(instance);
                 instancePoolableMap.Remove(instance);
-                Destroy(instance.gameObject);
+                if (instance.gameObject != null)
+                {
+                    Destroy(instance.gameObject);
+                }
                 return;
             }
 

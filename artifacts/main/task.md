@@ -1,15 +1,10 @@
-# 오브젝트 풀링 및 스포너 매니저 개발
+# 현재 진행 상황
 
-- `[x]` **1단계: 코어 풀링 시스템 구축**
-  - `[x]` `IPoolable.cs` 인터페이스 생성
-  - `[x]` `NetworkObjectPool.cs` 생성 (NGO INetworkPrefabInstanceHandler 연동)
-  - `[x]` `GameStatics.cs`에 접근자 추가
-
-- `[x]` **2단계: 기존 투사체에 풀링 적용 및 안정성 강화**
-  - `[x]` `NetProjectile.cs`에 `IPoolable` 적용 및 `Despawn(false)` 교체
-  - `[x]` `BasicAttackLogic.cs` 풀링 시스템 스폰 연동 및 얼리리턴/지연 셋업 적용
-  - `[x]` 리지드바디(`Rb`) 캐싱 및 속도 제어 권한을 `ANetMovement` 최상위 클래스로 통합 이관
-  - `[x]` `SkillManager`와 `NetworkObjectPool` 간의 상호 크로스 풀 셋업 연동(Awake/Start 시점 순서 제약 제거)
-
-- `[ ]` **3단계: 몬스터 스폰 시스템 구축**
-  - `[ ]` `MonsterSpawner.cs` 무작위 위치 스폰 로직 추가
+- [x] 1단계: 오브젝트 풀링 아키텍처 기본 인터페이스 구성 (IPoolable, NetworkObjectPool, GameStatics)
+- [x] 2단계: 플레이어 기본 마법탄 투사체 풀링 연동 및 리지드바디 캐싱/컴포넌트 의존성 최적화 완료
+- [x] 3단계: 몬스터 스폰 시스템 (NetMonsterSpawner) 및 몬스터 풀링 연동
+  - [x] `Assets/_Game/Scripts/GameModes/NetMonsterSpawner.cs` 생성
+  - [x] `OnNetworkSpawn()` 시점 몬스터 풀 사전 워밍업 구현
+  - [x] `IsServer` 가드 기반 타이머 루프 구현
+  - [x] 무작위 2D 좌표 산출 및 `GameStatics.ObjectPool.GetNetworkObject` 스폰 구현
+  - [x] 테스터 및 리뷰어 검증 (1단계 NetworkObjectPool 방어 코드 보완 포함) 완료

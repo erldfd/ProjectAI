@@ -363,6 +363,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  baseSpeed: 15
 --- !u!1 &5912985425572193920
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,7 +467,7 @@ Animator:
   m_GameObject: {fileID: 5912985425572193920}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: eca5a223edf020d40a443d1eb6dd49e9, type: 2}
+  m_Controller: {fileID: 9100000, guid: 2c38ad82b44e18544992a230e25f3176, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

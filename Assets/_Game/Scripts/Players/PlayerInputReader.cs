@@ -108,10 +108,12 @@ namespace ProjectAI.Players
         {
             if (context.performed)
             {
+                Debug.Log("Attack input performed");
                 OnAttackInputChanged?.Invoke(true);
             }
             else if (context.canceled)
             {
+                Debug.Log("Attack input canceled");
                 OnAttackInputChanged?.Invoke(false);
             }
         }

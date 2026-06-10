@@ -85,6 +85,7 @@ namespace ProjectAI.Players
 
         private void HandleAttackInputChanged(bool isAttacking)
         {
+            Debug.Log($"Attack input changed: {isAttacking}");
             if (!isAttacking)
             {
                 return;

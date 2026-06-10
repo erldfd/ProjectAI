@@ -243,6 +243,7 @@ GameObject:
   - component: {fileID: 4921892585005609114}
   - component: {fileID: 7424043328323526500}
   - component: {fileID: 9116605749001047819}
+  - component: {fileID: 7556419171413634377}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -441,6 +442,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.NetPlayerCharacter
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &7556419171413634377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aeb21508a3b764489489274472e38c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
+  ShowTopMostFoldoutHeaderGroup: 1
+  OwnedSkills: 01
+  firePoint: {fileID: 0}
+  ActiveStates:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!1 &7368630293233674342
 GameObject:
   m_ObjectHideFlags: 0
