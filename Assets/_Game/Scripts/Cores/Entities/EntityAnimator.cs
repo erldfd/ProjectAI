@@ -39,14 +39,18 @@ namespace ProjectAI.Core.Entities
 
         private void OnEnable()
         {
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
             entityEvents.OnVelocityChanged += HandleVelocityChanged;
             entityEvents.OnFacingDirectionChanged += HandleFacingDirectionChanged;
+            entityEvents.OnPlayAnimation += HandlePlayAnimation;
         }
 
         private void OnDisable()
         {
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
             entityEvents.OnVelocityChanged -= HandleVelocityChanged;
             entityEvents.OnFacingDirectionChanged -= HandleFacingDirectionChanged;
+            entityEvents.OnPlayAnimation -= HandlePlayAnimation;
         }
 
         private void HandleVelocityChanged(Vector2 velocity)
@@ -58,6 +62,28 @@ namespace ProjectAI.Core.Entities
         {
             // 오른쪽을 보면 flipX = false, 왼쪽을 보면 flipX = true
             spriteRenderer.flipX = !isFacingRight;
+        }
+
+        private void HandlePlayAnimation(int stateHash, float transitionDuration, int layer)
+        {
+            if (stateHash == 0)
+            {
+                return;
+            }
+
+            animator.CrossFade(stateHash, transitionDuration, layer, 0f);
+        }
+
+        /// <summary>
+        /// 애니메이션 클립의 Animation Event 창에서 이 메서드를 호출하여 스킬의 Action 타이밍을 전파합니다.
+        /// 파라미터가 없는 구체적인 메서드를 사용함으로써 매직 넘버 사용을 원천 차단합니다.
+        /// </summary>
+        public void TriggerActionAnimationEvent()
+        {
+            if (entityEvents != null)
+            {
+                entityEvents.InvokeAnimationEventTriggered(EAnimationEventTag.Action);
+            }
         }
     }
 }

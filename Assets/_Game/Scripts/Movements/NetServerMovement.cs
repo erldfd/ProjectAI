@@ -15,17 +15,15 @@ namespace ProjectAI.Movements
         [SerializeField]
         private float baseSpeed = 15f;
 
-        private Rigidbody2D rb;
         private Vector2 currentDirection = Vector2.zero;
         private float currentSpeedModifier = 1f;
 
-        public override Vector2 Velocity => rb.linearVelocity;
+        public override Vector2 Velocity => base.Rb.linearVelocity;
 
         protected override void Awake()
         {
             base.Awake();
-            rb = GetComponentInParent<Rigidbody2D>();
-            UnityEngine.Assertions.Assert.IsNotNull(rb, "Rigidbody2D component is missing in parent.");
+            UnityEngine.Assertions.Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
         }
 
         private void OnEnable()
@@ -66,9 +64,9 @@ namespace ProjectAI.Movements
                 return;
             }
 
-            rb.linearVelocity = currentDirection * (baseSpeed * currentSpeedModifier);
+            base.Rb.linearVelocity = currentDirection * (baseSpeed * currentSpeedModifier);
             // 네트워크 애니메이션 및 공통 이벤트 중계 트리거
-            base.NetAnimVelocity.Value = rb.linearVelocity;
+            base.NetAnimVelocity.Value = base.Rb.linearVelocity;
         }
     }
 }

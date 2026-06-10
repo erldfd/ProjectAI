@@ -1,17 +1,23 @@
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using Unity.Netcode;
+using UnityEngine.Assertions;
+using ProjectAI.Core.Pooling;
+using ProjectAI.Characters;
 
 namespace ProjectAI.Core.Skills
 {
     /// <summary>
     /// 스킬의 프리팹 및 기본 쿨타임 등을 정의하는 설정 데이터 구조체입니다.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public struct SSkillConfig
     {
         public ESkillType SkillType;
-        public GameObject Prefab;
+        public NetworkObject Prefab;
         public float BaseCooldown;
     }
 
@@ -34,6 +40,11 @@ namespace ProjectAI.Core.Skills
             InitializeSkills();
         }
 
+        private void Start()
+        {
+            Assert.IsNotNull(GameStatics.ObjectPool, "[SkillManager] Start: ObjectPool이 GameStatics에 등록되어 있지 않습니다! 씬 배치를 확인하십시오.");
+        }
+
         private void OnDestroy()
         {
             GameStatics.UnregisterSkillManager(this);
@@ -47,22 +58,22 @@ namespace ProjectAI.Core.Skills
             skillLogics.Clear();
 
             // 리플렉션을 사용하여 ISkillLogic을 구현한 모든 클래스를 찾아 인스턴스화
-            System.Type type = typeof(ISkillLogic);
-            System.Collections.Generic.IEnumerable<System.Type> types = null;
+            Type type = typeof(ISkillLogic);
+            IEnumerable<Type> types = null;
 
             try
             {
-                types = System.AppDomain.CurrentDomain.GetAssemblies()
+                types = AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany(s => s.GetTypes())
                     .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
             }
-            catch (System.Reflection.ReflectionTypeLoadException e)
+            catch (ReflectionTypeLoadException e)
             {
                 Debug.LogWarning($"[SkillManager] 리플렉션 어셈블리 로드 중 예외 발생. 일부 스킬이 누락될 수 있습니다: {e.Message}");
                 types = e.Types.Where(t => t != null && type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
             }
 
-            foreach (System.Type t in types)
+            foreach (Type t in types)
             {
                 // ScriptableObject나 MonoBehaviour가 아닌 순수 C# 클래스라고 가정합니다.
                 if (typeof(UnityEngine.Object).IsAssignableFrom(t))
@@ -71,7 +82,7 @@ namespace ProjectAI.Core.Skills
                     continue; // 만약 MonoBehaviour로 구현한다면 여기서 AddComponent 등을 처리해야 합니다. 현재는 순수 C# 클래스를 권장합니다.
                 }
 
-                ISkillLogic skillLogic = (ISkillLogic)System.Activator.CreateInstance(t);
+                ISkillLogic skillLogic = (ISkillLogic)Activator.CreateInstance(t);
                 if (skillLogics.ContainsKey(skillLogic.SkillType))
                 {
                     Debug.LogError($"[SkillManager] 중복된 스킬 타입이 발견되었습니다: {skillLogic.SkillType}");
@@ -81,6 +92,22 @@ namespace ProjectAI.Core.Skills
                 skillLogic.Initialize(this); // 매니저 데이터 주입
                 skillLogics.Add(skillLogic.SkillType, skillLogic);
                 Debug.Log($"[SkillManager] 스킬 로직 등록 완료: {skillLogic.SkillType} -> {t.Name}");
+            }
+
+            if (GameStatics.ObjectPool == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < SkillConfigs.Count; i++)
+            {
+                NetworkObject prefab = SkillConfigs[i].Prefab;
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                GameStatics.ObjectPool.SetupPool(prefab, 10, true);
             }
         }
 
@@ -100,8 +127,14 @@ namespace ProjectAI.Core.Skills
         /// <summary>
         /// 스킬 실행을 요청합니다. (서버 전용)
         /// </summary>
-        public bool ExecuteSkill(ESkillType type, NetSkillComponent caster)
+        public bool ExecuteSkill(ESkillType type, NetCharacter caster)
         {
+            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            {
+                Debug.LogWarning("[SkillManager] 스킬 실행(Execute)은 서버에서만 가능합니다.");
+                return false;
+            }
+
             if (!skillLogics.TryGetValue(type, out ISkillLogic logic))
             {
                 Debug.LogWarning($"[SkillManager] 알 수 없는 스킬 타입입니다: {type}");
@@ -115,6 +148,34 @@ namespace ProjectAI.Core.Skills
 
             logic.Execute(caster);
             return true;
+        }
+
+        public void ActionSkill(ESkillType type, NetCharacter caster)
+        {
+            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            {
+                Debug.LogWarning("[SkillManager] 스킬 액션(Action)은 서버에서만 가능합니다.");
+                return;
+            }
+
+            if (skillLogics.TryGetValue(type, out ISkillLogic logic))
+            {
+                logic.Action(caster);
+            }
+        }
+
+        public void EndSkill(ESkillType type, NetCharacter caster)
+        {
+            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            {
+                Debug.LogWarning("[SkillManager] 스킬 종료(End)는 서버에서만 가능합니다.");
+                return;
+            }
+
+            if (skillLogics.TryGetValue(type, out ISkillLogic logic))
+            {
+                logic.End(caster);
+            }
         }
     }
 }

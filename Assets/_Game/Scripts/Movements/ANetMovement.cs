@@ -37,10 +37,16 @@ namespace ProjectAI.Movements
         /// </summary>
         public abstract Vector2 Velocity { get; }
 
+        /// <summary>
+        /// 이동에 사용하는 물리 리지드바디 컴포넌트입니다.
+        /// </summary>
+        public Rigidbody2D Rb { get; protected set; }
+
         protected virtual void Awake()
         {
             _entityEvents = GetComponentInParent<EntityEvents>();
             Assert.IsNotNull(_entityEvents, "EntityEvents component is missing.");
+            Rb = GetComponentInParent<Rigidbody2D>();
         }
 
         public override void OnNetworkSpawn()

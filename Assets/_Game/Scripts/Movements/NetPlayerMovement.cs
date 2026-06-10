@@ -71,18 +71,16 @@ namespace ProjectAI.Movements
 
         private int currentSequenceId = 0;
 
-        private Rigidbody2D rb;
         private Vector2 currentMoveInput;
         private float currentMoveSpeedModifier = 1f;
 
-        public override Vector2 Velocity => rb.linearVelocity;
+        public override Vector2 Velocity => base.Rb.linearVelocity;
 
         #region Unity Lifecycle
         protected override void Awake()
         {
             base.Awake();
-            rb = GetComponentInParent<Rigidbody2D>();
-            Assert.IsNotNull(rb, "Rigidbody2D component is missing in parent.");
+            Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
         }
 
         private void OnEnable()
@@ -136,8 +134,8 @@ namespace ProjectAI.Movements
             SStatePayload statePayload = new SStatePayload
             {
                 SequenceId = currentSequenceId,
-                Position = rb.position,
-                Velocity = rb.linearVelocity
+                Position = base.Rb.position,
+                Velocity = base.Rb.linearVelocity
             };
             
             clientStateBuffer[bufferIndex] = statePayload;
@@ -164,7 +162,7 @@ namespace ProjectAI.Movements
                 {
                     // 이전 패킷의 속도를 수동으로 적용하여 중간 프레임 누락 방지
                     // TODO: 수동 가산 시 물리 벽 뚫림 방지를 위해 향후 Raycast(또는 BoxCast) 기반 충돌 검사 로직 추가 필요
-                    rb.position += rb.linearVelocity * Time.fixedDeltaTime;
+                    base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
                 }
                 
                 int bufferIndex = (inputPayload.SequenceId % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
@@ -178,8 +176,8 @@ namespace ProjectAI.Movements
                 SStatePayload statePayload = new SStatePayload
                 {
                     SequenceId = inputPayload.SequenceId,
-                    Position = rb.position,
-                    Velocity = rb.linearVelocity
+                    Position = base.Rb.position,
+                    Velocity = base.Rb.linearVelocity
                 };
 
                 clientStateBuffer[bufferIndex] = statePayload;
@@ -200,8 +198,8 @@ namespace ProjectAI.Movements
             {
                 // 옵저버 처리: 서버 상태를 수신하는 즉시 적용.
                 // 이후 FixedUpdate 사이클 동안 물리 엔진이 선형 속도를 기반으로 자연스럽게 외삽(Dead Reckoning)함.
-                rb.position = statePayload.Position;
-                rb.linearVelocity = statePayload.Velocity;
+                base.Rb.position = statePayload.Position;
+                base.Rb.linearVelocity = statePayload.Velocity;
                 return;
             }
 
@@ -218,8 +216,8 @@ namespace ProjectAI.Movements
             
             // 시각적 객체(VisualBody)가 분리되었으므로, 물리 객체는
             // 오차 발생 시 무조건 서버 위치로 즉시 강제 이동(Snap)시킴.
-            rb.position = statePayload.Position;
-            rb.linearVelocity = statePayload.Velocity;
+            base.Rb.position = statePayload.Position;
+            base.Rb.linearVelocity = statePayload.Velocity;
             
             ReSimulate(statePayload.SequenceId);
         }
@@ -227,7 +225,7 @@ namespace ProjectAI.Movements
         private void ReSimulate(int serverSequenceId)
         {
             // 서버 상태의 위치는 해당 시퀀스의 속도가 적용되기 '전' 상태이므로, 먼저 1프레임 가산해준다.
-            rb.position += rb.linearVelocity * Time.fixedDeltaTime;
+            base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
 
             int sequenceToReSimulate = serverSequenceId + 1;
 
@@ -241,14 +239,14 @@ namespace ProjectAI.Movements
                 clientStateBuffer[index] = new SStatePayload
                 {
                     SequenceId = sequenceToReSimulate,
-                    Position = rb.position,
-                    Velocity = rb.linearVelocity
+                    Position = base.Rb.position,
+                    Velocity = base.Rb.linearVelocity
                 };
                 
                 // 재시뮬레이션 위치 갱신. (버퍼에 예측 상태를 기록한 후에 필수)
                 // 1-Frame 오프셋 방지를 위해 HandleClientTick과 동일하게 가산 전 상태를 버퍼에 기록함.
                 // TODO: 수동 가산 시 물리 벽 뚫림 방지를 위해 향후 Raycast(또는 BoxCast) 기반 충돌 검사 로직 추가 필요
-                rb.position += rb.linearVelocity * Time.fixedDeltaTime;
+                base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
 
                 sequenceToReSimulate++;
             }
@@ -287,7 +285,7 @@ namespace ProjectAI.Movements
         #region Private Methods
         private void ApplyPhysics(Vector2 inputVector)
         {
-            rb.linearVelocity = inputVector * (moveSpeed * currentMoveSpeedModifier);
+            base.Rb.linearVelocity = inputVector * (moveSpeed * currentMoveSpeedModifier);
         }
         #endregion
     }

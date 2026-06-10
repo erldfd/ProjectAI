@@ -1,43 +1,34 @@
-# [Enum 기반 경량화 스킬 & 상태 관리 시스템 도입]
+# 잿빛 늑대 소환 시스템 구현 (풀링, 소환 연동, AI)
 
-무거운 ScriptableObject(데이터 주도) 방식 대신, 코드 기반(Enum & Manager)으로 빠르고 직관적으로 통제할 수 있는 실용적인 모듈화 설계입니다. NGO 환경에서 Enum은 직렬화가 매우 가벼우므로 네트워크 통신에도 최적화된 좋은 접근입니다.
+플래너 에이전트의 Week 2 기획에 따라 플레이어의 잿빛 늑대(소환수) 소환 기능 및 관련 타겟팅 AI를 구현합니다.
+
+## User Review Required
 
 > [!IMPORTANT]
-> **User Review Required**
-> 제안하신 방식(Enum + SkillManager + State Enum)을 바탕으로 구체적인 구조를 잡았습니다. 이 설계대로 코드를 작성할지 확인 부탁드립니다.
+> - 소환수(잿빛 늑대)는 플레이어 당 최대 1마리로 제한됩니다. L키로 소환합니다.
+> - K키 입력 시 소환수가 최우선으로 타겟팅할 적을 지정하는 "집중 명령"이 구현됩니다.
+> - 본 기획은 범위가 넓으므로, 우선 **작업 1 & 작업 2 (풀링 탑재 및 L키 서버 스폰)** 만 먼저 진행할 계획입니다. 승인하시겠습니까?
 
 ## Proposed Changes
 
-### 1. 전역 Enum 정의
-**[NEW] `Assets/_Game/Scripts/Cores/Skills/SkillEnums.cs`**
-- `ESkillType`: 스킬 식별자 (예: `BasicAttack`, `Dash`, `Fireball`)
-- `EStateTag`: 캐릭터의 상태 (예: `None`, `Casting`, `Silenced`, `Stunned`, `Invincible`)
-  - 상태는 여러 개가 중첩될 수 있으므로 `[Flags]` 속성을 부여하여 비트마스크(Bitmask)로 활용하거나 `NetworkList`로 관리합니다.
+### 작업 1: 잿빛 늑대 프리팹 풀링 탑재 및 초기화 로직 구현
+- **대상 스크립트 신규/수정**: `Assets/_Game/Scripts/Characters/Summons/NetWolfSummon.cs` (가칭)
+- **내용**:
+  - `IPoolable` 인터페이스 상속 및 `OnDespawn` 구현.
+  - 소환 해제/사망 시 HP, 이동속도, 물리(Rigidbody) 리셋 로직 구현으로 재소환 시 상태 초기화 보장.
 
-### 2. 스킬 로직 인터페이스 및 매니저
-**[NEW] `Assets/_Game/Scripts/Cores/Skills/ISkillLogic.cs`**
-- `void Execute(NetSkillComponent caster);`
-- `bool CanExecute(NetSkillComponent caster);` (쿨타임, 상태 체크 등)
+### 작업 2: 플레이어 소환 스킬(L키) 및 서버 스폰 연동
+- **대상 스크립트 수정**: `PlayerInputReader.cs`, `NetPlayerController.cs`, `BasicAttackLogic.cs`(또는 신규 소환스킬 클래스)
+- **내용**:
+  - L키 액션 맵핑 및 입력 구독 연동.
+  - `GameStatics.ObjectPool.GetNetworkObject`를 활용해 서버 권한(`ServerRpc`)으로 늑대 스폰 호출.
+  - 플레이어당 1마리 제한을 위한 식별(OwnerClientId 매핑) 및 중복 방지 제어.
 
-**[NEW] `Assets/_Game/Scripts/Cores/Skills/SkillManager.cs`**
-- 싱글톤 패턴으로 구현.
-- 게임 시작 시 모든 `ESkillType`에 매칭되는 `ISkillLogic` 구현체들을 Dictionary에 미리 할당해 둡니다.
-- `Execute(ESkillType type, NetSkillComponent caster)` 호출 시 해당 로직을 실행합니다.
+### 작업 3: 소환수 AI 및 집중 명령(K키) 구현 (추후 진행)
+- **내용**: 주변 적 탐색 AI 및 K키 타겟 우선 지정(집중 명령) 시스템은 기반 스폰 기능이 완성된 후 2차로 구현합니다.
 
-### 3. NetSkillComponent 구조 개편
-**[MODIFY] `Assets/_Game/Scripts/Cores/Skills/NetSkillComponent.cs`**
-- **보유 스킬**: `List<ESkillType> ownedSkills` (자신이 쓸 수 있는 스킬 목록)
-- **상태 관리**: `NetworkVariable<int> ActiveStates` (비트마스크를 이용해 현재 상태 동기화)
-- **작동 흐름**:
-  1. 클라이언트 컨트롤러가 `TryActivateSkill(ESkillType.BasicAttack)` 호출.
-  2. `ownedSkills`에 있는지, 현재 상태가 스킬 사용을 막고 있지 않은지(`Silenced` 등) 클라이언트 단에서 1차 검사.
-  3. `ServerRpcActivateSkill(ESkillType.BasicAttack)` 호출.
-  4. 서버에서 2차 검증 후 `SkillManager.Instance.Execute(skill, this)` 호출.
+## Verification Plan
 
-### 4. 스킬 구현체 분리
-**[NEW] `Assets/_Game/Scripts/Cores/Skills/Abilities/BasicAttackLogic.cs`**
-- `ISkillLogic`을 구현하며, 매니저에 의해 실행될 때 실질적인 투사체(마법탄) 생성 코드를 담당합니다.
-
-## Validation Plan
-1. 상태 부여 테스트: 스킬 로직 안에서 컴포넌트의 상태를 `EStateTag.Casting`으로 변경해보고, 다른 스킬이 막히는지 확인.
-2. 매니저 연동: `SkillManager`가 올바르게 로직을 라우팅하여 마법탄이 정상적으로 발사되는지 확인.
+### Manual Verification
+- Host/Client 접속 후 L키를 눌러 잿빛 늑대가 동기화되어 정상 스폰되는지 확인.
+- 늑대를 강제 디스폰(사망) 후 L키로 재소환했을 때 스탯과 물리가 온전히 초기화된 상태로 나오는지 확인.
