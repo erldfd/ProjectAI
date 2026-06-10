@@ -4,14 +4,22 @@ using ProjectAI.GameModes;
 using ProjectAI.Network;
 using ProjectAI.Core.Stats;
 using ProjectAI.Core.Skills;
+using ProjectAI.Core.Pooling;
+
 
 namespace ProjectAI.Core
 {
+    /// <summary>
+    /// 게임 전반에서 사용하는 정적 매니저 및 헬퍼 기능을 제공하는 클래스입니다.
+    /// </summary>
     public static class GameStatics
     {
+
         public static GameManager GameManager { get; private set; }
         public static ANetGameModeBase CurrentMode { get; private set; }
         public static SkillManager SkillManager { get; private set; }
+        public static NetworkObjectPool ObjectPool { get; private set; }
+
 
         public static NetworkManager NetworkManager => NetworkManager.Singleton;
 
@@ -85,5 +93,28 @@ namespace ProjectAI.Core
                 SkillManager = null;
             }
         }
+
+        public static void RegisterObjectPool(NetworkObjectPool pool)
+        {
+            if (ObjectPool != null)
+            {
+                Debug.LogError("[GameStatics] 누군가 이미 존재하는 NetworkObjectPool을 덮어쓰려고 시도했습니다!");
+                return;
+            }
+
+            ObjectPool = pool;
+        }
+
+
+        public static void UnregisterObjectPool(NetworkObjectPool pool)
+        {
+            if (ObjectPool != pool)
+            {
+                return;
+            }
+
+            ObjectPool = null;
+        }
     }
+
 }
