@@ -40,6 +40,15 @@ namespace ProjectAI.Projectiles
             {
                 Invoke(nameof(DestroyProjectile), lifeTime);
             }
+            else
+            {
+                // 순수 클라이언트는 어차피 충돌 판정을 무시하므로, 물리 콜라이더를 꺼서 부하를 줄임
+                Collider2D[] cols = GetComponentsInChildren<Collider2D>();
+                foreach (Collider2D col in cols)
+                {
+                    col.enabled = false;
+                }
+            }
         }
 
         public override void OnNetworkDespawn()
@@ -67,7 +76,11 @@ namespace ProjectAI.Projectiles
             ownerNetworkObjectId = ownerNetObjId;
             Debug.Log($"[NetProjectile] Initialize 호출됨. OwnerNetObjId: {ownerNetworkObjectId}, 방향: {direction}");
             
-            if (base.Movement is ProjectAI.Movements.NetServerMovement serverMovement)
+            if (base.Movement is ProjectAI.Movements.NetProjectileMovement projectileMovement)
+            {
+                projectileMovement.SetDirection(direction);
+            }
+            else if (base.Movement is ProjectAI.Movements.NetServerMovement serverMovement)
             {
                 serverMovement.SetDirection(direction);
             }
@@ -83,7 +96,11 @@ namespace ProjectAI.Projectiles
             }
 
             // 충돌 대상이 데미지를 받을 수 있는 객체인지 확인
-            IDamageable damageable = collision.GetComponentInChildren<IDamageable>();
+            IDamageable damageable = collision.GetComponentInParent<IDamageable>();
+            if (damageable == null)
+            {
+                damageable = collision.GetComponentInChildren<IDamageable>();
+            }
             
             if (damageable != null)
             {

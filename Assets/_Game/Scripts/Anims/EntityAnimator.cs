@@ -16,13 +16,13 @@ namespace ProjectAI.Core.Entities
     {
         private static readonly int hashMoveSpeed = Animator.StringToHash("MoveSpeed");
 
-        [SerializeField]
+
         private EntityEvents entityEvents;
         
-        [SerializeField]
+
         private Animator animator;
 
-        [SerializeField]
+
         private SpriteRenderer spriteRenderer;
 
         private void Awake()

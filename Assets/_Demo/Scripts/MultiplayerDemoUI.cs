@@ -42,7 +42,7 @@ namespace ProjectAI.Network
                 {
                     if (GUILayout.Button("방 만들기 (Start Host)", GUILayout.Height(40)))
                     {
-                        StartHostProcess();
+                        StartHostProcessAsync();
                     }
 
                     if (!string.IsNullOrEmpty(_hostedCode))
@@ -61,14 +61,14 @@ namespace ProjectAI.Network
 
                 if (GUILayout.Button("방 참가 (Join Client)", GUILayout.Height(40)))
                 {
-                    StartClientProcess();
+                    StartClientProcessAsync();
                 }
             }
 
             GUILayout.EndArea();
         }
 
-        private async void StartHostProcess()
+        private async void StartHostProcessAsync()
         {
             Assert.IsNotNull(GameStatics.MultiplayerManager, "[MultiplayerDemoUI] GameStatics.MultiplayerManager가 없습니다.");
             if (GameStatics.MultiplayerManager == null)
@@ -79,7 +79,7 @@ namespace ProjectAI.Network
 
             _isConnecting = true;
             // 호스트 생성 요청 및 발급된 방 코드 받기
-            _hostedCode = await GameStatics.MultiplayerManager.StartHost();
+            _hostedCode = await GameStatics.MultiplayerManager.StartHostAsync();
             _isConnecting = false;
 
             if (string.IsNullOrEmpty(_hostedCode))
@@ -92,7 +92,7 @@ namespace ProjectAI.Network
             }
         }
 
-        private async void StartClientProcess()
+        private async void StartClientProcessAsync()
         {
             if (string.IsNullOrEmpty(_joinCodeInput))
             {
@@ -109,10 +109,10 @@ namespace ProjectAI.Network
 
             _isConnecting = true;
             // 입력된 코드로 참가 요청
-            bool success = await GameStatics.MultiplayerManager.StartClient(_joinCodeInput);
+            bool isSuccess = await GameStatics.MultiplayerManager.StartClientAsync(_joinCodeInput);
             _isConnecting = false;
 
-            if (!success)
+            if (!isSuccess)
             {
                 Debug.LogError("방 참가에 실패했습니다.");
             }

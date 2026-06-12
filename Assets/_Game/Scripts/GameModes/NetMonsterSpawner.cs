@@ -106,6 +106,7 @@ namespace ProjectAI.GameModes
             
             if (GameStatics.ObjectPool == null || monsterPrefab == null)
             {
+                Debug.LogWarning($"[NetMonsterSpawner] 스폰 실패: ObjectPool({GameStatics.ObjectPool != null}) 또는 monsterPrefab({monsterPrefab != null})이 null입니다.");
                 return;
             }
 

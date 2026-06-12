@@ -30,17 +30,19 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public bool CanExecute(NetCharacter caster)
         {
-            // 침묵, 기절 상태면 사용 불가
-            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned))
+            // 침묵, 기절, 시전 중 상태면 사용 불가
+            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned) || caster.SkillComponent.HasState(EStateTag.Casting))
             {
+                Debug.Log($"[BasicAttackLogic] CanExecute 실패: {caster.NetworkObjectId} 상태 이상(침묵/기절/시전중)");
                 return false;
             }
 
             // 쿨타임 검사 (간단 구현)
             Assert.IsNotNull(GameStatics.NetworkManager, "[BasicAttackLogic] CanExecute: NetworkManager is null.");
             
-            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetLastActivationTime(SkillType) + cooldown)
+            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetServerActivationTime(SkillType) + cooldown)
             {
+                Debug.Log($"[BasicAttackLogic] CanExecute 실패: {caster.NetworkObjectId} 서버 쿨타임 대기 중");
                 return false;
             }
 
@@ -55,6 +57,9 @@ namespace ProjectAI.Core.Skills.Abilities
             {
                 return;
             }
+
+            // 서버 측 쿨타임 기록 (발동 시점)
+            caster.SkillComponent.SetServerActivationTime(SkillType, GameStatics.NetworkManager.ServerTime.Time);
 
             // 애니메이션 재생만 지시
             int animHash = caster.SkillComponent.GetSkillAnimHash(SkillType);
@@ -105,24 +110,19 @@ namespace ProjectAI.Core.Skills.Abilities
 
             projectileNetObj.Spawn();
 
-            if (projectileNetObj.TryGetComponent(out NetProjectile projectile))
+            if (!projectileNetObj.TryGetComponent(out NetProjectile projectile))
             {
-                Debug.Log($"[BasicAttackLogic] 발사체 초기화 완료. 방향: {direction}, CasterID: {caster.NetworkObjectId}");
-                projectile.Initialize(direction, caster.NetworkObjectId);
+                Debug.LogWarning($"[BasicAttackLogic] 발사체 스폰 실패: NetProjectile 컴포넌트를 찾을 수 없습니다. (CasterID: {caster.NetworkObjectId})");
+                return;
             }
+
+            Debug.Log($"[BasicAttackLogic] 발사체 초기화 완료. 방향: {direction}, CasterID: {caster.NetworkObjectId}");
+            projectile.Initialize(direction, caster.NetworkObjectId);
         }
 
         public void End(NetCharacter caster)
         {
-            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] End는 서버에서만 호출되어야 합니다.");
-            
-            if (!GameStatics.IsServerAuthorized)
-            {
-                return;
-            }
-
-            // 스킬 종료(또는 취소) 시점에 쿨타임을 세팅하여, 종료 시점부터 쿨타임이 돌도록 함.
-            caster.SkillComponent.SetLastActivationTime(SkillType, GameStatics.NetworkManager.ServerTime.Time);
+            // 현재 종료 시점 특이사항 없음
         }
     }
 }

@@ -24,10 +24,7 @@ namespace ProjectAI.Characters
         public void TryActivateSkill(ESkillType skillType)
         {
             // 캐릭터 내부망(EntityEvents)을 통해 각 컴포넌트들에게 지시를 내립니다.
-            if (Events != null)
-            {
-                Events.InvokeSkillTriggered(skillType);
-            }
+            base.Events.InvokeSkillTriggered(skillType);
         }
     }
 }

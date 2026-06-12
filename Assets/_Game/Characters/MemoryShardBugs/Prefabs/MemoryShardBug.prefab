@@ -113,7 +113,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.37, y: 0.28}
+  m_Size: {x: 0.3, y: 0.18}
   m_EdgeRadius: 0
 --- !u!114 &6386993713023528098
 MonoBehaviour:
@@ -515,6 +515,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
-  entityEvents: {fileID: 8851523879730136227}
-  animator: {fileID: 756817395569927855}
-  spriteRenderer: {fileID: 7566194960662532988}

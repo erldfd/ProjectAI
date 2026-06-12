@@ -133,7 +133,7 @@ namespace ProjectAI.GameModes
                 }
 
                 Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager가 없습니다. 비정상적인 상태입니다.");
-                await GameStatics.MultiplayerManager.StartHost();
+                await GameStatics.MultiplayerManager.StartHostAsync();
             }
             catch (System.Exception e)
             {

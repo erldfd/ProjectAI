@@ -5,6 +5,9 @@ using UnityEngine.Assertions;
 
 namespace ProjectAI.Environment
 {
+    /// <summary>
+    /// 파티 강제 이동 시 적용할 스폰 위치 모드를 정의합니다.
+    /// </summary>
     public enum EPartyTeleportMode
     {
         IndividualSpawnPoints, // 개별 스폰 포인트 지정 모드

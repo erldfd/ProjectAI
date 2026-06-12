@@ -31,18 +31,12 @@ namespace ProjectAI.Movements
 
         private void OnEnable()
         {
-            if (base._entityEvents != null)
-            {
-                base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
-            }
+            base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
         }
 
         private void OnDisable()
         {
-            if (base._entityEvents != null)
-            {
-                base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
-            }
+            base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
         }
 
         private void HandleMoveSpeedModifierChanged(float modifier)

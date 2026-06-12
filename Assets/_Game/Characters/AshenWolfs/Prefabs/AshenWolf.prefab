@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 797668309
+  GlobalObjectIdHash: 1185525890
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -459,9 +459,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
-  entityEvents: {fileID: 3460810399386613988}
-  animator: {fileID: 8274597395880921184}
-  spriteRenderer: {fileID: 8160027472630124071}
 --- !u!1 &8962202637160501687
 GameObject:
   m_ObjectHideFlags: 0

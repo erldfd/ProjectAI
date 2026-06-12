@@ -80,6 +80,9 @@ namespace ProjectAI.Movements
         private Vector2 currentMoveInput;
         private float currentMoveSpeedModifier = 1f;
 
+        private ContactFilter2D physicsFilter;
+        private RaycastHit2D[] physicsHits = new RaycastHit2D[1];
+
         public override Vector2 Velocity => base.Rb.linearVelocity;
 
         #region Unity Lifecycle
@@ -87,6 +90,11 @@ namespace ProjectAI.Movements
         {
             base.Awake();
             Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
+
+            physicsFilter = new ContactFilter2D();
+            physicsFilter.useTriggers = false;
+            physicsFilter.useLayerMask = true;
+            physicsFilter.layerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
         }
 
         private void OnEnable()
@@ -173,9 +181,8 @@ namespace ProjectAI.Movements
                 
                 if (processedCount > 0 && !IsOwner)
                 {
-                    // 이전 패킷의 속도를 수동으로 적용하여 중간 프레임 누락 방지
-                    // TODO: 수동 가산 시 물리 벽 뚫림 방지를 위해 향후 Raycast(또는 BoxCast) 기반 충돌 검사 로직 추가 필요
-                    base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
+                    // 이전 패킷의 속도를 수동으로 적용하여 중간 프레임 누락 방지 (물리 벽 뚫림 방지 적용)
+                    ApplyManualVelocity();
                 }
                 
                 int bufferIndex = (inputPayload.SequenceId % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
@@ -264,8 +271,7 @@ namespace ProjectAI.Movements
                 
                 // 재시뮬레이션 위치 갱신. (버퍼에 예측 상태를 기록한 후에 필수)
                 // 1-Frame 오프셋 방지를 위해 HandleClientTick과 동일하게 가산 전 상태를 버퍼에 기록함.
-                // TODO: 수동 가산 시 물리 벽 뚫림 방지를 위해 향후 Raycast(또는 BoxCast) 기반 충돌 검사 로직 추가 필요
-                base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
+                ApplyManualVelocity();
 
                 sequenceToReSimulate++;
             }
@@ -305,6 +311,28 @@ namespace ProjectAI.Movements
         private void ApplyPhysics(Vector2 inputVector)
         {
             base.Rb.linearVelocity = inputVector * (moveSpeed * currentMoveSpeedModifier);
+        }
+
+        private void ApplyManualVelocity()
+        {
+            Vector2 moveAmount = base.Rb.linearVelocity * Time.fixedDeltaTime;
+
+            if (moveAmount.sqrMagnitude < Mathf.Epsilon)
+            {
+                return;
+            }
+
+            int hitCount = base.Rb.Cast(moveAmount.normalized, physicsFilter, physicsHits, moveAmount.magnitude);
+
+            if (hitCount == 0)
+            {
+                base.Rb.position += moveAmount;
+            }
+            else
+            {
+                float safeDistance = Mathf.Max(0f, physicsHits[0].distance - 0.01f);
+                base.Rb.position += moveAmount.normalized * safeDistance;
+            }
         }
         #endregion
     }

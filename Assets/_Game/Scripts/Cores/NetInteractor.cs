@@ -46,6 +46,7 @@ namespace ProjectAI.Core
         {
             if (!IsOwner)
             {
+                Debug.Log("[NetInteractor] TryInteract: IsOwner가 아닙니다.");
                 return;
             }
 
@@ -76,6 +77,7 @@ namespace ProjectAI.Core
 
             if (closestInteractable == null)
             {
+                Debug.Log("[NetInteractor] TryInteract: 반경 내 상호작용 가능한 대상이 없습니다.");
                 return;
             }
 

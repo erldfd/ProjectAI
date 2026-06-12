@@ -31,14 +31,21 @@ namespace ProjectAI.Core.Skills
     {
         [Header("Skill Configurations")]
         [Tooltip("각 스킬의 프리팹이나 기본 쿨타임 데이터를 매핑합니다.")]
-        public List<SSkillConfig> SkillConfigs = new List<SSkillConfig>();
+        [SerializeField]
+        private List<SSkillConfig> SkillConfigs = new List<SSkillConfig>();
 
         private Dictionary<ESkillType, ISkillLogic> skillLogics = new Dictionary<ESkillType, ISkillLogic>();
+        private Dictionary<ESkillType, SSkillConfig> skillConfigCache = new Dictionary<ESkillType, SSkillConfig>();
 
         private void Awake()
         {
             GameStatics.RegisterSkillManager(this);
             InitializeSkills();
+
+            foreach (SSkillConfig config in SkillConfigs)
+            {
+                skillConfigCache[config.SkillType] = config;
+            }
         }
 
         private void Start()
@@ -114,12 +121,9 @@ namespace ProjectAI.Core.Skills
 
         public SSkillConfig GetConfig(ESkillType type)
         {
-            foreach (SSkillConfig config in SkillConfigs)
+            if (skillConfigCache.TryGetValue(type, out SSkillConfig config))
             {
-                if (config.SkillType == type)
-                {
-                    return config;
-                }
+                return config;
             }
             
             return default;
