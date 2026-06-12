@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6778530457622617823}
-  - component: {fileID: 5916983895517243914}
+  - component: {fileID: 7165925422676056748}
   m_Layer: 8
   m_Name: Movement
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4077721736701439754}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5916983895517243914
+--- !u!114 &7165925422676056748
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,9 +41,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2136301352418962940}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbe8aee64ec71fb4189edabaf8c9c7a6, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a7659aeb4a0bdb42a108ba0f9277b6c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.NetCharacterMovement
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Movements.NetProjectileMovement
   ShowTopMostFoldoutHeaderGroup: 1
   NetAnimVelocity:
     UpdateTraits:
@@ -55,7 +55,12 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
-  baseSpeed: 15
+  baseSpeed: 10
+  NetPhysicalVelocity:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: {x: 0, y: 0}
 --- !u!1 &4541504890263956714
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +164,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 0.075
 --- !u!114 &5989937830823538665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,7 +197,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4541504890263956714}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
@@ -229,7 +234,7 @@ MonoBehaviour:
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
   SwitchTransformSpaceWhenParented: 0
-  Interpolate: 1
+  Interpolate: 0
   SlerpPosition: 0
 --- !u!114 &8656426297533625654
 MonoBehaviour:
@@ -273,7 +278,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Entities.Entity
   ShowTopMostFoldoutHeaderGroup: 1
-  lifeTime: 5
+  lifeTime: 6
 --- !u!1 &6376556499668702141
 GameObject:
   m_ObjectHideFlags: 0
@@ -384,7 +389,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.06, y: 0.06, z: 0.06}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 4077721736701439754}
@@ -482,6 +487,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Entities.EntityAnimator
-  entityEvents: {fileID: 6867806949372543914}
-  animator: {fileID: 4384096442533176895}
-  spriteRenderer: {fileID: 1550173341614889453}

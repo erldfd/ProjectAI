@@ -1,5 +1,8 @@
+using UnityEngine.Scripting.APIUpdating;
+using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode.Components;
+using ProjectAI.Core;
 
 namespace ProjectAI.Movements
 {
@@ -7,7 +10,7 @@ namespace ProjectAI.Movements
     /// 서버 권한으로 물리 기반 이동을 수행하는 범용 이동 컴포넌트입니다. (몬스터, 투사체 등 공용)
     /// 내부적으로 부모의 Rigidbody2D를 참조하여 위치 및 속도를 동기화합니다.
     /// </summary>
-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "NetCharacterMovement")]
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "NetCharacterMovement")]
     public class NetServerMovement : ANetMovement
     {
         [Header("Movement Settings")]
@@ -23,27 +26,26 @@ namespace ProjectAI.Movements
         protected override void Awake()
         {
             base.Awake();
-            UnityEngine.Assertions.Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
+            Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
         }
 
         private void OnEnable()
         {
-            if (base._entityEvents != null)
-            {
-                base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
-            }
+            base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
         }
 
         private void OnDisable()
         {
-            if (base._entityEvents != null)
-            {
-                base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
-            }
+            base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
         }
 
         private void HandleMoveSpeedModifierChanged(float modifier)
         {
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
             currentSpeedModifier = modifier;
             UpdateVelocity();
         }
@@ -59,7 +61,9 @@ namespace ProjectAI.Movements
 
         private void UpdateVelocity()
         {
-            if (!base.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetServerMovement] UpdateVelocity는 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }

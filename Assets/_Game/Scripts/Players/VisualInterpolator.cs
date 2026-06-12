@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ProjectAI.Player
+namespace ProjectAI.Players
 {
     /// <summary>
     /// 시각적 객체(스프라이트 등)를 부모(물리 객체)와 분리하여, 

@@ -1,3 +1,4 @@
+using UnityEngine.Assertions;
 using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
@@ -47,13 +48,20 @@ namespace ProjectAI.GameModes
 
         protected virtual void OnGameModeNetworkSpawn() { }
 
-        protected void TeleportPlayersToPlayerStart()
+        public void TeleportPlayersToPlayerStart()
         {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[ANetGameModeBase] TeleportPlayersToPlayerStart는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
             Vector3 finalSpawnPosition = Vector3.zero;
             bool isSpawnPositionFound = false;
 
             // 1. Raw Coordinates 모드가 켜져 있고 ID가 비어있으면 쌩 좌표 사용
-            if (string.IsNullOrEmpty(SceneTransitionData.NextSpawnPointID) && SceneTransitionData.UseRawCoordinates)
+            if (string.IsNullOrEmpty(SceneTransitionData.NextSpawnPointID) && SceneTransitionData.ShouldUseRawCoordinates)
             {
                 finalSpawnPosition = SceneTransitionData.RawTargetPosition;
                 isSpawnPositionFound = true;
@@ -85,7 +93,9 @@ namespace ProjectAI.GameModes
             }
 
             // 3. 목적지를 찾았으면 실제 텔레포트 수행
-            if (isSpawnPositionFound && GameStatics.NetworkManager != null)
+            Assert.IsNotNull(GameStatics.NetworkManager, "[ANetGameModeBase] NetworkManager가 null입니다.");
+            
+            if (isSpawnPositionFound)
             {
                 foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
                 {
@@ -100,7 +110,7 @@ namespace ProjectAI.GameModes
 
             // 4. 텔레포트 완료 후 데이터 초기화
             SceneTransitionData.NextSpawnPointID = "";
-            SceneTransitionData.UseRawCoordinates = false;
+            SceneTransitionData.ShouldUseRawCoordinates = false;
         }
         #endregion
 
@@ -122,8 +132,8 @@ namespace ProjectAI.GameModes
                     return;
                 }
 
-                UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager가 없습니다. 비정상적인 상태입니다.");
-                await GameStatics.MultiplayerManager.StartHost();
+                Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager가 없습니다. 비정상적인 상태입니다.");
+                await GameStatics.MultiplayerManager.StartHostAsync();
             }
             catch (System.Exception e)
             {

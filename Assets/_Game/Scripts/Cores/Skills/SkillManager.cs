@@ -7,6 +7,7 @@ using Unity.Netcode;
 using UnityEngine.Assertions;
 using ProjectAI.Core.Pooling;
 using ProjectAI.Characters;
+using ProjectAI.Core;
 
 namespace ProjectAI.Core.Skills
 {
@@ -30,14 +31,21 @@ namespace ProjectAI.Core.Skills
     {
         [Header("Skill Configurations")]
         [Tooltip("각 스킬의 프리팹이나 기본 쿨타임 데이터를 매핑합니다.")]
-        public List<SSkillConfig> SkillConfigs = new List<SSkillConfig>();
+        [SerializeField]
+        private List<SSkillConfig> SkillConfigs = new List<SSkillConfig>();
 
         private Dictionary<ESkillType, ISkillLogic> skillLogics = new Dictionary<ESkillType, ISkillLogic>();
+        private Dictionary<ESkillType, SSkillConfig> skillConfigCache = new Dictionary<ESkillType, SSkillConfig>();
 
         private void Awake()
         {
             GameStatics.RegisterSkillManager(this);
             InitializeSkills();
+
+            foreach (SSkillConfig config in SkillConfigs)
+            {
+                skillConfigCache[config.SkillType] = config;
+            }
         }
 
         private void Start()
@@ -113,12 +121,9 @@ namespace ProjectAI.Core.Skills
 
         public SSkillConfig GetConfig(ESkillType type)
         {
-            foreach (SSkillConfig config in SkillConfigs)
+            if (skillConfigCache.TryGetValue(type, out SSkillConfig config))
             {
-                if (config.SkillType == type)
-                {
-                    return config;
-                }
+                return config;
             }
             
             return default;
@@ -129,9 +134,10 @@ namespace ProjectAI.Core.Skills
         /// </summary>
         public bool ExecuteSkill(ESkillType type, NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ExecuteSkill은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
-                Debug.LogWarning("[SkillManager] 스킬 실행(Execute)은 서버에서만 가능합니다.");
                 return false;
             }
 
@@ -152,9 +158,10 @@ namespace ProjectAI.Core.Skills
 
         public void ActionSkill(ESkillType type, NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ActionSkill은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
-                Debug.LogWarning("[SkillManager] 스킬 액션(Action)은 서버에서만 가능합니다.");
                 return;
             }
 
@@ -166,9 +173,10 @@ namespace ProjectAI.Core.Skills
 
         public void EndSkill(ESkillType type, NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] EndSkill은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
-                Debug.LogWarning("[SkillManager] 스킬 종료(End)는 서버에서만 가능합니다.");
                 return;
             }
 

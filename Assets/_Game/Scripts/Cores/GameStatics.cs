@@ -1,3 +1,4 @@
+using UnityEngine.Assertions;
 using Unity.Netcode;
 using UnityEngine;
 using ProjectAI.GameModes;
@@ -26,6 +27,21 @@ namespace ProjectAI.Core
         public static MultiplayerServiceManager MultiplayerManager => GameManager != null ? GameManager.MultiplayerService : null;
 
         /// <summary>
+        /// 현재 오프라인 상태이거나(로그인 전), 접속 중인 경우 서버 권한이 있는지 확인합니다.
+        /// </summary>
+        public static bool IsServerAuthorized
+        {
+            get
+            {
+                if (NetworkManager == null || !NetworkManager.IsListening)
+                {
+                    return true;
+                }
+                return NetworkManager.IsServer;
+            }
+        }
+
+        /// <summary>
         /// 전역 데미지 파이프라인입니다.
         /// 방어력 차감, 크리티컬 등 복잡한 데미지 계산 공식이 추가될 경우 여기서 중앙 통제합니다.
         /// </summary>
@@ -33,11 +49,12 @@ namespace ProjectAI.Core
         /// <param name="baseDamage">기본 타격 데미지</param>
         public static void ApplyDamage(GameObject target, int baseDamage)
         {
-            UnityEngine.Assertions.Assert.IsNotNull(target, "[GameStatics] ApplyDamage: target 오브젝트가 null입니다!");
+            Assert.IsNotNull(target, "[GameStatics] ApplyDamage: target 오브젝트가 null입니다!");
 
-            if (NetworkManager != null && !NetworkManager.IsServer)
+            Assert.IsTrue(IsServerAuthorized, "[GameStatics] ApplyDamage는 서버(또는 오프라인)에서만 호출되어야 합니다.");
+            
+            if (!IsServerAuthorized)
             {
-                Debug.LogWarning("[GameStatics] ApplyDamage는 서버에서만 호출되어야 합니다.");
                 return;
             }
 

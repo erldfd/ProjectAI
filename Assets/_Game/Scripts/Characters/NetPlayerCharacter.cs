@@ -1,6 +1,7 @@
 using ProjectAI.Core;
 using ProjectAI.Movements;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Characters
 {
@@ -16,6 +17,7 @@ namespace ProjectAI.Characters
         {
             base.Awake();
             interactor = GetComponentInChildren<NetInteractor>();
+            Assert.IsNotNull(interactor, "[NetPlayerCharacter] NetInteractor를 찾을 수 없습니다.");
         }
 
         /// <summary>
@@ -23,10 +25,13 @@ namespace ProjectAI.Characters
         /// </summary>
         public void Move(Vector2 direction)
         {
-            if (base.Movement is NetPlayerMovement playerMovement)
+            if (base.Movement is not NetPlayerMovement playerMovement)
             {
-                playerMovement.SetMoveInput(direction);
+                Debug.LogWarning($"[NetPlayerCharacter] Move 실패: Movement가 NetPlayerMovement가 아닙니다. (ID: {NetworkObjectId})");
+                return;
             }
+
+            playerMovement.SetMoveInput(direction);
         }
 
         /// <summary>
@@ -34,10 +39,7 @@ namespace ProjectAI.Characters
         /// </summary>
         public void TryInteract()
         {
-            if (interactor != null)
-            {
-                interactor.TryInteract();
-            }
+            interactor.TryInteract();
         }
     }
 }

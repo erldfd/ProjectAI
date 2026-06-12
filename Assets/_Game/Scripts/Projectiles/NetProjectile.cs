@@ -1,3 +1,4 @@
+using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core;
@@ -25,9 +26,9 @@ namespace ProjectAI.Projectiles
         {
             base.Awake();
             statComponent = GetComponentInChildren<NetStatComponent>();
-            UnityEngine.Assertions.Assert.IsNotNull(statComponent, "NetProjectile은 데미지 처리를 위해 NetStatComponent가 필수입니다.");
+            Assert.IsNotNull(statComponent, "NetProjectile은 데미지 처리를 위해 NetStatComponent가 필수입니다.");
 
-            UnityEngine.Assertions.Assert.IsNotNull(base.Movement, "NetProjectile은 이동 제어를 위한 ANetMovement 컴포넌트가 필수입니다.");
+            Assert.IsNotNull(base.Movement, "NetProjectile은 이동 제어를 위한 ANetMovement 컴포넌트가 필수입니다.");
         }
 
         public override void OnNetworkSpawn()
@@ -35,9 +36,18 @@ namespace ProjectAI.Projectiles
             base.OnNetworkSpawn();
 
             // 서버에서만 수명 관리
-            if (base.IsServer)
+            if (GameStatics.IsServerAuthorized)
             {
                 Invoke(nameof(DestroyProjectile), lifeTime);
+            }
+            else
+            {
+                // 순수 클라이언트는 어차피 충돌 판정을 무시하므로, 물리 콜라이더를 꺼서 부하를 줄임
+                Collider2D[] cols = GetComponentsInChildren<Collider2D>();
+                foreach (Collider2D col in cols)
+                {
+                    col.enabled = false;
+                }
             }
         }
 
@@ -45,7 +55,7 @@ namespace ProjectAI.Projectiles
         {
             base.OnNetworkDespawn();
 
-            if (base.IsServer)
+            if (GameStatics.IsServerAuthorized)
             {
                 CancelInvoke(nameof(DestroyProjectile));
             }
@@ -56,7 +66,9 @@ namespace ProjectAI.Projectiles
         /// </summary>
         public void Initialize(Vector2 direction, ulong ownerNetObjId)
         {
-            if (!base.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetProjectile] Initialize는 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
@@ -64,7 +76,11 @@ namespace ProjectAI.Projectiles
             ownerNetworkObjectId = ownerNetObjId;
             Debug.Log($"[NetProjectile] Initialize 호출됨. OwnerNetObjId: {ownerNetworkObjectId}, 방향: {direction}");
             
-            if (base.Movement is ProjectAI.Movements.NetServerMovement serverMovement)
+            if (base.Movement is ProjectAI.Movements.NetProjectileMovement projectileMovement)
+            {
+                projectileMovement.SetDirection(direction);
+            }
+            else if (base.Movement is ProjectAI.Movements.NetServerMovement serverMovement)
             {
                 serverMovement.SetDirection(direction);
             }
@@ -74,13 +90,17 @@ namespace ProjectAI.Projectiles
         {
             Debug.Log($"[NetProjectile] 투사체 충돌 감지: {collision.gameObject.name}");
             // 충돌 판정은 오직 서버에서만 처리합니다.
-            if (!base.IsServer)
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
 
             // 충돌 대상이 데미지를 받을 수 있는 객체인지 확인
-            IDamageable damageable = collision.GetComponentInChildren<IDamageable>();
+            IDamageable damageable = collision.GetComponentInParent<IDamageable>();
+            if (damageable == null)
+            {
+                damageable = collision.GetComponentInChildren<IDamageable>();
+            }
             
             if (damageable != null)
             {
@@ -110,16 +130,24 @@ namespace ProjectAI.Projectiles
 
         private void DestroyProjectile()
         {
-            Debug.Log($"[NetProjectile] 투사체 파괴(Despawn) 시도. IsServer: {base.IsServer}, NetworkObjectId: {base.NetworkObjectId}, IsSpawned: {base.NetworkObject?.IsSpawned}");
-            if (base.IsServer && base.NetworkObject != null && base.NetworkObject.IsSpawned)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetProjectile] DestroyProjectile은 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            Debug.Log($"[NetProjectile] 투사체 파괴(Despawn) 시도. IsServerAuthorized: {GameStatics.IsServerAuthorized}, NetworkObjectId: {NetworkObjectId}, IsSpawned: {NetworkObject?.IsSpawned}");
+            if (NetworkObject != null && NetworkObject.IsSpawned)
             {
                 if (GameStatics.ObjectPool != null)
                 {
-                    Debug.Log($"[NetProjectile] ObjectPool에 투사체 반환 호출: {base.NetworkObjectId}");
-                    GameStatics.ObjectPool.ReturnNetworkObject(base.NetworkObject);
+                    Debug.Log($"[NetProjectile] ObjectPool에 투사체 반환 호출: {NetworkObjectId}");
+                    GameStatics.ObjectPool.ReturnNetworkObject(NetworkObject);
                 }
-
-                base.NetworkObject.Despawn(false);
+                else
+                {
+                    NetworkObject.Despawn(true);
+                }
             }
         }
 

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4944438689536386590}
   - component: {fileID: 3460810399386613988}
   - component: {fileID: 9177875624014436927}
+  - component: {fileID: 304011742927502619}
   m_Layer: 7
   m_Name: AshenWolf
   m_TagString: Untagged
@@ -126,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 797668309
+  GlobalObjectIdHash: 1185525890
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -227,6 +228,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &304011742927502619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241306677100875897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aeb21508a3b764489489274472e38c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
+  ShowTopMostFoldoutHeaderGroup: 1
+  OwnedSkills: 01
+  SkillAnimations:
+  - SkillType: 1
+    AnimStateName: Attack_AshenWolfAnim
+  firePoint: {fileID: 0}
+  ActiveStates:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!1 &7194707752221078910
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,9 +459,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
-  entityEvents: {fileID: 3460810399386613988}
-  animator: {fileID: 8274597395880921184}
-  spriteRenderer: {fileID: 8160027472630124071}
 --- !u!1 &8962202637160501687
 GameObject:
   m_ObjectHideFlags: 0

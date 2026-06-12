@@ -25,5 +25,16 @@ namespace ProjectAI.Core.Entities
             
             Movement = GetComponentInChildren<ANetMovement>();
         }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            Animator animator = GetComponentInChildren<Animator>();
+            if (animator != null)
+            {
+                animator.cullingMode = GameStatics.IsServerAuthorized ? AnimatorCullingMode.AlwaysAnimate : AnimatorCullingMode.CullCompletely;
+            }
+        }
     }
 }

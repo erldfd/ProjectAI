@@ -1,7 +1,9 @@
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 using UnityEngine.Assertions;
+using ProjectAI.Core;
 
 namespace ProjectAI.Movements
 {
@@ -40,7 +42,7 @@ namespace ProjectAI.Movements
     /// <summary>
     /// Rigidbody2D를 사용한 캐릭터의 물리적 이동을 전담하는 클래스입니다.
     /// </summary>
-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Player", "Assembly-CSharp", "NetPlayerMovement")]
+    [MovedFrom(true, "ProjectAI.Player", "Assembly-CSharp", "NetPlayerMovement")]
     public class NetPlayerMovement : ANetMovement
     {
         private const int BUFFER_SIZE = 1024;
@@ -54,6 +56,10 @@ namespace ProjectAI.Movements
         [Tooltip("오차가 이 값보다 작으면 무시 (아주 작은 오차)")]
         [SerializeField]
         private float verySmallReconciliationThreshold = 0.01f;
+
+        [Tooltip("오차가 이 값보다 크면 텔레포트로 간주하고 강제 동기화만 수행 (ReSimulate 생략)")]
+        [SerializeField]
+        private float teleportReconciliationThreshold = 2.0f;
 
         // TODO: 향후 시각적 객체 분리 시 보간/스냅 분기 기준값으로 사용
         // [Tooltip("오차가 이 값보다 작으면 강제 동기화 (Snap)")]
@@ -74,6 +80,9 @@ namespace ProjectAI.Movements
         private Vector2 currentMoveInput;
         private float currentMoveSpeedModifier = 1f;
 
+        private ContactFilter2D physicsFilter;
+        private RaycastHit2D[] physicsHits = new RaycastHit2D[1];
+
         public override Vector2 Velocity => base.Rb.linearVelocity;
 
         #region Unity Lifecycle
@@ -81,6 +90,11 @@ namespace ProjectAI.Movements
         {
             base.Awake();
             Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
+
+            physicsFilter = new ContactFilter2D();
+            physicsFilter.useTriggers = false;
+            physicsFilter.useLayerMask = true;
+            physicsFilter.layerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
         }
 
         private void OnEnable()
@@ -100,12 +114,12 @@ namespace ProjectAI.Movements
 
         private void FixedUpdate()
         {
-            if (base.IsServer)
+            if (GameStatics.IsServerAuthorized)
             {
                 HandleServerTick();
             }
 
-            if (base.IsOwner)
+            if (IsOwner)
             {
                 HandleClientTick();
             }
@@ -144,6 +158,13 @@ namespace ProjectAI.Movements
         [Rpc(SendTo.Server, Delivery = RpcDelivery.Unreliable)]
         private void SendInputServerRpc(SInputPayload inputPayload)
         {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetPlayerMovement] SendInputServerRpc는 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
             serverInputQueue.Enqueue(inputPayload);
         }
         #endregion
@@ -158,17 +179,16 @@ namespace ProjectAI.Movements
             {
                 SInputPayload inputPayload = serverInputQueue.Dequeue();
                 
-                if (processedCount > 0 && !base.IsOwner)
+                if (processedCount > 0 && !IsOwner)
                 {
-                    // 이전 패킷의 속도를 수동으로 적용하여 중간 프레임 누락 방지
-                    // TODO: 수동 가산 시 물리 벽 뚫림 방지를 위해 향후 Raycast(또는 BoxCast) 기반 충돌 검사 로직 추가 필요
-                    base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
+                    // 이전 패킷의 속도를 수동으로 적용하여 중간 프레임 누락 방지 (물리 벽 뚫림 방지 적용)
+                    ApplyManualVelocity();
                 }
                 
                 int bufferIndex = (inputPayload.SequenceId % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
                 clientInputBuffer[bufferIndex] = inputPayload;
                 
-                if (!base.IsOwner)
+                if (!IsOwner)
                 {
                     ApplyPhysics(inputPayload.InputVector);
                 }
@@ -194,7 +214,7 @@ namespace ProjectAI.Movements
         [Rpc(SendTo.NotServer, Delivery = RpcDelivery.Unreliable)]
         private void SendStateClientRpc(SStatePayload statePayload)
         {
-            if (!base.IsOwner)
+            if (!IsOwner)
             {
                 // 옵저버 처리: 서버 상태를 수신하는 즉시 적용.
                 // 이후 FixedUpdate 사이클 동안 물리 엔진이 선형 속도를 기반으로 자연스럽게 외삽(Dead Reckoning)함.
@@ -219,6 +239,12 @@ namespace ProjectAI.Movements
             base.Rb.position = statePayload.Position;
             base.Rb.linearVelocity = statePayload.Velocity;
             
+            if (sqrDistance > teleportReconciliationThreshold * teleportReconciliationThreshold)
+            {
+                // 서버 강제 텔레포트로 간주. ReSimulate 생략
+                return;
+            }
+
             ReSimulate(statePayload.SequenceId);
         }
 
@@ -245,8 +271,7 @@ namespace ProjectAI.Movements
                 
                 // 재시뮬레이션 위치 갱신. (버퍼에 예측 상태를 기록한 후에 필수)
                 // 1-Frame 오프셋 방지를 위해 HandleClientTick과 동일하게 가산 전 상태를 버퍼에 기록함.
-                // TODO: 수동 가산 시 물리 벽 뚫림 방지를 위해 향후 Raycast(또는 BoxCast) 기반 충돌 검사 로직 추가 필요
-                base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
+                ApplyManualVelocity();
 
                 sequenceToReSimulate++;
             }
@@ -256,7 +281,7 @@ namespace ProjectAI.Movements
         #region Public Methods
         public void SetMoveInput(Vector2 input)
         {
-            if (!base.IsOwner)
+            if (!IsOwner)
             {
                 return;
             }
@@ -286,6 +311,28 @@ namespace ProjectAI.Movements
         private void ApplyPhysics(Vector2 inputVector)
         {
             base.Rb.linearVelocity = inputVector * (moveSpeed * currentMoveSpeedModifier);
+        }
+
+        private void ApplyManualVelocity()
+        {
+            Vector2 moveAmount = base.Rb.linearVelocity * Time.fixedDeltaTime;
+
+            if (moveAmount.sqrMagnitude < Mathf.Epsilon)
+            {
+                return;
+            }
+
+            int hitCount = base.Rb.Cast(moveAmount.normalized, physicsFilter, physicsHits, moveAmount.magnitude);
+
+            if (hitCount == 0)
+            {
+                base.Rb.position += moveAmount;
+            }
+            else
+            {
+                float safeDistance = Mathf.Max(0f, physicsHits[0].distance - 0.01f);
+                base.Rb.position += moveAmount.normalized * safeDistance;
+            }
         }
         #endregion
     }

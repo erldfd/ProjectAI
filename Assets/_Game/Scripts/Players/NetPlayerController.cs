@@ -1,9 +1,11 @@
+using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Characters;
 using ProjectAI.Core.Skills;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using ProjectAI.Core;
 
 namespace ProjectAI.Players
 {
@@ -23,16 +25,16 @@ namespace ProjectAI.Players
             playerCamera = GetComponentInChildren<PlayerCamera>();
             myCharacter = GetComponentInChildren<NetPlayerCharacter>();
             
-            UnityEngine.Assertions.Assert.IsNotNull(inputReader, "PlayerInputReader is missing.");
-            UnityEngine.Assertions.Assert.IsNotNull(playerCamera, "PlayerCamera is missing.");
-            UnityEngine.Assertions.Assert.IsNotNull(myCharacter, "NetPlayerCharacter is missing.");
+            Assert.IsNotNull(inputReader, "PlayerInputReader is missing.");
+            Assert.IsNotNull(playerCamera, "PlayerCamera is missing.");
+            Assert.IsNotNull(myCharacter, "NetPlayerCharacter is missing.");
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            if (!base.IsOwner)
+            if (!IsOwner)
             {
                 return;
             }
@@ -43,9 +45,9 @@ namespace ProjectAI.Players
             inputReader.OnAttackInputChanged += HandleAttackInputChanged;
             
             playerCamera.InitCamera();
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
             {
-                NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
+                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
             }
         }
 
@@ -59,9 +61,9 @@ namespace ProjectAI.Players
             inputReader.DisableInput();
             
             // 게임 종료 시 NetworkManager가 먼저 파괴될 수 있으므로, 예외(Assert) 대신 부드러운 널 체크로 이벤트 해제
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
             {
-                NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
+                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
             }
         }
         #endregion

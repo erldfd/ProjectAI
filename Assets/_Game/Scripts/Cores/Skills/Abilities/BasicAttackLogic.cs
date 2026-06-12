@@ -1,9 +1,11 @@
+using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core.Pooling;
 using ProjectAI.Movements;
 using ProjectAI.Projectiles;
 using ProjectAI.Characters;
+using ProjectAI.Core;
 
 namespace ProjectAI.Core.Skills.Abilities
 {
@@ -23,24 +25,25 @@ namespace ProjectAI.Core.Skills.Abilities
             projectilePrefab = config.Prefab;
             cooldown = config.BaseCooldown;
 
-            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab이 누락되었습니다.");
+            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab이 누락되었습니다.");
         }
 
         public bool CanExecute(NetCharacter caster)
         {
-            // 침묵, 기절 상태면 사용 불가
-            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned))
+            // 침묵, 기절, 시전 중 상태면 사용 불가
+            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned) || caster.SkillComponent.HasState(EStateTag.Casting))
             {
+                Debug.Log($"[BasicAttackLogic] CanExecute 실패: {caster.NetworkObjectId} 상태 이상(침묵/기절/시전중)");
                 return false;
             }
 
             // 쿨타임 검사 (간단 구현)
-            if (NetworkManager.Singleton != null)
+            Assert.IsNotNull(GameStatics.NetworkManager, "[BasicAttackLogic] CanExecute: NetworkManager is null.");
+            
+            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetServerActivationTime(SkillType) + cooldown)
             {
-                if (NetworkManager.Singleton.ServerTime.Time < caster.SkillComponent.GetLastActivationTime(SkillType) + cooldown)
-                {
-                    return false;
-                }
+                Debug.Log($"[BasicAttackLogic] CanExecute 실패: {caster.NetworkObjectId} 서버 쿨타임 대기 중");
+                return false;
             }
 
             return true;
@@ -48,10 +51,15 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public void Execute(NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] Execute는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
+
+            // 서버 측 쿨타임 기록 (발동 시점)
+            caster.SkillComponent.SetServerActivationTime(SkillType, GameStatics.NetworkManager.ServerTime.Time);
 
             // 애니메이션 재생만 지시
             int animHash = caster.SkillComponent.GetSkillAnimHash(SkillType);
@@ -66,13 +74,15 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public void Action(NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] Action은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
 
             // 실제 키프레임 도달 시 호출되는 투사체 스폰 로직
-            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
+            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
 
             Vector2 direction = Vector2.right;
             if (caster.Movement != null)
@@ -86,7 +96,7 @@ namespace ProjectAI.Core.Skills.Abilities
                 origin = caster.SkillComponent.FirePoint.position;
             }
 
-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
+            Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
 
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
@@ -100,25 +110,19 @@ namespace ProjectAI.Core.Skills.Abilities
 
             projectileNetObj.Spawn();
 
-            if (projectileNetObj.TryGetComponent(out NetProjectile projectile))
+            if (!projectileNetObj.TryGetComponent(out NetProjectile projectile))
             {
-                Debug.Log($"[BasicAttackLogic] 발사체 초기화 완료. 방향: {direction}, CasterID: {caster.NetworkObjectId}");
-                projectile.Initialize(direction, caster.NetworkObjectId);
+                Debug.LogWarning($"[BasicAttackLogic] 발사체 스폰 실패: NetProjectile 컴포넌트를 찾을 수 없습니다. (CasterID: {caster.NetworkObjectId})");
+                return;
             }
+
+            Debug.Log($"[BasicAttackLogic] 발사체 초기화 완료. 방향: {direction}, CasterID: {caster.NetworkObjectId}");
+            projectile.Initialize(direction, caster.NetworkObjectId);
         }
 
         public void End(NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
-            {
-                return;
-            }
-
-            // 스킬 종료(또는 취소) 시점에 쿨타임을 세팅하여, 종료 시점부터 쿨타임이 돌도록 함.
-            if (NetworkManager.Singleton != null)
-            {
-                caster.SkillComponent.SetLastActivationTime(SkillType, NetworkManager.Singleton.ServerTime.Time);
-            }
+            // 현재 종료 시점 특이사항 없음
         }
     }
 }

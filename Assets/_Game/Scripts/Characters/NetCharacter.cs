@@ -1,7 +1,6 @@
 using ProjectAI.Core.Entities;
 using ProjectAI.Core.Skills;
-using ProjectAI.Movements;
-using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Characters
 {
@@ -16,6 +15,7 @@ namespace ProjectAI.Characters
         {
             base.Awake();
             SkillComponent = GetComponentInChildren<NetSkillComponent>();
+            Assert.IsNotNull(SkillComponent, "[NetCharacter] NetSkillComponent를 찾을 수 없습니다.");
         }
 
         /// <summary>
@@ -24,10 +24,7 @@ namespace ProjectAI.Characters
         public void TryActivateSkill(ESkillType skillType)
         {
             // 캐릭터 내부망(EntityEvents)을 통해 각 컴포넌트들에게 지시를 내립니다.
-            if (Events != null)
-            {
-                Events.InvokeSkillTriggered(skillType);
-            }
+            base.Events.InvokeSkillTriggered(skillType);
         }
     }
 }

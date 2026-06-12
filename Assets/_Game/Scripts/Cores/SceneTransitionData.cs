@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace ProjectAI.Core
 {
     /// <summary>
@@ -14,11 +16,11 @@ namespace ProjectAI.Core
         /// <summary>
         /// ID 매칭 대신 강제로 좌표(Raw Coordinates)를 사용할지 여부입니다.
         /// </summary>
-        public static bool UseRawCoordinates { get; set; } = false;
+        public static bool ShouldUseRawCoordinates { get; set; } = false;
 
         /// <summary>
         /// UseRawCoordinates가 true일 때 플레이어들이 스폰될 월드 좌표입니다.
         /// </summary>
-        public static UnityEngine.Vector2 RawTargetPosition { get; set; } = UnityEngine.Vector2.zero;
+        public static Vector2 RawTargetPosition { get; set; } = Vector2.zero;
     }
 }

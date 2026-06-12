@@ -1,6 +1,7 @@
 using UnityEngine;
 using ProjectAI.Core;
 using ProjectAI.Core.Interfaces;
+using Unity.Netcode;
 
 namespace ProjectAI.Environment.Conditions
 {
@@ -15,10 +16,10 @@ namespace ProjectAI.Environment.Conditions
             // [주의] 이 조건 체크는 "서버"에서 실행됨. 
             // 따라서 NetworkManager.IsServer로 체크하면 무조건 true가 나와 방장 외 클라이언트도 통과되는 버그가 발생함.
             // 상호작용 주체(interactor)의 소유자(Owner)가 서버 자신(ServerClientId)인지 대조해야 정확히 방장만 통과됨.
-            Unity.Netcode.NetworkObject netObj = interactor.GetComponentInParent<Unity.Netcode.NetworkObject>();
+            NetworkObject netObj = interactor.GetComponentInParent<NetworkObject>();
             if (netObj != null)
             {
-                return netObj.OwnerClientId == Unity.Netcode.NetworkManager.ServerClientId;
+                return netObj.OwnerClientId == NetworkManager.ServerClientId;
             }
 
             return false;

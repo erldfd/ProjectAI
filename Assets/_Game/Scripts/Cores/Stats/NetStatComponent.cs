@@ -1,3 +1,4 @@
+using UnityEngine.Assertions;
 using Unity.Netcode;
 using UnityEngine;
 using ProjectAI.Core.Entities;
@@ -46,17 +47,11 @@ namespace ProjectAI.Core.Stats
 
         private void Awake()
         {
-            if (healthComponent == null)
-            {
-                healthComponent = GetComponentInChildren<NetHealthComponent>();
-            }
+            healthComponent = GetComponentInChildren<NetHealthComponent>();
+            Assert.IsNotNull(healthComponent, "NetStatComponent는 NetHealthComponent가 필요합니다.");
 
-            if (entityEvents == null)
-            {
-                entityEvents = GetComponentInParent<EntityEvents>();
-            }
-
-            UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "NetStatComponent는 EntityEvents가 필요합니다.");
+            entityEvents = GetComponentInParent<EntityEvents>();
+            Assert.IsNotNull(entityEvents, "NetStatComponent는 EntityEvents가 필요합니다.");
         }
 
         public override void OnNetworkSpawn()
@@ -65,7 +60,7 @@ namespace ProjectAI.Core.Stats
 
             MoveSpeedModifier.OnValueChanged += HandleMoveSpeedModifierChanged;
 
-            if (base.IsServer && healthComponent != null)
+            if (IsServer && healthComponent != null)
             {
                 // 스폰 완료 시, 오너로서 하위 체력 컴포넌트를 하향식으로 초기화
                 healthComponent.InitializeHealth(MaxHealth.Value);

@@ -49,10 +49,14 @@ namespace ProjectAI.Core.Stats
         /// </summary>
         public void InitializeHealth(int maxHealth)
         {
-            if (IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetHealthComponent] InitializeHealth는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
-                CurrentHealth.Value = maxHealth;
+                return;
             }
+            
+            CurrentHealth.Value = maxHealth;
         }
 
         private void HandleHealthChanged(int previousValue, int newValue)
@@ -65,18 +69,22 @@ namespace ProjectAI.Core.Stats
         /// </summary>
         public void TakeDamage(int damage)
         {
-            if (!IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetHealthComponent] TakeDamage는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
 
             if (damage <= 0)
             {
+                Debug.LogWarning($"[NetHealthComponent] 데미지가 음수이거나 0입니다: {damage}");
                 return; // 데미지가 음수이거나 0이면 무시 (회복 방지)
             }
 
             if (CurrentHealth.Value <= 0)
             {
+                Debug.LogWarning("[NetHealthComponent] 이미 사망한 개체에 데미지를 입히려 합니다.");
                 return; // 이미 사망한 개체
             }
 
@@ -105,7 +113,8 @@ namespace ProjectAI.Core.Stats
         private void DieClientRpc()
         {
             OnDeath?.Invoke();
-            // TODO: 추후 랙돌 생성이나 객체 파괴(Destroy) 로직 연동
+            // 참고: 객체 파괴(Despawn) 및 랙돌 연출 등은 NetHealthComponent에서 직접 하지 않고,
+            // OnDeath 이벤트를 구독하는 외부 컨트롤러(NetPlayerController, NetMonsterController)에 위임합니다.
         }
     }
 }

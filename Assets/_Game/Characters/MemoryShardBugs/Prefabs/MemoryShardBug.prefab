@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2903177497797824953}
   - component: {fileID: 8851523879730136227}
   - component: {fileID: 9205784597414881130}
+  - component: {fileID: 6729544991482475136}
   m_Layer: 7
   m_Name: MemoryShardBug
   m_TagString: Untagged
@@ -54,7 +55,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDamping: 0
+  m_LinearDamping: 100
   m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -112,7 +113,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.37, y: 0.28}
+  m_Size: {x: 0.3, y: 0.18}
   m_EdgeRadius: 0
 --- !u!114 &6386993713023528098
 MonoBehaviour:
@@ -126,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1303697169
+  GlobalObjectIdHash: 2961203071
   InScenePlacedSourceGlobalObjectIdHash: 797668309
   DeferredDespawnTick: 0
   Ownership: 1
@@ -227,6 +228,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &6729544991482475136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253525206431576581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aeb21508a3b764489489274472e38c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
+  ShowTopMostFoldoutHeaderGroup: 1
+  OwnedSkills: 01
+  SkillAnimations:
+  - SkillType: 1
+    AnimStateName: Attack_MemoryShardBugAnim
+  firePoint: {fileID: 0}
+  ActiveStates:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!1 &2869384090380664040
 GameObject:
   m_ObjectHideFlags: 0
@@ -491,6 +515,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
-  entityEvents: {fileID: 8851523879730136227}
-  animator: {fileID: 756817395569927855}
-  spriteRenderer: {fileID: 7566194960662532988}

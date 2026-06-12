@@ -1,3 +1,4 @@
+using UnityEngine.Assertions;
 using System;
 using System.Threading.Tasks;
 using Unity.Netcode;
@@ -7,6 +8,7 @@ using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using ProjectAI.Core;
 
 namespace ProjectAI.Network
 {
@@ -15,16 +17,16 @@ namespace ProjectAI.Network
     /// </summary>
     public class RelayMatchmakingService : IMatchmakingService
     {
-        private const int MaxPlayers = 4; // 호스트 포함 최대 인원
-        private const int ShutdownTimeoutMs = 3000; // 셧다운 대기 타임아웃(밀리초)
+        private const int MAX_PLAYERS = 4; // 호스트 포함 최대 인원
+        private const int SHUTDOWN_TIMEOUT_MS = 3000; // 셧다운 대기 타임아웃 (밀리초)
 
         public async Task<string> StartHostAsync()
         {
             try
             {
-                UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton, "NetworkManager.Singleton is null");
+                Assert.IsNotNull(GameStatics.NetworkManager, "GameStatics.NetworkManager is null");
 
-                if (NetworkManager.Singleton.IsListening)
+                if (GameStatics.NetworkManager.IsListening)
                 {
                     Debug.LogWarning("[RelayMatchmakingService] 이미 네트워크에 연결되어 있습니다. (Host 또는 Client 실행 중)");
                     return null;
@@ -33,20 +35,20 @@ namespace ProjectAI.Network
                 await EnsureAuthenticatedAsync();
 
                 // 1. 릴레이 서버 할당 요청 (호스트 제외 인원수 전달)
-                Allocation allocation = await RelayService.Instance.CreateAllocationAsync(MaxPlayers - 1);
+                Allocation allocation = await RelayService.Instance.CreateAllocationAsync(MAX_PLAYERS - 1);
 
                 // 2. 조인 코드 발급
                 string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
                 Debug.Log($"[RelayMatchmakingService] 방 생성 성공! Join Code: {joinCode}");
 
                 // 3. NetworkManager에 Relay 서버 정보 설정
-                if (NetworkManager.Singleton == null)
+                if (GameStatics.NetworkManager == null)
                 {
-                    Debug.LogError("[RelayMatchmakingService] NetworkManager.Singleton is null.");
+                    Debug.LogError("[RelayMatchmakingService] GameStatics.NetworkManager is null.");
                     return null;
                 }
 
-                UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+                UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
                 if (transport == null)
                 {
                     Debug.LogError("[RelayMatchmakingService] UnityTransport component is missing on NetworkManager.");
@@ -62,7 +64,7 @@ namespace ProjectAI.Network
                 );
 
                 // 4. 호스트 시작
-                if (NetworkManager.Singleton.StartHost())
+                if (GameStatics.NetworkManager.StartHost())
                 {
                     return joinCode;
                 }
@@ -80,9 +82,9 @@ namespace ProjectAI.Network
         {
             try
             {
-                UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton, "NetworkManager.Singleton is null");
+                Assert.IsNotNull(GameStatics.NetworkManager, "GameStatics.NetworkManager is null");
 
-                if (NetworkManager.Singleton.IsListening)
+                if (GameStatics.NetworkManager.IsListening)
                 {
                     Debug.Log("[RelayMatchmakingService] 기존 방 연결을 종료하고 새로운 방에 접속합니다.");
                     LeaveGame();
@@ -90,12 +92,12 @@ namespace ProjectAI.Network
                     // NGO의 Shutdown이 완전히 끝날 때까지 대기해야 다음 연결이 꼬이지 않습니다.
                     // 다만 Shutdown 버그로 인해 무한 루프(Soft Lock)에 빠지는 것을 막기 위해 CancellationToken을 사용합니다.
                     // ShutdownTimeoutMs(3초) 뒤에 자동으로 '취소 신호'를 발생시키는 토큰 객체를 생성합니다.
-                    using (System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource(ShutdownTimeoutMs))
+                    using (System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource(SHUTDOWN_TIMEOUT_MS))
                     {
                         try
                         {
-                            while (NetworkManager.Singleton != null && 
-                                   (NetworkManager.Singleton.IsListening || NetworkManager.Singleton.ShutdownInProgress))
+                            while (GameStatics.NetworkManager != null && 
+                                   (GameStatics.NetworkManager.IsListening || GameStatics.NetworkManager.ShutdownInProgress))
                             {
                                 // 매 프레임마다 취소 신호가 왔는지(3초가 지났는지) 확인합니다.
                                 // 만약 3초가 지났다면 즉시 OperationCanceledException 에러를 던져 루프 탈출합니다.
@@ -118,13 +120,13 @@ namespace ProjectAI.Network
                 JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinData);
 
                 // 2. NetworkManager에 Relay 서버 정보 설정
-                if (NetworkManager.Singleton == null)
+                if (GameStatics.NetworkManager == null)
                 {
-                    Debug.LogError("[RelayMatchmakingService] NetworkManager.Singleton is null.");
+                    Debug.LogError("[RelayMatchmakingService] GameStatics.NetworkManager is null.");
                     return false;
                 }
 
-                UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+                UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
                 if (transport == null)
                 {
                     Debug.LogError("[RelayMatchmakingService] UnityTransport component is missing on NetworkManager.");
@@ -141,7 +143,7 @@ namespace ProjectAI.Network
                 );
 
                 // 3. 클라이언트 시작
-                return NetworkManager.Singleton.StartClient();
+                return GameStatics.NetworkManager.StartClient();
             }
             catch (Exception e)
             {
@@ -152,9 +154,9 @@ namespace ProjectAI.Network
 
         public void LeaveGame()
         {
-            if (NetworkManager.Singleton != null)
+            if (GameStatics.NetworkManager != null)
             {
-                NetworkManager.Singleton.Shutdown();
+                GameStatics.NetworkManager.Shutdown();
             }
         }
 

@@ -1,3 +1,4 @@
+using UnityEngine.Scripting.APIUpdating;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Unity.Netcode;
@@ -10,24 +11,27 @@ namespace ProjectAI.Core.Entities
     /// </summary>
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(SpriteRenderer))]
-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterAnimator")]
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterAnimator")]
     public class EntityAnimator : MonoBehaviour
     {
         private static readonly int hashMoveSpeed = Animator.StringToHash("MoveSpeed");
 
-        [SerializeField]
+
         private EntityEvents entityEvents;
         
-        [SerializeField]
+
         private Animator animator;
 
-        [SerializeField]
+
         private SpriteRenderer spriteRenderer;
 
         private void Awake()
         {
             animator = GetComponent<Animator>();
+            Assert.IsNotNull(animator, "Animator is missing.");
+
             spriteRenderer = GetComponent<SpriteRenderer>();
+            Assert.IsNotNull(spriteRenderer, "SpriteRenderer is missing.");
 
             // EntityEvents가 명시적으로 할당되지 않은 경우 탐색
             if (entityEvents == null)

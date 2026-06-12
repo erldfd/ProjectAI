@@ -1,0 +1,1264 @@
+﻿diff --git a/Assets/InputSystem_Actions.inputactions b/Assets/InputSystem_Actions.inputactions
+index d8c9a08..a47bb16 100644
+--- a/Assets/InputSystem_Actions.inputactions
++++ b/Assets/InputSystem_Actions.inputactions
+@@ -265,17 +265,6 @@
+                     "isComposite": false,
+                     "isPartOfComposite": false
+                 },
+-                {
+-                    "name": "",
+-                    "id": "05f6913d-c316-48b2-a6bb-e225f14c7960",
+-                    "path": "<Mouse>/leftButton",
+-                    "interactions": "",
+-                    "processors": "",
+-                    "groups": ";Keyboard&Mouse",
+-                    "action": "Attack",
+-                    "isComposite": false,
+-                    "isPartOfComposite": false
+-                },
+                 {
+                     "name": "",
+                     "id": "886e731e-7071-4ae4-95c0-e61739dad6fd",
+diff --git a/Assets/_Demo/Scripts/MultiplayerDemoUI.cs b/Assets/_Demo/Scripts/MultiplayerDemoUI.cs
+index d878a2b..9344b1b 100644
+--- a/Assets/_Demo/Scripts/MultiplayerDemoUI.cs
++++ b/Assets/_Demo/Scripts/MultiplayerDemoUI.cs
+@@ -1,6 +1,7 @@
+ #if UNITY_EDITOR
+ using UnityEngine;
+ using ProjectAI.Core;
++using UnityEngine.Assertions;
+ 
+ namespace ProjectAI.Network
+ {
+@@ -69,6 +70,7 @@ namespace ProjectAI.Network
+ 
+         private async void StartHostProcess()
+         {
++            Assert.IsNotNull(GameStatics.MultiplayerManager, "[MultiplayerDemoUI] GameStatics.MultiplayerManager媛 ?놁뒿?덈떎.");
+             if (GameStatics.MultiplayerManager == null)
+             {
+                 Debug.LogError("GameStatics.MultiplayerManager媛 ?놁뒿?덈떎. GameManager媛 ?ъ뿉 ?덈뒗吏 ?뺤씤?섏꽭??");
+@@ -98,6 +100,7 @@ namespace ProjectAI.Network
+                 return;
+             }
+ 
++            Assert.IsNotNull(GameStatics.MultiplayerManager, "[MultiplayerDemoUI] GameStatics.MultiplayerManager媛 ?놁뒿?덈떎.");
+             if (GameStatics.MultiplayerManager == null)
+             {
+                 Debug.LogError("GameStatics.MultiplayerManager媛 ?놁뒿?덈떎.");
+diff --git a/Assets/_Game/Scripts/Anims/EntityAnimator.cs b/Assets/_Game/Scripts/Anims/EntityAnimator.cs
+index a59e40f..ab018e5 100644
+--- a/Assets/_Game/Scripts/Anims/EntityAnimator.cs
++++ b/Assets/_Game/Scripts/Anims/EntityAnimator.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Scripting.APIUpdating;
+ using UnityEngine;
+ using UnityEngine.Assertions;
+ using Unity.Netcode;
+@@ -10,7 +11,7 @@ namespace ProjectAI.Core.Entities
+     /// </summary>
+     [RequireComponent(typeof(Animator))]
+     [RequireComponent(typeof(SpriteRenderer))]
+-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterAnimator")]
++    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterAnimator")]
+     public class EntityAnimator : MonoBehaviour
+     {
+         private static readonly int hashMoveSpeed = Animator.StringToHash("MoveSpeed");
+diff --git a/Assets/_Game/Scripts/Cores/Entities/EntityEvents.cs b/Assets/_Game/Scripts/Cores/Entities/EntityEvents.cs
+index 96d9586..bee247f 100644
+--- a/Assets/_Game/Scripts/Cores/Entities/EntityEvents.cs
++++ b/Assets/_Game/Scripts/Cores/Entities/EntityEvents.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Scripting.APIUpdating;
+ using System;
+ using UnityEngine;
+ using ProjectAI.Core.Skills;
+@@ -7,7 +8,7 @@ namespace ProjectAI.Core.Entities
+     /// <summary>
+     /// ?뷀떚???댁쇅遺?먯꽌 諛쒖깮?섎뒗 媛곸쥌 ?곹깭 ?대깽?몃? 以묎퀎?섎뒗 踰붿슜 Event Bus 而댄룷?뚰듃?낅땲??
+     /// </summary>
+-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterEvents")]
++    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterEvents")]
+     public class EntityEvents : MonoBehaviour
+     {
+         /// <summary>
+diff --git a/Assets/_Game/Scripts/Cores/GameManager.cs b/Assets/_Game/Scripts/Cores/GameManager.cs
+index 77a8864..e010730 100644
+--- a/Assets/_Game/Scripts/Cores/GameManager.cs
++++ b/Assets/_Game/Scripts/Cores/GameManager.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using UnityEngine;
+ using ProjectAI.Network;
+ 
+@@ -26,7 +27,7 @@ namespace ProjectAI.Core
+             GameStatics.RegisterManager(this);
+             
+             MultiplayerService = GetComponent<MultiplayerServiceManager>();
+-            UnityEngine.Assertions.Assert.IsNotNull(MultiplayerService, "[GameManager] MultiplayerServiceManager 而댄룷?뚰듃媛 遺李⑸릺???덉? ?딆뒿?덈떎. ?꾩닔 而댄룷?뚰듃?낅땲??");
++            Assert.IsNotNull(MultiplayerService, "[GameManager] MultiplayerServiceManager 而댄룷?뚰듃媛 遺李⑸릺???덉? ?딆뒿?덈떎. ?꾩닔 而댄룷?뚰듃?낅땲??");
+             
+             // ?ъ쓣 ?꾪솚?대룄 ??媛앹껜(諛?遺李⑸맂 ?ㅽ듃?뚰겕 留ㅻ땲?)媛 ??젣?섏? ?딅룄濡?蹂댄샇?⑸땲??
+             DontDestroyOnLoad(gameObject);
+diff --git a/Assets/_Game/Scripts/Cores/GameModes/ANetGameModeBase.cs b/Assets/_Game/Scripts/Cores/GameModes/ANetGameModeBase.cs
+index 68535f8..d4e11f8 100644
+--- a/Assets/_Game/Scripts/Cores/GameModes/ANetGameModeBase.cs
++++ b/Assets/_Game/Scripts/Cores/GameModes/ANetGameModeBase.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using System.Collections;
+ using UnityEngine;
+ using Unity.Netcode;
+@@ -49,11 +50,18 @@ namespace ProjectAI.GameModes
+ 
+         protected void TeleportPlayersToPlayerStart()
+         {
++            Assert.IsTrue(IsServer, "[ANetGameModeBase] TeleportPlayersToPlayerStart???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (!IsServer)
++            {
++                return;
++            }
++            
+             Vector3 finalSpawnPosition = Vector3.zero;
+             bool isSpawnPositionFound = false;
+ 
+             // 1. Raw Coordinates 紐⑤뱶媛 耳쒖졇 ?덇퀬 ID媛 鍮꾩뼱?덉쑝硫???醫뚰몴 ?ъ슜
+-            if (string.IsNullOrEmpty(SceneTransitionData.NextSpawnPointID) && SceneTransitionData.UseRawCoordinates)
++            if (string.IsNullOrEmpty(SceneTransitionData.NextSpawnPointID) && SceneTransitionData.ShouldUseRawCoordinates)
+             {
+                 finalSpawnPosition = SceneTransitionData.RawTargetPosition;
+                 isSpawnPositionFound = true;
+@@ -85,7 +93,9 @@ namespace ProjectAI.GameModes
+             }
+ 
+             // 3. 紐⑹쟻吏瑜?李얠븯?쇰㈃ ?ㅼ젣 ?붾젅?ы듃 ?섑뻾
+-            if (isSpawnPositionFound && GameStatics.NetworkManager != null)
++            Assert.IsNotNull(GameStatics.NetworkManager, "[ANetGameModeBase] NetworkManager媛 null?낅땲??");
++            
++            if (isSpawnPositionFound)
+             {
+                 foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
+                 {
+@@ -100,7 +110,7 @@ namespace ProjectAI.GameModes
+ 
+             // 4. ?붾젅?ы듃 ?꾨즺 ???곗씠??珥덇린??             SceneTransitionData.NextSpawnPointID = "";
+-            SceneTransitionData.UseRawCoordinates = false;
++            SceneTransitionData.ShouldUseRawCoordinates = false;
+         }
+         #endregion
+ 
+@@ -122,7 +132,7 @@ namespace ProjectAI.GameModes
+                     return;
+                 }
+ 
+-                UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager媛 ?놁뒿?덈떎. 鍮꾩젙?곸쟻???곹깭?낅땲??");
++                Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager媛 ?놁뒿?덈떎. 鍮꾩젙?곸쟻???곹깭?낅땲??");
+                 await GameStatics.MultiplayerManager.StartHost();
+             }
+             catch (System.Exception e)
+diff --git a/Assets/_Game/Scripts/Cores/GameStatics.cs b/Assets/_Game/Scripts/Cores/GameStatics.cs
+index 12b9438..300ecd8 100644
+--- a/Assets/_Game/Scripts/Cores/GameStatics.cs
++++ b/Assets/_Game/Scripts/Cores/GameStatics.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using Unity.Netcode;
+ using UnityEngine;
+ using ProjectAI.GameModes;
+@@ -33,11 +34,12 @@ namespace ProjectAI.Core
+         /// <param name="baseDamage">湲곕낯 ?寃??곕?吏</param>
+         public static void ApplyDamage(GameObject target, int baseDamage)
+         {
+-            UnityEngine.Assertions.Assert.IsNotNull(target, "[GameStatics] ApplyDamage: target ?ㅻ툕?앺듃媛 null?낅땲??");
++            Assert.IsNotNull(target, "[GameStatics] ApplyDamage: target ?ㅻ툕?앺듃媛 null?낅땲??");
+ 
+-            if (NetworkManager != null && !NetworkManager.IsServer)
++            Assert.IsTrue(NetworkManager != null && NetworkManager.IsServer, "[GameStatics] ApplyDamage???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (NetworkManager == null || !NetworkManager.IsServer)
+             {
+-                Debug.LogWarning("[GameStatics] ApplyDamage???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+                 return;
+             }
+ 
+diff --git a/Assets/_Game/Scripts/Cores/NetInteractor.cs b/Assets/_Game/Scripts/Cores/NetInteractor.cs
+index 7f879c7..fd9256d 100644
+--- a/Assets/_Game/Scripts/Cores/NetInteractor.cs
++++ b/Assets/_Game/Scripts/Cores/NetInteractor.cs
+@@ -91,7 +91,14 @@ namespace ProjectAI.Core
+         [Rpc(SendTo.Server)]
+         private void RequestInteractRpc(ulong targetObjectId)
+         {
+-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
++            Assert.IsTrue(IsServer, "[NetInteractor] RequestInteractRpc???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
++            if (!IsServer)
++            {
++                return;
++            }
++            
++            if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
+             {
+                 return;
+             }
+diff --git a/Assets/_Game/Scripts/Cores/Pooling/NetworkObjectPool.cs b/Assets/_Game/Scripts/Cores/Pooling/NetworkObjectPool.cs
+index 0b54dc7..8918d84 100644
+--- a/Assets/_Game/Scripts/Cores/Pooling/NetworkObjectPool.cs
++++ b/Assets/_Game/Scripts/Cores/Pooling/NetworkObjectPool.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using System.Collections.Generic;
+ using Unity.Netcode;
+ using UnityEngine;
+@@ -54,10 +55,10 @@ namespace ProjectAI.Core.Pooling
+         private void OnEnable()
+         {
+             GameStatics.RegisterObjectPool(this);
+-            if (NetworkManager.Singleton != null)
++            if (GameStatics.NetworkManager != null)
+             {
+-                NetworkManager.Singleton.OnServerStarted += RegisterPrefabHandlers;
+-                NetworkManager.Singleton.OnClientStarted += RegisterPrefabHandlers;
++                GameStatics.NetworkManager.OnServerStarted += RegisterPrefabHandlers;
++                GameStatics.NetworkManager.OnClientStarted += RegisterPrefabHandlers;
+             }
+         }
+ 
+@@ -69,7 +70,7 @@ namespace ProjectAI.Core.Pooling
+ 
+         private void SetupSkillProjectiles()
+         {
+-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillProjectiles: SkillManager媛 GameStatics???깅줉?섏뼱 ?덉? ?딆뒿?덈떎!");
++            Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillProjectiles: SkillManager媛 GameStatics???깅줉?섏뼱 ?덉? ?딆뒿?덈떎!");
+ 
+             for (int i = 0; i < GameStatics.SkillManager.SkillConfigs.Count; i++)
+             {
+@@ -85,16 +86,16 @@ namespace ProjectAI.Core.Pooling
+ 
+         private void OnDisable()
+         {
+-            if (NetworkManager.Singleton != null)
++            if (GameStatics.NetworkManager != null)
+             {
+-                NetworkManager.Singleton.OnServerStarted -= RegisterPrefabHandlers;
+-                NetworkManager.Singleton.OnClientStarted -= RegisterPrefabHandlers;
++                GameStatics.NetworkManager.OnServerStarted -= RegisterPrefabHandlers;
++                GameStatics.NetworkManager.OnClientStarted -= RegisterPrefabHandlers;
+ 
+-                if (NetworkManager.Singleton.PrefabHandler != null)
++                if (GameStatics.NetworkManager.PrefabHandler != null)
+                 {
+                     for (int i = 0; i < registeredPrefabs.Count; i++)
+                     {
+-                        NetworkManager.Singleton.PrefabHandler.RemoveHandler(registeredPrefabs[i]);
++                        GameStatics.NetworkManager.PrefabHandler.RemoveHandler(registeredPrefabs[i]);
+                     }
+                 }
+             }
+@@ -111,7 +112,7 @@ namespace ProjectAI.Core.Pooling
+         /// </summary>
+         public void SetupPool(NetworkObject prefab, int initialSize, bool shouldExpandWhenEmpty = true)
+         {
+-            UnityEngine.Assertions.Assert.IsNotNull(prefab, "[NetworkObjectPool] SetupPool: prefab??null?낅땲??");
++            Assert.IsNotNull(prefab, "[NetworkObjectPool] SetupPool: prefab??null?낅땲??");
+ 
+             if (pools.ContainsKey(prefab))
+             {
+@@ -140,7 +141,7 @@ namespace ProjectAI.Core.Pooling
+ 
+         private void RegisterPrefabHandlers()
+         {
+-            if (NetworkManager.Singleton == null || NetworkManager.Singleton.PrefabHandler == null)
++            if (GameStatics.NetworkManager == null || GameStatics.NetworkManager.PrefabHandler == null)
+             {
+                 return;
+             }
+@@ -150,7 +151,7 @@ namespace ProjectAI.Core.Pooling
+                 NetworkObject prefab = pair.Value.Prefab;
+                 if (!registeredPrefabs.Contains(prefab))
+                 {
+-                    NetworkManager.Singleton.PrefabHandler.AddHandler(prefab, new PrefabPoolHandler(this, prefab));
++                    GameStatics.NetworkManager.PrefabHandler.AddHandler(prefab, new PrefabPoolHandler(this, prefab));
+                     registeredPrefabs.Add(prefab);
+                 }
+             }
+diff --git a/Assets/_Game/Scripts/Cores/SceneTransitionData.cs b/Assets/_Game/Scripts/Cores/SceneTransitionData.cs
+index c753d50..056a545 100644
+--- a/Assets/_Game/Scripts/Cores/SceneTransitionData.cs
++++ b/Assets/_Game/Scripts/Cores/SceneTransitionData.cs
+@@ -1,3 +1,5 @@
++using UnityEngine;
++
+ namespace ProjectAI.Core
+ {
+     /// <summary>
+@@ -14,11 +16,11 @@ namespace ProjectAI.Core
+         /// <summary>
+         /// ID 留ㅼ묶 ???媛뺤젣濡?醫뚰몴(Raw Coordinates)瑜??ъ슜?좎? ?щ??낅땲??
+         /// </summary>
+-        public static bool UseRawCoordinates { get; set; } = false;
++        public static bool ShouldUseRawCoordinates { get; set; } = false;
+ 
+         /// <summary>
+         /// UseRawCoordinates媛 true?????뚮젅?댁뼱?ㅼ씠 ?ㅽ룿???붾뱶 醫뚰몴?낅땲??
+         /// </summary>
+-        public static UnityEngine.Vector2 RawTargetPosition { get; set; } = UnityEngine.Vector2.zero;
++        public static Vector2 RawTargetPosition { get; set; } = Vector2.zero;
+     }
+ }
+diff --git a/Assets/_Game/Scripts/Cores/Skills/Abilities/BasicAttackLogic.cs b/Assets/_Game/Scripts/Cores/Skills/Abilities/BasicAttackLogic.cs
+index 89d8f3d..28c47c2 100644
+--- a/Assets/_Game/Scripts/Cores/Skills/Abilities/BasicAttackLogic.cs
++++ b/Assets/_Game/Scripts/Cores/Skills/Abilities/BasicAttackLogic.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using UnityEngine;
+ using Unity.Netcode;
+ using ProjectAI.Core.Pooling;
+@@ -23,7 +24,7 @@ namespace ProjectAI.Core.Skills.Abilities
+             projectilePrefab = config.Prefab;
+             cooldown = config.BaseCooldown;
+ 
+-            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab???꾨씫?섏뿀?듬땲??");
++            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab???꾨씫?섏뿀?듬땲??");
+         }
+ 
+         public bool CanExecute(NetCharacter caster)
+@@ -35,12 +36,11 @@ namespace ProjectAI.Core.Skills.Abilities
+             }
+ 
+             // 荑⑦???寃??(媛꾨떒 援ы쁽)
+-            if (NetworkManager.Singleton != null)
++            Assert.IsNotNull(GameStatics.NetworkManager, "[BasicAttackLogic] CanExecute: NetworkManager is null.");
++            
++            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetLastActivationTime(SkillType) + cooldown)
+             {
+-                if (NetworkManager.Singleton.ServerTime.Time < caster.SkillComponent.GetLastActivationTime(SkillType) + cooldown)
+-                {
+-                    return false;
+-                }
++                return false;
+             }
+ 
+             return true;
+@@ -48,7 +48,9 @@ namespace ProjectAI.Core.Skills.Abilities
+ 
+         public void Execute(NetCharacter caster)
+         {
+-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
++            Assert.IsTrue(GameStatics.NetworkManager != null && GameStatics.NetworkManager.IsServer, "[BasicAttackLogic] Execute???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (GameStatics.NetworkManager == null || !GameStatics.NetworkManager.IsServer)
+             {
+                 return;
+             }
+@@ -66,13 +68,15 @@ namespace ProjectAI.Core.Skills.Abilities
+ 
+         public void Action(NetCharacter caster)
+         {
+-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
++            Assert.IsTrue(GameStatics.NetworkManager != null && GameStatics.NetworkManager.IsServer, "[BasicAttackLogic] Action? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (GameStatics.NetworkManager == null || !GameStatics.NetworkManager.IsServer)
+             {
+                 return;
+             }
+ 
+             // ?ㅼ젣 ?ㅽ봽?덉엫 ?꾨떖 ???몄텧?섎뒗 ?ъ궗泥??ㅽ룿 濡쒖쭅
+-            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
++            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
+ 
+             Vector2 direction = Vector2.right;
+             if (caster.Movement != null)
+@@ -86,7 +90,7 @@ namespace ProjectAI.Core.Skills.Abilities
+                 origin = caster.SkillComponent.FirePoint.position;
+             }
+ 
+-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool???깅줉?섏뼱 ?덉? ?딆뒿?덈떎!");
++            Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool???깅줉?섏뼱 ?덉? ?딆뒿?덈떎!");
+ 
+             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+             Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
+@@ -109,16 +113,15 @@ namespace ProjectAI.Core.Skills.Abilities
+ 
+         public void End(NetCharacter caster)
+         {
+-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
++            Assert.IsTrue(GameStatics.NetworkManager != null && GameStatics.NetworkManager.IsServer, "[BasicAttackLogic] End???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (GameStatics.NetworkManager == null || !GameStatics.NetworkManager.IsServer)
+             {
+                 return;
+             }
+ 
+             // ?ㅽ궗 醫낅즺(?먮뒗 痍⑥냼) ?쒖젏??荑⑦??꾩쓣 ?명똿?섏뿬, 醫낅즺 ?쒖젏遺??荑⑦??꾩씠 ?뚮룄濡???
+-            if (NetworkManager.Singleton != null)
+-            {
+-                caster.SkillComponent.SetLastActivationTime(SkillType, NetworkManager.Singleton.ServerTime.Time);
+-            }
++            caster.SkillComponent.SetLastActivationTime(SkillType, GameStatics.NetworkManager.ServerTime.Time);
+         }
+     }
+ }
+diff --git a/Assets/_Game/Scripts/Cores/Skills/NetSkillComponent.cs b/Assets/_Game/Scripts/Cores/Skills/NetSkillComponent.cs
+index 2452b7c..78d9382 100644
+--- a/Assets/_Game/Scripts/Cores/Skills/NetSkillComponent.cs
++++ b/Assets/_Game/Scripts/Cores/Skills/NetSkillComponent.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using UnityEngine;
+ using Unity.Netcode;
+ using ProjectAI.Core;
+@@ -75,7 +76,7 @@ namespace ProjectAI.Core.Skills
+             }
+ 
+             ownerCharacter = GetComponentInParent<NetCharacter>();
+-            UnityEngine.Assertions.Assert.IsNotNull(ownerCharacter, "[NetSkillComponent] NetCharacter瑜?李얠쓣 ???놁뒿?덈떎.");
++            Assert.IsNotNull(ownerCharacter, "[NetSkillComponent] NetCharacter瑜?李얠쓣 ???놁뒿?덈떎.");
+         }
+ 
+         private void OnEnable()
+@@ -138,7 +139,7 @@ namespace ProjectAI.Core.Skills
+ 
+             if (base.IsOwner)
+             {
+-                UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
++                Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+                 entityEvents.OnSkillTriggered += TryActivateSkill;
+             }
+         }
+@@ -147,7 +148,7 @@ namespace ProjectAI.Core.Skills
+         {
+             base.OnNetworkDespawn();
+ 
+-            UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
++            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+             entityEvents.OnSkillTriggered -= TryActivateSkill;
+         }
+ 
+@@ -183,18 +184,26 @@ namespace ProjectAI.Core.Skills
+ 
+         public void AddState(EStateTag tag)
+         {
+-            if (base.IsServer)
++            Assert.IsTrue(base.IsServer, "[NetSkillComponent] AddState???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
++            if (!base.IsServer)
+             {
+-                ActiveStates.Value |= (int)tag;
++                return;
+             }
++            
++            ActiveStates.Value |= (int)tag;
+         }
+ 
+         public void RemoveState(EStateTag tag)
+         {
+-            if (base.IsServer)
++            Assert.IsTrue(base.IsServer, "[NetSkillComponent] RemoveState???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
++            if (!base.IsServer)
+             {
+-                ActiveStates.Value &= ~(int)tag;
++                return;
+             }
++            
++            ActiveStates.Value &= ~(int)tag;
+         }
+ 
+         /// <summary>
+@@ -211,7 +220,7 @@ namespace ProjectAI.Core.Skills
+             if (GameStatics.SkillManager != null)
+             {
+                 SSkillConfig config = GameStatics.SkillManager.GetConfig(skillType);
+-                if (NetworkManager.Singleton != null && NetworkManager.Singleton.ServerTime.Time < GetLastActivationTime(skillType) + config.BaseCooldown)
++                if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.ServerTime.Time < GetLastActivationTime(skillType) + config.BaseCooldown)
+                 {
+                     return; // 荑⑦????湲?以?                 }
+@@ -223,9 +232,9 @@ namespace ProjectAI.Core.Skills
+             }
+ 
+             // ?대씪?댁뼵???꾩슜(?몄뒪???쒖쇅) 荑⑦??꾩쓣 誘몃━ ?뚮┝ (?덉륫)
+-            if (NetworkManager.Singleton != null && !base.IsServer)
++            if (GameStatics.NetworkManager != null && !base.IsServer)
+             {
+-                SetLastActivationTime(skillType, NetworkManager.Singleton.ServerTime.Time);
++                SetLastActivationTime(skillType, GameStatics.NetworkManager.ServerTime.Time);
+             }
+ 
+             RequestActivateSkillServerRpc(skillType);
+@@ -234,6 +243,13 @@ namespace ProjectAI.Core.Skills
+         [Rpc(SendTo.Server)]
+         private void RequestActivateSkillServerRpc(ESkillType skillType)
+         {
++            Assert.IsTrue(IsServer, "[NetSkillComponent] RequestActivateSkillServerRpc???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
++            if (!IsServer)
++            {
++                return;
++            }
++            
+             if (!OwnedSkills.Contains(skillType))
+             {
+                 return;
+@@ -254,7 +270,7 @@ namespace ProjectAI.Core.Skills
+         [Rpc(SendTo.ClientsAndHost)]
+         public void BroadcastPlayAnimationClientRpc(int stateHash, float transitionDuration)
+         {
+-            UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
++            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+             entityEvents.InvokePlayAnimation(stateHash, transitionDuration, 0);
+         }
+     }
+diff --git a/Assets/_Game/Scripts/Cores/Skills/SkillManager.cs b/Assets/_Game/Scripts/Cores/Skills/SkillManager.cs
+index 4093f11..c3c714b 100644
+--- a/Assets/_Game/Scripts/Cores/Skills/SkillManager.cs
++++ b/Assets/_Game/Scripts/Cores/Skills/SkillManager.cs
+@@ -129,9 +129,10 @@ namespace ProjectAI.Core.Skills
+         /// </summary>
+         public bool ExecuteSkill(ESkillType type, NetCharacter caster)
+         {
+-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
++            Assert.IsTrue(GameStatics.NetworkManager != null && GameStatics.NetworkManager.IsServer, "[SkillManager] ExecuteSkill? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (GameStatics.NetworkManager == null || !GameStatics.NetworkManager.IsServer)
+             {
+-                Debug.LogWarning("[SkillManager] ?ㅽ궗 ?ㅽ뻾(Execute)? ?쒕쾭?먯꽌留?媛?ν빀?덈떎.");
+                 return false;
+             }
+ 
+@@ -152,9 +153,10 @@ namespace ProjectAI.Core.Skills
+ 
+         public void ActionSkill(ESkillType type, NetCharacter caster)
+         {
+-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
++            Assert.IsTrue(GameStatics.NetworkManager != null && GameStatics.NetworkManager.IsServer, "[SkillManager] ActionSkill? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (GameStatics.NetworkManager == null || !GameStatics.NetworkManager.IsServer)
+             {
+-                Debug.LogWarning("[SkillManager] ?ㅽ궗 ?≪뀡(Action)? ?쒕쾭?먯꽌留?媛?ν빀?덈떎.");
+                 return;
+             }
+ 
+@@ -166,9 +168,10 @@ namespace ProjectAI.Core.Skills
+ 
+         public void EndSkill(ESkillType type, NetCharacter caster)
+         {
+-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
++            Assert.IsTrue(GameStatics.NetworkManager != null && GameStatics.NetworkManager.IsServer, "[SkillManager] EndSkill? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (GameStatics.NetworkManager == null || !GameStatics.NetworkManager.IsServer)
+             {
+-                Debug.LogWarning("[SkillManager] ?ㅽ궗 醫낅즺(End)???쒕쾭?먯꽌留?媛?ν빀?덈떎.");
+                 return;
+             }
+ 
+diff --git a/Assets/_Game/Scripts/Cores/Stats/NetHealthComponent.cs b/Assets/_Game/Scripts/Cores/Stats/NetHealthComponent.cs
+index a86cafd..d9fd076 100644
+--- a/Assets/_Game/Scripts/Cores/Stats/NetHealthComponent.cs
++++ b/Assets/_Game/Scripts/Cores/Stats/NetHealthComponent.cs
+@@ -49,10 +49,14 @@ namespace ProjectAI.Core.Stats
+         /// </summary>
+         public void InitializeHealth(int maxHealth)
+         {
+-            if (IsServer)
++            Assert.IsTrue(IsServer, "[NetHealthComponent] InitializeHealth???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
++            if (!IsServer)
+             {
+-                CurrentHealth.Value = maxHealth;
++                return;
+             }
++            
++            CurrentHealth.Value = maxHealth;
+         }
+ 
+         private void HandleHealthChanged(int previousValue, int newValue)
+@@ -65,6 +69,8 @@ namespace ProjectAI.Core.Stats
+         /// </summary>
+         public void TakeDamage(int damage)
+         {
++            Assert.IsTrue(IsServer, "[NetHealthComponent] TakeDamage???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
++            
+             if (!IsServer)
+             {
+                 return;
+@@ -72,11 +78,13 @@ namespace ProjectAI.Core.Stats
+ 
+             if (damage <= 0)
+             {
++                Debug.LogWarning($"[NetHealthComponent] ?곕?吏媛 ?뚯닔?닿굅??0?낅땲?? {damage}");
+                 return; // ?곕?吏媛 ?뚯닔?닿굅??0?대㈃ 臾댁떆 (?뚮났 諛⑹?)
+             }
+ 
+             if (CurrentHealth.Value <= 0)
+             {
++                Debug.LogWarning("[NetHealthComponent] ?대? ?щ쭩??媛쒖껜???곕?吏瑜??낇엳???⑸땲??");
+                 return; // ?대? ?щ쭩??媛쒖껜
+             }
+ 
+diff --git a/Assets/_Game/Scripts/Cores/Stats/NetStatComponent.cs b/Assets/_Game/Scripts/Cores/Stats/NetStatComponent.cs
+index 8942fd2..60e0a92 100644
+--- a/Assets/_Game/Scripts/Cores/Stats/NetStatComponent.cs
++++ b/Assets/_Game/Scripts/Cores/Stats/NetStatComponent.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using Unity.Netcode;
+ using UnityEngine;
+ using ProjectAI.Core.Entities;
+@@ -56,7 +57,7 @@ namespace ProjectAI.Core.Stats
+                 entityEvents = GetComponentInParent<EntityEvents>();
+             }
+ 
+-            UnityEngine.Assertions.Assert.IsNotNull(entityEvents, "NetStatComponent??EntityEvents媛 ?꾩슂?⑸땲??");
++            Assert.IsNotNull(entityEvents, "NetStatComponent??EntityEvents媛 ?꾩슂?⑸땲??");
+         }
+ 
+         public override void OnNetworkSpawn()
+diff --git a/Assets/_Game/Scripts/GameModes/NetMonsterSpawner.cs b/Assets/_Game/Scripts/GameModes/NetMonsterSpawner.cs
+index bc09025..a3ab494 100644
+--- a/Assets/_Game/Scripts/GameModes/NetMonsterSpawner.cs
++++ b/Assets/_Game/Scripts/GameModes/NetMonsterSpawner.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using System;
+ using UnityEngine;
+ using Unity.Netcode;
+@@ -47,7 +48,7 @@ namespace ProjectAI.GameModes
+         {
+             base.OnNetworkSpawn();
+ 
+-            UnityEngine.Assertions.Assert.IsNotNull(monsterPrefab, "[NetMonsterSpawner] 紐ъ뒪???꾨━?뱀씠 ?꾨씫?섏뿀?듬땲??");
++            Assert.IsNotNull(monsterPrefab, "[NetMonsterSpawner] 紐ъ뒪???꾨━?뱀씠 ?꾨씫?섏뿀?듬땲??");
+ 
+             // ?쒕쾭/?대씪?댁뼵??怨듯넻: ?留??몃뱾???ъ쟾 ?깅줉 ?꾩닔
+             if (GameStatics.ObjectPool != null)
+@@ -60,7 +61,7 @@ namespace ProjectAI.GameModes
+                 return;
+             }
+ 
+-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.ObjectPool, "[NetMonsterSpawner] GameStatics.ObjectPool???깅줉?섏? ?딆븯?듬땲??");
++            Assert.IsNotNull(GameStatics.ObjectPool, "[NetMonsterSpawner] GameStatics.ObjectPool???깅줉?섏? ?딆븯?듬땲??");
+         }
+ 
+         private void Update()
+@@ -94,6 +95,13 @@ namespace ProjectAI.GameModes
+ 
+         private void SpawnMonster()
+         {
++            Assert.IsTrue(base.IsServer, "[NetMonsterSpawner] 紐ъ뒪???ㅽ룿 濡쒖쭅? ?쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
++            if (!base.IsServer)
++            {
++                return;
++            }
++            
+             if (GameStatics.ObjectPool == null || monsterPrefab == null)
+             {
+                 return;
+diff --git a/Assets/_Game/Scripts/Gameplays/InteractionConditions/RequireHostCondition.cs b/Assets/_Game/Scripts/Gameplays/InteractionConditions/RequireHostCondition.cs
+index 538d229..6dec154 100644
+--- a/Assets/_Game/Scripts/Gameplays/InteractionConditions/RequireHostCondition.cs
++++ b/Assets/_Game/Scripts/Gameplays/InteractionConditions/RequireHostCondition.cs
+@@ -1,6 +1,7 @@
+ using UnityEngine;
+ using ProjectAI.Core;
+ using ProjectAI.Core.Interfaces;
++using Unity.Netcode;
+ 
+ namespace ProjectAI.Environment.Conditions
+ {
+@@ -15,10 +16,10 @@ namespace ProjectAI.Environment.Conditions
+             // [二쇱쓽] ??議곌굔 泥댄겕??"?쒕쾭"?먯꽌 ?ㅽ뻾?? 
+             // ?곕씪??NetworkManager.IsServer濡?泥댄겕?섎㈃ 臾댁“嫄?true媛 ?섏? 諛⑹옣 ???대씪?댁뼵?몃룄 ?듦낵?섎뒗 踰꾧렇媛 諛쒖깮??
+             // ?곹샇?묒슜 二쇱껜(interactor)???뚯쑀??Owner)媛 ?쒕쾭 ?먯떊(ServerClientId)?몄? ?議고빐???뺥솗??諛⑹옣留??듦낵??
+-            Unity.Netcode.NetworkObject netObj = interactor.GetComponentInParent<Unity.Netcode.NetworkObject>();
++            NetworkObject netObj = interactor.GetComponentInParent<NetworkObject>();
+             if (netObj != null)
+             {
+-                return netObj.OwnerClientId == Unity.Netcode.NetworkManager.ServerClientId;
++                return netObj.OwnerClientId == NetworkManager.ServerClientId;
+             }
+ 
+             return false;
+diff --git a/Assets/_Game/Scripts/Gameplays/Portals/APortalInteractable.cs b/Assets/_Game/Scripts/Gameplays/Portals/APortalInteractable.cs
+deleted file mode 100644
+index 2038607..0000000
+--- a/Assets/_Game/Scripts/Gameplays/Portals/APortalInteractable.cs
++++ /dev/null
+@@ -1,56 +0,0 @@
+-using UnityEngine;
+-using Unity.Netcode;
+-using ProjectAI.Core.Interfaces;
+-
+-namespace ProjectAI.Environment
+-{
+-    /// <summary>
+-    /// 議곌굔 寃??IInteractionCondition)? ?ㅼ젣 ?대룞 濡쒖쭅(ExecutePortal)???먮쫫???듭젣?섎뒗 ?ы깉 遺紐??대옒?ㅼ엯?덈떎.
+-    /// </summary>
+-    public abstract class APortalInteractable : NetworkBehaviour, IInteractable
+-    {
+-        private IInteractionCondition[] conditions;
+-
+-        #region Unity Lifecycle
+-        protected virtual void Awake()
+-        {
+-            conditions = GetComponents<IInteractionCondition>();
+-        }
+-        #endregion
+-
+-        #region Public Methods
+-        public void Interact(GameObject interactor)
+-        {
+-            Debug.Log("CAn Interact?");
+-            if (CanInteract(interactor))
+-            {
+-                Debug.Log("I Can");
+-                ExecutePortal(interactor);
+-            }
+-        }
+-        #endregion
+-
+-        #region Protected Methods
+-        protected virtual bool CanInteract(GameObject interactor)
+-        {
+-            foreach (IInteractionCondition condition in conditions)
+-            {
+-                if (!condition.CheckCondition(interactor))
+-                {
+-                    OnInteractFailed(interactor, condition.GetFailedMessage());
+-                    return false;
+-                }
+-            }
+-            
+-            return true;
+-        }
+-
+-        protected virtual void OnInteractFailed(GameObject interactor, string message)
+-        {
+-            Debug.Log($"[Portal] {message}");
+-        }
+-
+-        protected abstract void ExecutePortal(GameObject interactor);
+-        #endregion
+-    }
+-}
+diff --git a/Assets/_Game/Scripts/Gameplays/Portals/APortalInteractable.cs.meta b/Assets/_Game/Scripts/Gameplays/Portals/APortalInteractable.cs.meta
+deleted file mode 100644
+index 8f24687..0000000
+--- a/Assets/_Game/Scripts/Gameplays/Portals/APortalInteractable.cs.meta
++++ /dev/null
+@@ -1,2 +0,0 @@
+-fileFormatVersion: 2
+-guid: 202e50dfa1e1abf449c8805afd8b94ff
+\ No newline at end of file
+diff --git a/Assets/_Game/Scripts/Gameplays/Portals/LocationTeleportPortal.cs b/Assets/_Game/Scripts/Gameplays/Portals/LocationTeleportPortal.cs
+deleted file mode 100644
+index d740a40..0000000
+--- a/Assets/_Game/Scripts/Gameplays/Portals/LocationTeleportPortal.cs
++++ /dev/null
+@@ -1,74 +0,0 @@
+-using UnityEngine;
+-using ProjectAI.Core;
+-
+-namespace ProjectAI.Environment
+-{
+-    /// <summary>
+-    /// 媛숈? ???대??먯꽌 ?뱀젙 ?꾩튂濡??쒓컙?대룞?쒖폒 二쇰뒗 ?μ냼 ?대룞 ?꾩슜 ?ы깉?낅땲??
+-    /// 媛쒖씤留??대룞?좎?, ?뚰떚 ?꾩껜瑜??대룞?쒗궗吏 ?좏깮?????덉뒿?덈떎.
+-    /// </summary>
+-    public class LocationTeleportPortal : APortalInteractable
+-    {
+-        [Header("Teleport Settings")]
+-        [Tooltip("?꾩갑??紐⑹쟻吏 ?몃옖?ㅽ뤌 (留듭뿉 諛곗튂??鍮??ㅻ툕?앺듃 ?깆쓣 ?뚯뼱???볦쑝?몄슂)")]
+-        [SerializeField]
+-        private Transform destinationPoint;
+-
+-        [Tooltip("泥댄겕 ???곹샇?묒슜???쇱옄留??대룞?섏? ?딄퀬, ?묒냽??紐⑤뱺 ?뚰떚?먯쓣 紐⑹쟻吏濡??④퍡 媛뺤젣 ?대룞?쒗궢?덈떎.")]
+-        [SerializeField]
+-        private bool shouldTeleportEntireParty = false;
+-
+-        #region Protected Methods
+-        protected override void ExecutePortal(GameObject interactor)
+-        {
+-            if (destinationPoint == null)
+-            {
+-                Debug.LogWarning("[LocationTeleportPortal] 紐⑹쟻吏(destinationPoint)媛 ?ㅼ젙?섏? ?딆븯?듬땲?? ?몄뒪?숉꽣瑜??뺤씤?댁＜?몄슂.");
+-                return;
+-            }
+-
+-            Vector3 destPos = destinationPoint.position;
+-            
+-            Debug.Log(shouldTeleportEntireParty);
+-            if (shouldTeleportEntireParty)
+-            {
+-                // 1. ?뚰떚 ?꾩껜 媛뺤젣 ?대룞
+-                if (GameStatics.NetworkManager != null)
+-                {
+-                    foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
+-                    {
+-                        if (client.PlayerObject != null)
+-                        {
+-                            Rigidbody2D rb = client.PlayerObject.GetComponentInChildren<Rigidbody2D>();
+-                            if (rb != null)
+-                            {
+-                                rb.position = destPos;
+-                            }
+-                            else
+-                            {
+-                                client.PlayerObject.transform.position = destPos;
+-                            }
+-                        }
+-                    }
+-                }
+-            }
+-            else
+-            {
+-                // 2. ?곹샇?묒슜??媛쒖씤留??대룞
+-                if (interactor != null)
+-                {
+-                    Rigidbody2D rb = interactor.GetComponentInChildren<Rigidbody2D>();
+-                    if (rb != null)
+-                    {
+-                        rb.position = destPos;
+-                    }
+-                    else
+-                    {
+-                        interactor.transform.position = destPos;
+-                    }
+-                }
+-            }
+-        }
+-        #endregion
+-    }
+-}
+diff --git a/Assets/_Game/Scripts/Gameplays/Portals/LocationTeleportPortal.cs.meta b/Assets/_Game/Scripts/Gameplays/Portals/LocationTeleportPortal.cs.meta
+deleted file mode 100644
+index 46b78db..0000000
+--- a/Assets/_Game/Scripts/Gameplays/Portals/LocationTeleportPortal.cs.meta
++++ /dev/null
+@@ -1,2 +0,0 @@
+-fileFormatVersion: 2
+-guid: 495c2d1f1a4299f4489ec30b4f26962c
+\ No newline at end of file
+diff --git a/Assets/_Game/Scripts/Gameplays/Portals/SceneTransitionPortal.cs b/Assets/_Game/Scripts/Gameplays/Portals/SceneTransitionPortal.cs
+deleted file mode 100644
+index 31b4f31..0000000
+--- a/Assets/_Game/Scripts/Gameplays/Portals/SceneTransitionPortal.cs
++++ /dev/null
+@@ -1,41 +0,0 @@
+-using UnityEngine;
+-using ProjectAI.Core;
+-using ProjectAI.Core.Enums;
+-
+-namespace ProjectAI.Environment
+-{
+-    /// <summary>
+-    /// ?곹샇?묒슜 ???뚰떚 ?꾩껜瑜?吏?뺣맂 ?ъ쑝濡??대룞?쒗궎??援ъ껜?곸씤 ???대룞 ?ы깉?낅땲??
+-    /// </summary>
+-    public class SceneTransitionPortal : APortalInteractable
+-    {
+-        [Tooltip("?대룞???????)]
+-        [SerializeField]
+-        private ESceneType targetScene = ESceneType.Dungeon;
+-
+-        [Header("Spawn Settings")]
+-        [Tooltip("?대룞???ъ뿉??李⑹????뱀젙 ?ㅽ룿 ?ъ씤?몄쓽 ID (??媛믪씠 ?덉쑝硫?醫뚰몴蹂대떎 ?곗꽑?⑸땲??")]
+-        [SerializeField]
+-        private string targetSpawnPointID = "";
+-
+-        [Tooltip("泥댄겕 ???꾨옒????醫뚰몴(Raw)濡?吏곸젒 ?대룞?⑸땲??(targetSpawnPointID媛 鍮꾩썙???덉뼱???묐룞)")]
+-        [SerializeField]
+-        private bool useRawCoordinates = false;
+-
+-        [Tooltip("吏곸젒 ?대룞??紐⑺몴 ?붾뱶 醫뚰몴 (Vector2)")]
+-        [SerializeField]
+-        private Vector2 rawTargetPosition = Vector2.zero;
+-
+-        #region Protected Methods
+-        protected override void ExecutePortal(GameObject interactor)
+-        {
+-            SceneTransitionData.NextSpawnPointID = targetSpawnPointID;
+-            SceneTransitionData.UseRawCoordinates = useRawCoordinates;
+-            SceneTransitionData.RawTargetPosition = rawTargetPosition;
+-
+-            string sceneName = targetScene.ToString();
+-            GameStatics.NetworkManager.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+-        }
+-        #endregion
+-    }
+-}
+diff --git a/Assets/_Game/Scripts/Gameplays/Portals/SceneTransitionPortal.cs.meta b/Assets/_Game/Scripts/Gameplays/Portals/SceneTransitionPortal.cs.meta
+deleted file mode 100644
+index 569cb4a..0000000
+--- a/Assets/_Game/Scripts/Gameplays/Portals/SceneTransitionPortal.cs.meta
++++ /dev/null
+@@ -1,2 +0,0 @@
+-fileFormatVersion: 2
+-guid: 96321084c065a724aadf24a5048b442d
+\ No newline at end of file
+diff --git a/Assets/_Game/Scripts/Movements/ANetMovement.cs b/Assets/_Game/Scripts/Movements/ANetMovement.cs
+index d5a250a..1b804bf 100644
+--- a/Assets/_Game/Scripts/Movements/ANetMovement.cs
++++ b/Assets/_Game/Scripts/Movements/ANetMovement.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Scripting.APIUpdating;
+ using Unity.Netcode;
+ using UnityEngine;
+ using UnityEngine.Assertions;
+@@ -9,7 +10,7 @@ namespace ProjectAI.Movements
+     /// 紐⑤뱺 ?ㅽ듃?뚰겕 ?뷀떚???뚮젅?댁뼱, 紐ъ뒪?? ?ъ궗泥??? ?대룞 而댄룷?뚰듃??異붿긽 湲곕컲 ?대옒?ㅼ엯?덈떎.
+     /// 怨듯넻 湲곕뒫(?됰갚 ?? 諛??곹깭 ?대깽??EntityEvents)? ?듭떊?섍린 ?꾪븳 ?덈툕 ??븷???⑸땲??
+     /// </summary>
+-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "ANetMovement")]
++    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "ANetMovement")]
+     public abstract class ANetMovement : NetworkBehaviour
+     {
+         protected EntityEvents _entityEvents;
+diff --git a/Assets/_Game/Scripts/Movements/NetPlayerMovement.cs b/Assets/_Game/Scripts/Movements/NetPlayerMovement.cs
+index cf3c411..f4306c5 100644
+--- a/Assets/_Game/Scripts/Movements/NetPlayerMovement.cs
++++ b/Assets/_Game/Scripts/Movements/NetPlayerMovement.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Scripting.APIUpdating;
+ using UnityEngine;
+ using Unity.Netcode;
+ using System.Collections.Generic;
+@@ -40,7 +41,7 @@ namespace ProjectAI.Movements
+     /// <summary>
+     /// Rigidbody2D瑜??ъ슜??罹먮┃?곗쓽 臾쇰━???대룞???꾨떞?섎뒗 ?대옒?ㅼ엯?덈떎.
+     /// </summary>
+-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Player", "Assembly-CSharp", "NetPlayerMovement")]
++    [MovedFrom(true, "ProjectAI.Player", "Assembly-CSharp", "NetPlayerMovement")]
+     public class NetPlayerMovement : ANetMovement
+     {
+         private const int BUFFER_SIZE = 1024;
+@@ -55,6 +56,10 @@ namespace ProjectAI.Movements
+         [SerializeField]
+         private float verySmallReconciliationThreshold = 0.01f;
+ 
++        [Tooltip("?ㅼ감媛 ??媛믩낫???щ㈃ ?붾젅?ы듃濡?媛꾩＜?섍퀬 媛뺤젣 ?숆린?붾쭔 ?섑뻾 (ReSimulate ?앸왂)")]
++        [SerializeField]
++        private float teleportReconciliationThreshold = 2.0f;
++
+         // TODO: ?ν썑 ?쒓컖??媛앹껜 遺꾨━ ??蹂닿컙/?ㅻ깄 遺꾧린 湲곗?媛믪쑝濡??ъ슜
+         // [Tooltip("?ㅼ감媛 ??媛믩낫???묒쑝硫?媛뺤젣 ?숆린??(Snap)")]
+         // [SerializeField]
+@@ -144,6 +149,13 @@ namespace ProjectAI.Movements
+         [Rpc(SendTo.Server, Delivery = RpcDelivery.Unreliable)]
+         private void SendInputServerRpc(SInputPayload inputPayload)
+         {
++            Assert.IsTrue(IsServer, "[NetPlayerMovement] SendInputServerRpc???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
++            if (!IsServer)
++            {
++                return;
++            }
++            
+             serverInputQueue.Enqueue(inputPayload);
+         }
+         #endregion
+@@ -219,6 +231,12 @@ namespace ProjectAI.Movements
+             base.Rb.position = statePayload.Position;
+             base.Rb.linearVelocity = statePayload.Velocity;
+             
++            if (sqrDistance > teleportReconciliationThreshold * teleportReconciliationThreshold)
++            {
++                // ?쒕쾭 媛뺤젣 ?붾젅?ы듃濡?媛꾩＜. ReSimulate ?앸왂
++                return;
++            }
++
+             ReSimulate(statePayload.SequenceId);
+         }
+ 
+diff --git a/Assets/_Game/Scripts/Movements/NetServerMovement.cs b/Assets/_Game/Scripts/Movements/NetServerMovement.cs
+index 1bfc065..6022227 100644
+--- a/Assets/_Game/Scripts/Movements/NetServerMovement.cs
++++ b/Assets/_Game/Scripts/Movements/NetServerMovement.cs
+@@ -1,3 +1,5 @@
++using UnityEngine.Scripting.APIUpdating;
++using UnityEngine.Assertions;
+ using UnityEngine;
+ using Unity.Netcode.Components;
+ 
+@@ -7,7 +9,7 @@ namespace ProjectAI.Movements
+     /// ?쒕쾭 沅뚰븳?쇰줈 臾쇰━ 湲곕컲 ?대룞???섑뻾?섎뒗 踰붿슜 ?대룞 而댄룷?뚰듃?낅땲?? (紐ъ뒪?? ?ъ궗泥???怨듭슜)
+     /// ?대??곸쑝濡?遺紐⑥쓽 Rigidbody2D瑜?李몄“?섏뿬 ?꾩튂 諛??띾룄瑜??숆린?뷀빀?덈떎.
+     /// </summary>
+-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "NetCharacterMovement")]
++    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "NetCharacterMovement")]
+     public class NetServerMovement : ANetMovement
+     {
+         [Header("Movement Settings")]
+@@ -23,7 +25,7 @@ namespace ProjectAI.Movements
+         protected override void Awake()
+         {
+             base.Awake();
+-            UnityEngine.Assertions.Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
++            Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
+         }
+ 
+         private void OnEnable()
+@@ -59,6 +61,8 @@ namespace ProjectAI.Movements
+ 
+         private void UpdateVelocity()
+         {
++            Assert.IsTrue(base.IsServer, "[NetServerMovement] UpdateVelocity???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
+             if (!base.IsServer)
+             {
+                 return;
+diff --git a/Assets/_Game/Scripts/Networks/MultiplayerServiceManager.cs b/Assets/_Game/Scripts/Networks/MultiplayerServiceManager.cs
+index 1981cc2..9811c99 100644
+--- a/Assets/_Game/Scripts/Networks/MultiplayerServiceManager.cs
++++ b/Assets/_Game/Scripts/Networks/MultiplayerServiceManager.cs
+@@ -41,12 +41,12 @@ namespace ProjectAI.Network
+             {
+                 MatchmakingService = new RelayMatchmakingService();
+                 
+-                if (NetworkManager.Singleton != null)
++                if (GameStatics.NetworkManager != null)
+                 {
+-                    UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
++                    UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
+                     if (transport != null)
+                     {
+-                        NetworkManager.Singleton.NetworkConfig.NetworkTransport = transport;
++                        GameStatics.NetworkManager.NetworkConfig.NetworkTransport = transport;
+                     }
+                     else
+                     {
+@@ -55,7 +55,7 @@ namespace ProjectAI.Network
+                 }
+                 else
+                 {
+-                    Debug.LogWarning("[MultiplayerServiceManager] NetworkManager.Singleton is null. Cannot set NetworkTransport.");
++                    Debug.LogWarning("[MultiplayerServiceManager] GameStatics.NetworkManager is null. Cannot set NetworkTransport.");
+                 }
+             }
+             else if (CurrentMode == EMultiplayerMode.Steamworks)
+diff --git a/Assets/_Game/Scripts/Networks/RelayMatchmakingService.cs b/Assets/_Game/Scripts/Networks/RelayMatchmakingService.cs
+index 207a1ae..7c90e9d 100644
+--- a/Assets/_Game/Scripts/Networks/RelayMatchmakingService.cs
++++ b/Assets/_Game/Scripts/Networks/RelayMatchmakingService.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using System;
+ using System.Threading.Tasks;
+ using Unity.Netcode;
+@@ -15,16 +16,16 @@ namespace ProjectAI.Network
+     /// </summary>
+     public class RelayMatchmakingService : IMatchmakingService
+     {
+-        private const int MaxPlayers = 4; // ?몄뒪???ы븿 理쒕? ?몄썝
+-        private const int ShutdownTimeoutMs = 3000; // ?㏓떎???湲???꾩븘??諛由ъ큹)
++        private const int MAX_PLAYERS = 4; // ?몄뒪???ы븿 理쒕? ?몄썝
++        private const int SHUTDOWN_TIMEOUT_MS = 3000; // ?㏓떎???湲???꾩븘??(諛由ъ큹)
+ 
+         public async Task<string> StartHostAsync()
+         {
+             try
+             {
+-                UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton, "NetworkManager.Singleton is null");
++                Assert.IsNotNull(GameStatics.NetworkManager, "GameStatics.NetworkManager is null");
+ 
+-                if (NetworkManager.Singleton.IsListening)
++                if (GameStatics.NetworkManager.IsListening)
+                 {
+                     Debug.LogWarning("[RelayMatchmakingService] ?대? ?ㅽ듃?뚰겕???곌껐?섏뼱 ?덉뒿?덈떎. (Host ?먮뒗 Client ?ㅽ뻾 以?");
+                     return null;
+@@ -33,20 +34,20 @@ namespace ProjectAI.Network
+                 await EnsureAuthenticatedAsync();
+ 
+                 // 1. 由대젅???쒕쾭 ?좊떦 ?붿껌 (?몄뒪???쒖쇅 ?몄썝???꾨떖)
+-                Allocation allocation = await RelayService.Instance.CreateAllocationAsync(MaxPlayers - 1);
++                Allocation allocation = await RelayService.Instance.CreateAllocationAsync(MAX_PLAYERS - 1);
+ 
+                 // 2. 議곗씤 肄붾뱶 諛쒓툒
+                 string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+                 Debug.Log($"[RelayMatchmakingService] 諛??앹꽦 ?깃났! Join Code: {joinCode}");
+ 
+                 // 3. NetworkManager??Relay ?쒕쾭 ?뺣낫 ?ㅼ젙
+-                if (NetworkManager.Singleton == null)
++                if (GameStatics.NetworkManager == null)
+                 {
+-                    Debug.LogError("[RelayMatchmakingService] NetworkManager.Singleton is null.");
++                    Debug.LogError("[RelayMatchmakingService] GameStatics.NetworkManager is null.");
+                     return null;
+                 }
+ 
+-                UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
++                UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
+                 if (transport == null)
+                 {
+                     Debug.LogError("[RelayMatchmakingService] UnityTransport component is missing on NetworkManager.");
+@@ -62,7 +63,7 @@ namespace ProjectAI.Network
+                 );
+ 
+                 // 4. ?몄뒪???쒖옉
+-                if (NetworkManager.Singleton.StartHost())
++                if (GameStatics.NetworkManager.StartHost())
+                 {
+                     return joinCode;
+                 }
+@@ -80,9 +81,9 @@ namespace ProjectAI.Network
+         {
+             try
+             {
+-                UnityEngine.Assertions.Assert.IsNotNull(NetworkManager.Singleton, "NetworkManager.Singleton is null");
++                Assert.IsNotNull(GameStatics.NetworkManager, "GameStatics.NetworkManager is null");
+ 
+-                if (NetworkManager.Singleton.IsListening)
++                if (GameStatics.NetworkManager.IsListening)
+                 {
+                     Debug.Log("[RelayMatchmakingService] 湲곗〈 諛??곌껐??醫낅즺?섍퀬 ?덈줈??諛⑹뿉 ?묒냽?⑸땲??");
+                     LeaveGame();
+@@ -90,12 +91,12 @@ namespace ProjectAI.Network
+                     // NGO??Shutdown???꾩쟾???앸궇 ?뚭퉴吏 ?湲고빐???ㅼ쓬 ?곌껐??瑗ъ씠吏 ?딆뒿?덈떎.
+                     // ?ㅻ쭔 Shutdown 踰꾧렇濡??명빐 臾댄븳 猷⑦봽(Soft Lock)??鍮좎???寃껋쓣 留됯린 ?꾪빐 CancellationToken???ъ슜?⑸땲??
+                     // ShutdownTimeoutMs(3珥? ?ㅼ뿉 ?먮룞?쇰줈 '痍⑥냼 ?좏샇'瑜?諛쒖깮?쒗궎???좏겙 媛앹껜瑜??앹꽦?⑸땲??
+-                    using (System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource(ShutdownTimeoutMs))
++                    using (System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource(SHUTDOWN_TIMEOUT_MS))
+                     {
+                         try
+                         {
+-                            while (NetworkManager.Singleton != null && 
+-                                   (NetworkManager.Singleton.IsListening || NetworkManager.Singleton.ShutdownInProgress))
++                            while (GameStatics.NetworkManager != null && 
++                                   (GameStatics.NetworkManager.IsListening || GameStatics.NetworkManager.ShutdownInProgress))
+                             {
+                                 // 留??꾨젅?꾨쭏??痍⑥냼 ?좏샇媛 ?붾뒗吏(3珥덇? 吏?щ뒗吏) ?뺤씤?⑸땲??
+                                 // 留뚯빟 3珥덇? 吏?щ떎硫?利됱떆 OperationCanceledException ?먮윭瑜??섏졇 猷⑦봽 ?덉텧?⑸땲??
+@@ -118,13 +119,13 @@ namespace ProjectAI.Network
+                 JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinData);
+ 
+                 // 2. NetworkManager??Relay ?쒕쾭 ?뺣낫 ?ㅼ젙
+-                if (NetworkManager.Singleton == null)
++                if (GameStatics.NetworkManager == null)
+                 {
+-                    Debug.LogError("[RelayMatchmakingService] NetworkManager.Singleton is null.");
++                    Debug.LogError("[RelayMatchmakingService] GameStatics.NetworkManager is null.");
+                     return false;
+                 }
+ 
+-                UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
++                UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
+                 if (transport == null)
+                 {
+                     Debug.LogError("[RelayMatchmakingService] UnityTransport component is missing on NetworkManager.");
+@@ -141,7 +142,7 @@ namespace ProjectAI.Network
+                 );
+ 
+                 // 3. ?대씪?댁뼵???쒖옉
+-                return NetworkManager.Singleton.StartClient();
++                return GameStatics.NetworkManager.StartClient();
+             }
+             catch (Exception e)
+             {
+@@ -152,9 +153,9 @@ namespace ProjectAI.Network
+ 
+         public void LeaveGame()
+         {
+-            if (NetworkManager.Singleton != null)
++            if (GameStatics.NetworkManager != null)
+             {
+-                NetworkManager.Singleton.Shutdown();
++                GameStatics.NetworkManager.Shutdown();
+             }
+         }
+ 
+diff --git a/Assets/_Game/Scripts/Players/NetPlayerController.cs b/Assets/_Game/Scripts/Players/NetPlayerController.cs
+index 3b0b0ec..b353d86 100644
+--- a/Assets/_Game/Scripts/Players/NetPlayerController.cs
++++ b/Assets/_Game/Scripts/Players/NetPlayerController.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using UnityEngine;
+ using Unity.Netcode;
+ using ProjectAI.Characters;
+@@ -23,9 +24,9 @@ namespace ProjectAI.Players
+             playerCamera = GetComponentInChildren<PlayerCamera>();
+             myCharacter = GetComponentInChildren<NetPlayerCharacter>();
+             
+-            UnityEngine.Assertions.Assert.IsNotNull(inputReader, "PlayerInputReader is missing.");
+-            UnityEngine.Assertions.Assert.IsNotNull(playerCamera, "PlayerCamera is missing.");
+-            UnityEngine.Assertions.Assert.IsNotNull(myCharacter, "NetPlayerCharacter is missing.");
++            Assert.IsNotNull(inputReader, "PlayerInputReader is missing.");
++            Assert.IsNotNull(playerCamera, "PlayerCamera is missing.");
++            Assert.IsNotNull(myCharacter, "NetPlayerCharacter is missing.");
+         }
+ 
+         public override void OnNetworkSpawn()
+@@ -43,9 +44,9 @@ namespace ProjectAI.Players
+             inputReader.OnAttackInputChanged += HandleAttackInputChanged;
+             
+             playerCamera.InitCamera();
+-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
++            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
+             {
+-                NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
++                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
+             }
+         }
+ 
+@@ -59,9 +60,9 @@ namespace ProjectAI.Players
+             inputReader.DisableInput();
+             
+             // 寃뚯엫 醫낅즺 ??NetworkManager媛 癒쇱? ?뚭눼?????덉쑝誘濡? ?덉쇅(Assert) ???遺?쒕윭????泥댄겕濡??대깽???댁젣
+-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
++            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
+             {
+-                NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
++                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
+             }
+         }
+         #endregion
+diff --git a/Assets/_Game/Scripts/Projectiles/NetProjectile.cs b/Assets/_Game/Scripts/Projectiles/NetProjectile.cs
+index 6190379..aa0b19f 100644
+--- a/Assets/_Game/Scripts/Projectiles/NetProjectile.cs
++++ b/Assets/_Game/Scripts/Projectiles/NetProjectile.cs
+@@ -1,3 +1,4 @@
++using UnityEngine.Assertions;
+ using UnityEngine;
+ using Unity.Netcode;
+ using ProjectAI.Core;
+@@ -25,9 +26,9 @@ namespace ProjectAI.Projectiles
+         {
+             base.Awake();
+             statComponent = GetComponentInChildren<NetStatComponent>();
+-            UnityEngine.Assertions.Assert.IsNotNull(statComponent, "NetProjectile? ?곕?吏 泥섎━瑜??꾪빐 NetStatComponent媛 ?꾩닔?낅땲??");
++            Assert.IsNotNull(statComponent, "NetProjectile? ?곕?吏 泥섎━瑜??꾪빐 NetStatComponent媛 ?꾩닔?낅땲??");
+ 
+-            UnityEngine.Assertions.Assert.IsNotNull(base.Movement, "NetProjectile? ?대룞 ?쒖뼱瑜??꾪븳 ANetMovement 而댄룷?뚰듃媛 ?꾩닔?낅땲??");
++            Assert.IsNotNull(base.Movement, "NetProjectile? ?대룞 ?쒖뼱瑜??꾪븳 ANetMovement 而댄룷?뚰듃媛 ?꾩닔?낅땲??");
+         }
+ 
+         public override void OnNetworkSpawn()
+@@ -56,6 +57,8 @@ namespace ProjectAI.Projectiles
+         /// </summary>
+         public void Initialize(Vector2 direction, ulong ownerNetObjId)
+         {
++            Assert.IsTrue(base.IsServer, "[NetProjectile] Initialize???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
+             if (!base.IsServer)
+             {
+                 return;
+@@ -110,8 +113,14 @@ namespace ProjectAI.Projectiles
+ 
+         private void DestroyProjectile()
+         {
++            Assert.IsTrue(base.IsServer, "[NetProjectile] DestroyProjectile? ?쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
++            
++            if (!base.IsServer)
++            {
++                return;
++            }
+             Debug.Log($"[NetProjectile] ?ъ궗泥??뚭눼(Despawn) ?쒕룄. IsServer: {base.IsServer}, NetworkObjectId: {base.NetworkObjectId}, IsSpawned: {base.NetworkObject?.IsSpawned}");
+-            if (base.IsServer && base.NetworkObject != null && base.NetworkObject.IsSpawned)
++            if (base.NetworkObject != null && base.NetworkObject.IsSpawned)
+             {
+                 if (GameStatics.ObjectPool != null)
+                 {

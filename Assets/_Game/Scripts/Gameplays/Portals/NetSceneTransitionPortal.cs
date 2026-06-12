@@ -1,13 +1,14 @@
 using UnityEngine;
 using ProjectAI.Core;
 using ProjectAI.Core.Enums;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Environment
 {
     /// <summary>
     /// 상호작용 시 파티 전체를 지정된 씬으로 이동시키는 구체적인 씬 이동 포탈입니다.
     /// </summary>
-    public class SceneTransitionPortal : APortalInteractable
+    public class NetSceneTransitionPortal : ANetPortalInteractable
     {
         [Tooltip("이동할 대상 씬")]
         [SerializeField]
@@ -20,7 +21,7 @@ namespace ProjectAI.Environment
 
         [Tooltip("체크 시 아래의 쌩 좌표(Raw)로 직접 이동합니다 (targetSpawnPointID가 비워져 있어야 작동)")]
         [SerializeField]
-        private bool useRawCoordinates = false;
+        private bool shouldUseRawCoordinates = false;
 
         [Tooltip("직접 이동할 목표 월드 좌표 (Vector2)")]
         [SerializeField]
@@ -29,10 +30,18 @@ namespace ProjectAI.Environment
         #region Protected Methods
         protected override void ExecutePortal(GameObject interactor)
         {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSceneTransitionPortal] ExecutePortal은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
             SceneTransitionData.NextSpawnPointID = targetSpawnPointID;
-            SceneTransitionData.UseRawCoordinates = useRawCoordinates;
+            SceneTransitionData.ShouldUseRawCoordinates = shouldUseRawCoordinates;
             SceneTransitionData.RawTargetPosition = rawTargetPosition;
 
+            Assert.IsNotNull(GameStatics.NetworkManager, "[NetSceneTransitionPortal] NetworkManager가 null입니다.");
             string sceneName = targetScene.ToString();
             GameStatics.NetworkManager.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
         }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using Unity.Netcode;
 using System.Collections.Generic;
 using ProjectAI.Core.Interfaces;
@@ -45,6 +46,7 @@ namespace ProjectAI.Core
         {
             if (!IsOwner)
             {
+                Debug.Log("[NetInteractor] TryInteract: IsOwner가 아닙니다.");
                 return;
             }
 
@@ -75,6 +77,7 @@ namespace ProjectAI.Core
 
             if (closestInteractable == null)
             {
+                Debug.Log("[NetInteractor] TryInteract: 반경 내 상호작용 가능한 대상이 없습니다.");
                 return;
             }
 
@@ -91,7 +94,14 @@ namespace ProjectAI.Core
         [Rpc(SendTo.Server)]
         private void RequestInteractRpc(ulong targetObjectId)
         {
-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetInteractor] RequestInteractRpc는 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
             {
                 return;
             }

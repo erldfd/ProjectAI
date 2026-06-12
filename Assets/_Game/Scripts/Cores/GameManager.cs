@@ -1,3 +1,4 @@
+using UnityEngine.Assertions;
 using UnityEngine;
 using ProjectAI.Network;
 
@@ -18,7 +19,7 @@ namespace ProjectAI.Core
                 Debug.LogWarning("[GameManager] 중복된 GameManager 발견. 이전 객체를 유지하고 새로 로드된 객체를 파괴합니다.");
                 // Destroy는 프레임 끝에 실행되므로, 그 찰나의 순간에도 로직이 돌지 않도록 즉시 꺼버립니다.
                 gameObject.SetActive(false);
-                Destroy(gameObject);
+                UnityEngine.Object.Destroy(gameObject);
                 return;
             }
 
@@ -26,7 +27,7 @@ namespace ProjectAI.Core
             GameStatics.RegisterManager(this);
             
             MultiplayerService = GetComponent<MultiplayerServiceManager>();
-            UnityEngine.Assertions.Assert.IsNotNull(MultiplayerService, "[GameManager] MultiplayerServiceManager 컴포넌트가 부착되어 있지 않습니다. 필수 컴포넌트입니다.");
+            Assert.IsNotNull(MultiplayerService, "[GameManager] MultiplayerServiceManager 컴포넌트가 부착되어 있지 않습니다. 필수 컴포넌트입니다.");
             
             // 씬을 전환해도 이 객체(및 부착된 네트워크 매니저)가 삭제되지 않도록 보호합니다.
             DontDestroyOnLoad(gameObject);

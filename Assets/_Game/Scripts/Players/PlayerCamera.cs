@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Players
 {
@@ -37,10 +38,7 @@ namespace ProjectAI.Players
                 return;
             }
 
-            if (targetTransform == null)
-            {
-                return;
-            }
+            Assert.IsNotNull(targetTransform, "[PlayerCamera] InitCamera: targetTransform이 할당되지 않았습니다.");
 
             cinemachineCamera.Follow = targetTransform;
         }
