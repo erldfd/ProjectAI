@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using System.Threading.Tasks;
+using ProjectAI.Core;
 
 namespace ProjectAI.Network
 {
@@ -41,12 +42,12 @@ namespace ProjectAI.Network
             {
                 MatchmakingService = new RelayMatchmakingService();
                 
-                if (NetworkManager.Singleton != null)
+                if (GameStatics.NetworkManager != null)
                 {
-                    UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+                    UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
                     if (transport != null)
                     {
-                        NetworkManager.Singleton.NetworkConfig.NetworkTransport = transport;
+                        GameStatics.NetworkManager.NetworkConfig.NetworkTransport = transport;
                     }
                     else
                     {
@@ -55,7 +56,7 @@ namespace ProjectAI.Network
                 }
                 else
                 {
-                    Debug.LogWarning("[MultiplayerServiceManager] NetworkManager.Singleton is null. Cannot set NetworkTransport.");
+                    Debug.LogWarning("[MultiplayerServiceManager] GameStatics.NetworkManager is null. Cannot set NetworkTransport.");
                 }
             }
             else if (CurrentMode == EMultiplayerMode.Steamworks)

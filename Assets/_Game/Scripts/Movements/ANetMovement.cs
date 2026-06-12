@@ -1,3 +1,4 @@
+using UnityEngine.Scripting.APIUpdating;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -9,7 +10,7 @@ namespace ProjectAI.Movements
     /// 모든 네트워크 엔티티(플레이어, 몬스터, 투사체 등) 이동 컴포넌트의 추상 기반 클래스입니다.
     /// 공통 기능(넉백 등) 및 상태 이벤트(EntityEvents)와 통신하기 위한 허브 역할을 합니다.
     /// </summary>
-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "ANetMovement")]
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "ANetMovement")]
     public abstract class ANetMovement : NetworkBehaviour
     {
         protected EntityEvents _entityEvents;
@@ -47,6 +48,7 @@ namespace ProjectAI.Movements
             _entityEvents = GetComponentInParent<EntityEvents>();
             Assert.IsNotNull(_entityEvents, "EntityEvents component is missing.");
             Rb = GetComponentInParent<Rigidbody2D>();
+            Assert.IsNotNull(Rb, "Rigidbody2D is missing.");
         }
 
         public override void OnNetworkSpawn()

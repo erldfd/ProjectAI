@@ -1,13 +1,15 @@
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core.Interfaces;
+using UnityEngine.Assertions;
+using ProjectAI.Core;
 
 namespace ProjectAI.Environment
 {
     /// <summary>
     /// 조건 검사(IInteractionCondition)와 실제 이동 로직(ExecutePortal)의 흐름을 통제하는 포탈 부모 클래스입니다.
     /// </summary>
-    public abstract class APortalInteractable : NetworkBehaviour, IInteractable
+    public abstract class ANetPortalInteractable : NetworkBehaviour, IInteractable
     {
         private IInteractionCondition[] conditions;
 
@@ -21,10 +23,15 @@ namespace ProjectAI.Environment
         #region Public Methods
         public void Interact(GameObject interactor)
         {
-            Debug.Log("CAn Interact?");
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[ANetPortalInteractable] Interact는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
             if (CanInteract(interactor))
             {
-                Debug.Log("I Can");
                 ExecutePortal(interactor);
             }
         }

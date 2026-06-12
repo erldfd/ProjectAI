@@ -1,3 +1,4 @@
+using UnityEngine.Scripting.APIUpdating;
 using System;
 using UnityEngine;
 using ProjectAI.Core.Skills;
@@ -7,7 +8,7 @@ namespace ProjectAI.Core.Entities
     /// <summary>
     /// 엔티티 내외부에서 발생하는 각종 상태 이벤트를 중계하는 범용 Event Bus 컴포넌트입니다.
     /// </summary>
-    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterEvents")]
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterEvents")]
     public class EntityEvents : MonoBehaviour
     {
         /// <summary>

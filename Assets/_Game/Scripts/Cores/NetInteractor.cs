@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using Unity.Netcode;
 using System.Collections.Generic;
 using ProjectAI.Core.Interfaces;
@@ -91,7 +92,14 @@ namespace ProjectAI.Core
         [Rpc(SendTo.Server)]
         private void RequestInteractRpc(ulong targetObjectId)
         {
-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetInteractor] RequestInteractRpc는 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
             {
                 return;
             }

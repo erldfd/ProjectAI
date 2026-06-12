@@ -1,7 +1,6 @@
 using ProjectAI.Core.Entities;
 using ProjectAI.Core.Skills;
-using ProjectAI.Movements;
-using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Characters
 {
@@ -16,6 +15,7 @@ namespace ProjectAI.Characters
         {
             base.Awake();
             SkillComponent = GetComponentInChildren<NetSkillComponent>();
+            Assert.IsNotNull(SkillComponent, "[NetCharacter] NetSkillComponent를 찾을 수 없습니다.");
         }
 
         /// <summary>

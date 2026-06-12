@@ -1,6 +1,7 @@
 using ProjectAI.Core;
 using ProjectAI.Movements;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Characters
 {
@@ -16,6 +17,7 @@ namespace ProjectAI.Characters
         {
             base.Awake();
             interactor = GetComponentInChildren<NetInteractor>();
+            Assert.IsNotNull(interactor, "[NetPlayerCharacter] NetInteractor를 찾을 수 없습니다.");
         }
 
         /// <summary>

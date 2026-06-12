@@ -1,7 +1,9 @@
+using UnityEngine.Assertions;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using ProjectAI.Core.Skills;
+using ProjectAI.Core;
 
 namespace ProjectAI.Core.Pooling
 {
@@ -11,7 +13,7 @@ namespace ProjectAI.Core.Pooling
     public class NetworkObjectPool : MonoBehaviour
     {
         /// <summary>
-        /// 프리팹별 풀 데이터를 관리하는 구조체입니다.
+        /// 프리팹별 풀 데이터를 관리하는 클래스입니다.
         /// </summary>
         private class PoolData
         {
@@ -51,25 +53,60 @@ namespace ProjectAI.Core.Pooling
         private readonly Dictionary<NetworkObject, IPoolable> instancePoolableMap = new Dictionary<NetworkObject, IPoolable>();
         private readonly List<NetworkObject> registeredPrefabs = new List<NetworkObject>();
 
+        [Header("Debug")]
+        [Tooltip("체크 시 하이어라키에서 숨겨진 대기 중인 풀 객체들이 다시 나타납니다.")]
+        public bool ShouldShowHiddenPoolObjects;
+
+        private bool isInitialized = false;
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            HideFlags flag = ShouldShowHiddenPoolObjects ? HideFlags.None : HideFlags.HideInHierarchy;
+            foreach (PoolData pool in pools.Values)
+            {
+                foreach (NetworkObject obj in pool.Queue)
+                {
+                    if (obj != null && obj.gameObject != null)
+                    {
+                        obj.gameObject.hideFlags = flag;
+                    }
+                }
+            }
+        }
+#endif
+
         private void OnEnable()
         {
             GameStatics.RegisterObjectPool(this);
-            if (NetworkManager.Singleton != null)
+            if (GameStatics.NetworkManager != null)
             {
-                NetworkManager.Singleton.OnServerStarted += RegisterPrefabHandlers;
-                NetworkManager.Singleton.OnClientStarted += RegisterPrefabHandlers;
+                GameStatics.NetworkManager.OnServerStarted += InitializePools;
+                GameStatics.NetworkManager.OnClientStarted += InitializePools;
+
+                // 이미 서버나 클라이언트가 가동된 이후에 OnEnable이 불린 경우 즉시 초기화
+                if (GameStatics.NetworkManager.IsServer || GameStatics.NetworkManager.IsClient)
+                {
+                    InitializePools();
+                }
             }
         }
 
-        private void Start()
+        private void InitializePools()
         {
-            RegisterPrefabHandlers();
+            if (isInitialized)
+            {
+                return;
+            }
+
+            isInitialized = true;
             SetupSkillProjectiles();
+            RegisterPrefabHandlers();
         }
 
         private void SetupSkillProjectiles()
         {
-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillProjectiles: SkillManager가 GameStatics에 등록되어 있지 않습니다!");
+            Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillProjectiles: SkillManager가 GameStatics에 등록되어 있지 않습니다!");
 
             for (int i = 0; i < GameStatics.SkillManager.SkillConfigs.Count; i++)
             {
@@ -85,24 +122,37 @@ namespace ProjectAI.Core.Pooling
 
         private void OnDisable()
         {
-            if (NetworkManager.Singleton != null)
+            if (GameStatics.NetworkManager != null)
             {
-                NetworkManager.Singleton.OnServerStarted -= RegisterPrefabHandlers;
-                NetworkManager.Singleton.OnClientStarted -= RegisterPrefabHandlers;
+                GameStatics.NetworkManager.OnServerStarted -= InitializePools;
+                GameStatics.NetworkManager.OnClientStarted -= InitializePools;
 
-                if (NetworkManager.Singleton.PrefabHandler != null)
+                if (GameStatics.NetworkManager.PrefabHandler != null)
                 {
                     for (int i = 0; i < registeredPrefabs.Count; i++)
                     {
-                        NetworkManager.Singleton.PrefabHandler.RemoveHandler(registeredPrefabs[i]);
+                        GameStatics.NetworkManager.PrefabHandler.RemoveHandler(registeredPrefabs[i]);
                     }
                 }
             }
 
             registeredPrefabs.Clear();
+            
+            foreach (PoolData pool in pools.Values)
+            {
+                foreach (NetworkObject obj in pool.Queue)
+                {
+                    if (obj != null && obj.gameObject != null)
+                    {
+                        Destroy(obj.gameObject);
+                    }
+                }
+            }
+
             pools.Clear();
             instanceToPrefabMap.Clear();
             instancePoolableMap.Clear();
+            isInitialized = false;
             GameStatics.UnregisterObjectPool(this);
         }
 
@@ -111,7 +161,7 @@ namespace ProjectAI.Core.Pooling
         /// </summary>
         public void SetupPool(NetworkObject prefab, int initialSize, bool shouldExpandWhenEmpty = true)
         {
-            UnityEngine.Assertions.Assert.IsNotNull(prefab, "[NetworkObjectPool] SetupPool: prefab이 null입니다!");
+            Assert.IsNotNull(prefab, "[NetworkObjectPool] SetupPool: prefab이 null입니다!");
 
             if (pools.ContainsKey(prefab))
             {
@@ -132,6 +182,7 @@ namespace ProjectAI.Core.Pooling
             for (int i = 0; i < initialSize; i++)
             {
                 NetworkObject instance = CreateInstance(prefab);
+                instance.gameObject.hideFlags = ShouldShowHiddenPoolObjects ? HideFlags.None : HideFlags.HideInHierarchy;
                 instance.gameObject.SetActive(false);
                 poolData.Queue.Enqueue(instance);
                 instanceToPrefabMap.Add(instance, prefab);
@@ -140,7 +191,7 @@ namespace ProjectAI.Core.Pooling
 
         private void RegisterPrefabHandlers()
         {
-            if (NetworkManager.Singleton == null || NetworkManager.Singleton.PrefabHandler == null)
+            if (GameStatics.NetworkManager == null || GameStatics.NetworkManager.PrefabHandler == null)
             {
                 return;
             }
@@ -150,7 +201,7 @@ namespace ProjectAI.Core.Pooling
                 NetworkObject prefab = pair.Value.Prefab;
                 if (!registeredPrefabs.Contains(prefab))
                 {
-                    NetworkManager.Singleton.PrefabHandler.AddHandler(prefab, new PrefabPoolHandler(this, prefab));
+                    GameStatics.NetworkManager.PrefabHandler.AddHandler(prefab, new PrefabPoolHandler(this, prefab));
                     registeredPrefabs.Add(prefab);
                 }
             }
@@ -158,8 +209,7 @@ namespace ProjectAI.Core.Pooling
 
         private NetworkObject CreateInstance(NetworkObject prefab)
         {
-            // NGO 씬 스윕 시 경고(Disabled NetworkBehaviours...) 방지를 위해
-            // 부모(base.transform)를 지정하지 않고 최상위 루트에 생성합니다.
+            // 루트에 생성하되 HideFlags를 통해 에디터 하이어라키에서 숨깁니다.
             NetworkObject instance = UnityEngine.Object.Instantiate(prefab);
             IPoolable poolable = instance.GetComponent<IPoolable>();
 
@@ -181,6 +231,8 @@ namespace ProjectAI.Core.Pooling
 
         private NetworkObject GetNetworkObjectInternal(NetworkObject prefab, Vector3 position, Quaternion rotation)
         {
+            Assert.IsNotNull(prefab, "[NetworkObjectPool] GetNetworkObjectInternal: prefab이 null입니다!");
+
             if (!pools.TryGetValue(prefab, out PoolData poolData))
             {
                 Debug.LogError($"[NetworkObjectPool] Setup된 풀이 존재하지 않습니다: {prefab.name}");
@@ -199,12 +251,15 @@ namespace ProjectAI.Core.Pooling
                 {
                     Debug.LogWarning($"[NetworkObjectPool] 풀이 고갈되었습니다: {prefab.name}. 강제로 임시 인스턴스를 확장합니다.");
                 }
+
                 instance = CreateInstance(prefab);
                 instanceToPrefabMap.Add(instance, prefab);
             }
 
             if (instance != null)
             {
+                instance.gameObject.hideFlags = HideFlags.None;
+
                 Transform instTransform = instance.transform;
                 instTransform.position = position;
                 instTransform.rotation = rotation;
@@ -224,7 +279,25 @@ namespace ProjectAI.Core.Pooling
         /// </summary>
         public void ReturnNetworkObject(NetworkObject instance)
         {
-            ReturnNetworkObjectInternal(instance);
+            Assert.IsNotNull(instance, "[NetworkObjectPool] ReturnNetworkObject: 반환하려는 instance가 null입니다!");
+
+            if (instance.IsSpawned)
+            {
+                // 스폰된 상태라면 서버만 Despawn을 호출할 수 있습니다. 
+                // 클라이언트는 서버의 Despawn 메시지를 받아 NGO 콜백으로 자동 처리됩니다.
+                if (GameStatics.IsServerAuthorized)
+                {
+                    instance.Despawn(true);
+                }
+                else
+                {
+                    Debug.LogWarning($"[NetworkObjectPool] 클라이언트가 스폰된 객체의 반환을 시도했습니다: {instance.name}. 서버의 Despawn 메시지를 대기합니다.");
+                }
+            }
+            else
+            {
+                ReturnNetworkObjectInternal(instance);
+            }
         }
 
         private void ReturnNetworkObjectInternal(NetworkObject instance)
@@ -236,10 +309,12 @@ namespace ProjectAI.Core.Pooling
 
             if (!instanceToPrefabMap.TryGetValue(instance, out NetworkObject prefab))
             {
+                Debug.LogWarning($"[NetworkObjectPool] 풀에 등록되지 않은 객체 반환 시도: {instance.name}. 강제 파괴합니다.");
                 if (instance.gameObject != null)
                 {
                     Destroy(instance.gameObject);
                 }
+
                 return;
             }
 
@@ -247,10 +322,12 @@ namespace ProjectAI.Core.Pooling
             {
                 instanceToPrefabMap.Remove(instance);
                 instancePoolableMap.Remove(instance);
+                Debug.LogWarning($"[NetworkObjectPool] 삭제되었거나 유효하지 않은 풀로의 반환 시도: {prefab.name}. 강제 파괴합니다.");
                 if (instance.gameObject != null)
                 {
                     Destroy(instance.gameObject);
                 }
+
                 return;
             }
 
@@ -259,8 +336,8 @@ namespace ProjectAI.Core.Pooling
                 poolable.OnDespawn();
             }
 
-            instance.transform.SetParent(base.transform);
-
+            // 폴더 대신 하이어라키 숨김 방식을 사용하여 NGO 제약을 회피합니다.
+            instance.gameObject.hideFlags = ShouldShowHiddenPoolObjects ? HideFlags.None : HideFlags.HideInHierarchy;
             instance.gameObject.SetActive(false);
             poolData.Queue.Enqueue(instance);
         }

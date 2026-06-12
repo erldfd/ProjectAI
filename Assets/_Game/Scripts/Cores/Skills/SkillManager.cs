@@ -7,6 +7,7 @@ using Unity.Netcode;
 using UnityEngine.Assertions;
 using ProjectAI.Core.Pooling;
 using ProjectAI.Characters;
+using ProjectAI.Core;
 
 namespace ProjectAI.Core.Skills
 {
@@ -129,9 +130,10 @@ namespace ProjectAI.Core.Skills
         /// </summary>
         public bool ExecuteSkill(ESkillType type, NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ExecuteSkill은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
-                Debug.LogWarning("[SkillManager] 스킬 실행(Execute)은 서버에서만 가능합니다.");
                 return false;
             }
 
@@ -152,9 +154,10 @@ namespace ProjectAI.Core.Skills
 
         public void ActionSkill(ESkillType type, NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ActionSkill은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
-                Debug.LogWarning("[SkillManager] 스킬 액션(Action)은 서버에서만 가능합니다.");
                 return;
             }
 
@@ -166,9 +169,10 @@ namespace ProjectAI.Core.Skills
 
         public void EndSkill(ESkillType type, NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] EndSkill은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
-                Debug.LogWarning("[SkillManager] 스킬 종료(End)는 서버에서만 가능합니다.");
                 return;
             }
 

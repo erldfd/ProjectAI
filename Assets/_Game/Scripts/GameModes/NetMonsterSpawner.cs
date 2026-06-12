@@ -1,3 +1,4 @@
+using UnityEngine.Assertions;
 using System;
 using UnityEngine;
 using Unity.Netcode;
@@ -47,7 +48,7 @@ namespace ProjectAI.GameModes
         {
             base.OnNetworkSpawn();
 
-            UnityEngine.Assertions.Assert.IsNotNull(monsterPrefab, "[NetMonsterSpawner] 몬스터 프리팹이 누락되었습니다.");
+            Assert.IsNotNull(monsterPrefab, "[NetMonsterSpawner] 몬스터 프리팹이 누락되었습니다.");
 
             // 서버/클라이언트 공통: 풀링 핸들러 사전 등록 필수
             if (GameStatics.ObjectPool != null)
@@ -55,17 +56,17 @@ namespace ProjectAI.GameModes
                 GameStatics.ObjectPool.SetupPool(monsterPrefab, initialPoolSize, true);
             }
 
-            if (!base.IsServer)
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
 
-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.ObjectPool, "[NetMonsterSpawner] GameStatics.ObjectPool이 등록되지 않았습니다.");
+            Assert.IsNotNull(GameStatics.ObjectPool, "[NetMonsterSpawner] GameStatics.ObjectPool이 등록되지 않았습니다.");
         }
 
         private void Update()
         {
-            if (!base.IsServer || !base.IsSpawned)
+            if (!GameStatics.IsServerAuthorized || !IsSpawned)
             {
                 return;
             }
@@ -88,19 +89,28 @@ namespace ProjectAI.GameModes
             if (spawnTimer >= spawnInterval)
             {
                 spawnTimer = 0f;
-                SpawnMonster();
+                Vector2 randomPoint = UnityEngine.Random.insideUnitCircle * spawnRadius;
+                Vector3 spawnPosition = (Vector3)((Vector2)transform.position + randomPoint);
+                SpawnMonster(spawnPosition, Quaternion.identity);
             }
         }
 
-        private void SpawnMonster()
+        private void SpawnMonster(Vector3 position, Quaternion rotation)
         {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterSpawner] 몬스터 스폰 로직은 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
             if (GameStatics.ObjectPool == null || monsterPrefab == null)
             {
                 return;
             }
 
             Vector2 randomPoint = UnityEngine.Random.insideUnitCircle * spawnRadius;
-            Vector2 spawnPosition = (Vector2)base.transform.position + randomPoint;
+            Vector2 spawnPosition = (Vector2)transform.position + randomPoint;
 
             NetworkObject monsterNetObj = GameStatics.ObjectPool.GetNetworkObject(monsterPrefab, spawnPosition, Quaternion.identity);
             if (monsterNetObj != null)

@@ -1,9 +1,11 @@
+using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core.Pooling;
 using ProjectAI.Movements;
 using ProjectAI.Projectiles;
 using ProjectAI.Characters;
+using ProjectAI.Core;
 
 namespace ProjectAI.Core.Skills.Abilities
 {
@@ -23,7 +25,7 @@ namespace ProjectAI.Core.Skills.Abilities
             projectilePrefab = config.Prefab;
             cooldown = config.BaseCooldown;
 
-            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab이 누락되었습니다.");
+            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab이 누락되었습니다.");
         }
 
         public bool CanExecute(NetCharacter caster)
@@ -35,12 +37,11 @@ namespace ProjectAI.Core.Skills.Abilities
             }
 
             // 쿨타임 검사 (간단 구현)
-            if (NetworkManager.Singleton != null)
+            Assert.IsNotNull(GameStatics.NetworkManager, "[BasicAttackLogic] CanExecute: NetworkManager is null.");
+            
+            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetLastActivationTime(SkillType) + cooldown)
             {
-                if (NetworkManager.Singleton.ServerTime.Time < caster.SkillComponent.GetLastActivationTime(SkillType) + cooldown)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
@@ -48,7 +49,9 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public void Execute(NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] Execute는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
@@ -66,13 +69,15 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public void Action(NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] Action은 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
 
             // 실제 키프레임 도달 시 호출되는 투사체 스폰 로직
-            UnityEngine.Assertions.Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
+            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
 
             Vector2 direction = Vector2.right;
             if (caster.Movement != null)
@@ -86,7 +91,7 @@ namespace ProjectAI.Core.Skills.Abilities
                 origin = caster.SkillComponent.FirePoint.position;
             }
 
-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
+            Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
 
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
@@ -109,16 +114,15 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public void End(NetCharacter caster)
         {
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer)
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] End는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
 
             // 스킬 종료(또는 취소) 시점에 쿨타임을 세팅하여, 종료 시점부터 쿨타임이 돌도록 함.
-            if (NetworkManager.Singleton != null)
-            {
-                caster.SkillComponent.SetLastActivationTime(SkillType, NetworkManager.Singleton.ServerTime.Time);
-            }
+            caster.SkillComponent.SetLastActivationTime(SkillType, GameStatics.NetworkManager.ServerTime.Time);
         }
     }
 }

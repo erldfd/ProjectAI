@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using UnityEngine;
 using ProjectAI.Core;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Network
 {
@@ -69,6 +70,7 @@ namespace ProjectAI.Network
 
         private async void StartHostProcess()
         {
+            Assert.IsNotNull(GameStatics.MultiplayerManager, "[MultiplayerDemoUI] GameStatics.MultiplayerManager가 없습니다.");
             if (GameStatics.MultiplayerManager == null)
             {
                 Debug.LogError("GameStatics.MultiplayerManager가 없습니다. GameManager가 씬에 있는지 확인하세요.");
@@ -98,6 +100,7 @@ namespace ProjectAI.Network
                 return;
             }
 
+            Assert.IsNotNull(GameStatics.MultiplayerManager, "[MultiplayerDemoUI] GameStatics.MultiplayerManager가 없습니다.");
             if (GameStatics.MultiplayerManager == null)
             {
                 Debug.LogError("GameStatics.MultiplayerManager가 없습니다.");
