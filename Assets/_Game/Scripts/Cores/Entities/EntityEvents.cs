@@ -49,6 +49,16 @@ namespace ProjectAI.Core.Entities
         public event Action<int> OnAnimationStateExited;
 
         /// <summary>
+        /// 엔티티가 피격되었음을 알리는 이벤트 (데미지, 남은 체력)
+        /// </summary>
+        public event Action<int, int> OnHitTriggered;
+
+        /// <summary>
+        /// 엔티티가 사망 상태에 진입했음을 알리는 이벤트
+        /// </summary>
+        public event Action OnDeathTriggered;
+
+        /// <summary>
         /// 구독 시점에 즉시 최신 값을 한 번 내려줍니다. (Late Subscriber 버그 방지)
         /// </summary>
         /// <param name="modifier">적용 중인 이동 속도 배율 (1f가 기본)</param>
@@ -127,6 +137,16 @@ namespace ProjectAI.Core.Entities
         public void InvokeAnimationStateExited(int stateHash)
         {
             OnAnimationStateExited?.Invoke(stateHash);
+        }
+
+        public void InvokeHitTriggered(int damage, int remainingHealth)
+        {
+            OnHitTriggered?.Invoke(damage, remainingHealth);
+        }
+
+        public void InvokeDeathTriggered()
+        {
+            OnDeathTriggered?.Invoke();
         }
     }
 }

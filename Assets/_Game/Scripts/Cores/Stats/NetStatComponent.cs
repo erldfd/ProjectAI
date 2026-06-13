@@ -59,8 +59,11 @@ namespace ProjectAI.Core.Stats
             base.OnNetworkSpawn();
 
             MoveSpeedModifier.OnValueChanged += HandleMoveSpeedModifierChanged;
+            
+            healthComponent.OnHit += HandleHit;
+            healthComponent.OnDeath += HandleDeath;
 
-            if (IsServer && healthComponent != null)
+            if (IsServer)
             {
                 // 스폰 완료 시, 오너로서 하위 체력 컴포넌트를 하향식으로 초기화
                 healthComponent.InitializeHealth(MaxHealth.Value);
@@ -73,6 +76,19 @@ namespace ProjectAI.Core.Stats
         {
             base.OnNetworkDespawn();
             MoveSpeedModifier.OnValueChanged -= HandleMoveSpeedModifierChanged;
+            
+            healthComponent.OnHit -= HandleHit;
+            healthComponent.OnDeath -= HandleDeath;
+        }
+
+        private void HandleHit(int damage, int remainingHealth)
+        {
+            entityEvents.InvokeHitTriggered(damage, remainingHealth);
+        }
+
+        private void HandleDeath()
+        {
+            entityEvents.InvokeDeathTriggered();
         }
 
         private void HandleMoveSpeedModifierChanged(float previousValue, float newValue)

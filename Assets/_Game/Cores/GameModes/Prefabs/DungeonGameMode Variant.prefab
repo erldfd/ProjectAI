@@ -8,6 +8,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1964158991572127021, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      propertyPath: skillConfigs.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1964158991572127021, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      propertyPath: skillConfigs.Array.data[0].Prefab
+      value: 
+      objectReference: {fileID: 5989937830823538665, guid: 866b169e45fdadc41900453db77a7a44, type: 3}
+    - target: {fileID: 1964158991572127021, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      propertyPath: skillConfigs.Array.data[0].SkillType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1964158991572127021, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      propertyPath: skillConfigs.Array.data[0].BaseCooldown
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
       propertyPath: m_Name
       value: DungeonGameMode Variant
@@ -54,6 +70,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7549203637897625750, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
       propertyPath: GlobalObjectIdHash
+      value: 162712380
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549203637897625750, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549203637897625750, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 3657358095
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -63,6 +87,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7993161565623532568}
+    - targetCorrespondingSourceObject: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8016704558029678772}
   m_SourcePrefab: {fileID: 100100000, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
 --- !u!1 &8394131999265860841 stripped
 GameObject:
@@ -82,3 +109,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.GameModes.NetDungeonGameMode
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &8016704558029678772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8394131999265860841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6fb49a65bc04f74bb9b11902a667dd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.SkillManager
+  skillConfigs:
+  - SkillType: 1
+    Prefab: {fileID: 5989937830823538665, guid: 866b169e45fdadc41900453db77a7a44, type: 3}
+    BaseCooldown: 0.5

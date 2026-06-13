@@ -358,10 +358,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.GameModes.NetMonsterSpawner
   ShowTopMostFoldoutHeaderGroup: 1
   monsterPrefab: {fileID: 6386993713023528098, guid: ef78fc902fca18641a8c5cae8871bb3f, type: 3}
-  spawnInterval: 5
+  spawnInterval: 10
   spawnRadius: 5
-  initialPoolSize: 10
-  maxSpawnCount: 1
+  initialPoolSize: 0
+  maxSpawnCount: 3
 --- !u!4 &856688215
 Transform:
   m_ObjectHideFlags: 0
@@ -628,14 +628,6 @@ PrefabInstance:
     - target: {fileID: 185369328024596786, guid: 74047734d7321294a890792c7e444813, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 162712380
-      objectReference: {fileID: 0}
-    - target: {fileID: 185369328024596786, guid: 74047734d7321294a890792c7e444813, type: 3}
-      propertyPath: SceneMigrationSynchronization
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 185369328024596786, guid: 74047734d7321294a890792c7e444813, type: 3}
-      propertyPath: InScenePlacedSourceGlobalObjectIdHash
-      value: 3657358095
       objectReference: {fileID: 0}
     - target: {fileID: 4892560124056987606, guid: 74047734d7321294a890792c7e444813, type: 3}
       propertyPath: m_LocalPosition.x

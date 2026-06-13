@@ -1,0 +1,4490 @@
+﻿
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Demo\Scripts\MultiplayerDemoUI.cs
+========================================
+#if UNITY_EDITOR
+using UnityEngine;
+using ProjectAI.Core;
+using UnityEngine.Assertions;
+
+namespace ProjectAI.Network
+{
+    /// <summary>
+    /// 媛쒕컻 以?諛??앹꽦(Host) 諛?議곗씤 肄붾뱶(Join Code) ?낅젰 ?뚯뒪?몃? ?꾪븳 ?꾩떆 GUI 而댄룷?뚰듃?낅땲??
+    /// </summary>
+    public class MultiplayerDemoUI : MonoBehaviour
+    {
+        private string _joinCodeInput = "";
+        private string _hostedCode = "";
+        private bool _isConnecting = false;
+
+        private void OnGUI()
+        {
+            // 醫뚯륫 ?곷떒??UI ?⑤꼸 洹몃━湲?            GUILayout.BeginArea(new Rect(10, 10, 300, 300));
+            GUILayout.Box("Multiplayer Test UI");
+
+            if (_isConnecting)
+            {
+                GUILayout.Label("?곌껐 以묒엯?덈떎...");
+            }
+            else
+            {
+                // --- ?몄뒪??湲곕뒫 ---
+                if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.IsHost)
+                {
+                    GUILayout.Label("?꾩옱 ?먮룞/?섎룞 ?몄뒪??以묒엯?덈떎.");
+                    string cachedCode = GameStatics.MultiplayerManager != null ? GameStatics.MultiplayerManager.LastJoinCode : "";
+                    if (!string.IsNullOrEmpty(cachedCode))
+                    {
+                        GUILayout.Space(10);
+                        GUILayout.Label("諛쒓툒??Join Code (蹂듭궗?댁꽌 ?ㅻⅨ ?대씪?댁뼵?몄뿉 ?꾨떖):");
+                        GUILayout.TextField(cachedCode);
+                    }
+                }
+                else
+                {
+                    if (GUILayout.Button("諛?留뚮뱾湲?(Start Host)", GUILayout.Height(40)))
+                    {
+                        StartHostProcessAsync();
+                    }
+
+                    if (!string.IsNullOrEmpty(_hostedCode))
+                    {
+                        GUILayout.Space(10);
+                        GUILayout.Label("諛쒓툒??Join Code (蹂듭궗?댁꽌 ?ㅻⅨ ?대씪?댁뼵?몄뿉 ?꾨떖):");
+                        _hostedCode = GUILayout.TextField(_hostedCode);
+                    }
+                }
+
+                GUILayout.Space(30);
+
+                // --- ?대씪?댁뼵??李멸? 湲곕뒫 ---
+                GUILayout.Label("李멸???諛⑹쓽 Join Code ?낅젰:");
+                _joinCodeInput = GUILayout.TextField(_joinCodeInput);
+
+                if (GUILayout.Button("諛?李멸? (Join Client)", GUILayout.Height(40)))
+                {
+                    StartClientProcessAsync();
+                }
+            }
+
+            GUILayout.EndArea();
+        }
+
+        private async void StartHostProcessAsync()
+        {
+            Assert.IsNotNull(GameStatics.MultiplayerManager, "[MultiplayerDemoUI] GameStatics.MultiplayerManager媛 ?놁뒿?덈떎.");
+            if (GameStatics.MultiplayerManager == null)
+            {
+                Debug.LogError("GameStatics.MultiplayerManager媛 ?놁뒿?덈떎. GameManager媛 ?ъ뿉 ?덈뒗吏 ?뺤씤?섏꽭??");
+                return;
+            }
+
+            _isConnecting = true;
+            // ?몄뒪???앹꽦 ?붿껌 諛?諛쒓툒??諛?肄붾뱶 諛쏄린
+            _hostedCode = await GameStatics.MultiplayerManager.StartHostAsync();
+            _isConnecting = false;
+
+            if (string.IsNullOrEmpty(_hostedCode))
+            {
+                Debug.LogError("諛??앹꽦???ㅽ뙣?덉뒿?덈떎.");
+            }
+            else
+            {
+                Debug.Log($"諛??앹꽦 ?깃났. 肄붾뱶瑜??꾨떖?섏꽭?? {_hostedCode}");
+            }
+        }
+
+        private async void StartClientProcessAsync()
+        {
+            if (string.IsNullOrEmpty(_joinCodeInput))
+            {
+                Debug.LogWarning("李멸???Join Code瑜??낅젰?댁＜?몄슂.");
+                return;
+            }
+
+            Assert.IsNotNull(GameStatics.MultiplayerManager, "[MultiplayerDemoUI] GameStatics.MultiplayerManager媛 ?놁뒿?덈떎.");
+            if (GameStatics.MultiplayerManager == null)
+            {
+                Debug.LogError("GameStatics.MultiplayerManager媛 ?놁뒿?덈떎.");
+                return;
+            }
+
+            _isConnecting = true;
+            // ?낅젰??肄붾뱶濡?李멸? ?붿껌
+            bool success = await GameStatics.MultiplayerManager.StartClientAsync(_joinCodeInput);
+            _isConnecting = false;
+
+            if (!success)
+            {
+                Debug.LogError("諛?李멸????ㅽ뙣?덉뒿?덈떎.");
+            }
+            else
+            {
+                Debug.Log("諛?李멸????깃났?덉뒿?덈떎!");
+            }
+        }
+    }
+}
+#endif
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Anims\AnimStateSelectorAttribute.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Core.Entities
+{
+    /// <summary>
+    /// ?몄뒪?숉꽣?먯꽌 ?좊땲硫붿씠?곗쓽 State ?대쫫?ㅼ쓣 ?쒕∼?ㅼ슫?쇰줈 ?좏깮?????덇쾶 ?댁＜???띿꽦?낅땲??
+    /// 臾몄옄??string) ?꾨뱶??遺李⑺븯???ъ슜?⑸땲??
+    /// </summary>
+    public class AnimStateSelectorAttribute : PropertyAttribute
+    {
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Anims\EAnimationEventTag.cs
+========================================
+namespace ProjectAI.Core.Entities
+{
+    /// <summary>
+    /// ?좊땲硫붿씠???대┰??Animation Event?먯꽌 int ?뚮씪誘명꽣濡??섍만 ?앸퀎???닿굅?뺤엯?덈떎.
+    /// 媛뺥???Strong Type)??媛뺤젣?섏뿬 臾몄옄???ㅽ? ?깆쓣 諛⑹??⑸땲??
+    /// </summary>
+    public enum EAnimationEventTag
+    {
+        None = 0,
+        
+        /// <summary>
+        /// ?ㅽ궗???듭떖 ?≪뀡(?ъ궗泥?諛쒖궗, ?寃??먯젙 ????諛쒕룞?섎뒗 ??대컢
+        /// </summary>
+        Action = 1,
+        
+        Sound = 2,
+        Effect = 3
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Anims\EntityAnimator.cs
+========================================
+using UnityEngine.Scripting.APIUpdating;
+using UnityEngine;
+using UnityEngine.Assertions;
+using Unity.Netcode;
+
+namespace ProjectAI.Core.Entities
+{
+    /// <summary>
+    /// EntityEvents瑜?援щ룆?섏뿬 ?좊땲硫붿씠?곕? ?쒖뼱?섎뒗 而댄룷?뚰듃?낅땲??
+    /// ?ㅽ듃?뚰겕??臾쇰━ 濡쒖쭅怨??꾩쟾??遺꾨━?섏뼱 ?덉뒿?덈떎.
+    /// </summary>
+    [RequireComponent(typeof(Animator))]
+    [RequireComponent(typeof(SpriteRenderer))]
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterAnimator")]
+    public class EntityAnimator : MonoBehaviour
+    {
+        private static readonly int hashMoveSpeed = Animator.StringToHash("MoveSpeed");
+
+
+        private EntityEvents entityEvents;
+        
+
+        private Animator animator;
+
+
+        private SpriteRenderer spriteRenderer;
+
+        private void Awake()
+        {
+            animator = GetComponent<Animator>();
+            Assert.IsNotNull(animator, "Animator is missing.");
+
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            Assert.IsNotNull(spriteRenderer, "SpriteRenderer is missing.");
+
+            // EntityEvents媛 紐낆떆?곸쑝濡??좊떦?섏? ?딆? 寃쎌슦 ?먯깋
+            if (entityEvents == null)
+            {
+                entityEvents = GetComponentInParent<EntityEvents>();
+                Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            }
+        }
+
+        private void OnEnable()
+        {
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            entityEvents.OnVelocityChanged += HandleVelocityChanged;
+            entityEvents.OnFacingDirectionChanged += HandleFacingDirectionChanged;
+            entityEvents.OnPlayAnimation += HandlePlayAnimation;
+        }
+
+        private void OnDisable()
+        {
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            entityEvents.OnVelocityChanged -= HandleVelocityChanged;
+            entityEvents.OnFacingDirectionChanged -= HandleFacingDirectionChanged;
+            entityEvents.OnPlayAnimation -= HandlePlayAnimation;
+        }
+
+        private void HandleVelocityChanged(Vector2 velocity)
+        {
+            animator.SetFloat(hashMoveSpeed, velocity.magnitude);
+        }
+
+        private void HandleFacingDirectionChanged(bool isFacingRight)
+        {
+            // ?ㅻⅨ履쎌쓣 蹂대㈃ flipX = false, ?쇱そ??蹂대㈃ flipX = true
+            spriteRenderer.flipX = !isFacingRight;
+        }
+
+        private void HandlePlayAnimation(int stateHash, float transitionDuration, int layer)
+        {
+            if (stateHash == 0)
+            {
+                return;
+            }
+
+            animator.CrossFade(stateHash, transitionDuration, layer, 0f);
+        }
+
+        /// <summary>
+        /// ?좊땲硫붿씠???대┰??Animation Event 李쎌뿉????硫붿꽌?쒕? ?몄텧?섏뿬 ?ㅽ궗??Action ??대컢???꾪뙆?⑸땲??
+        /// ?뚮씪誘명꽣媛 ?녿뒗 援ъ껜?곸씤 硫붿꽌?쒕? ?ъ슜?⑥쑝濡쒖뜥 留ㅼ쭅 ?섎쾭 ?ъ슜???먯쿇 李⑤떒?⑸땲??
+        /// </summary>
+        public void TriggerActionAnimationEvent()
+        {
+            if (entityEvents != null)
+            {
+                entityEvents.InvokeAnimationEventTriggered(EAnimationEventTag.Action);
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Anims\SkillStateBehaviour.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Core.Entities
+{
+    /// <summary>
+    /// Animator State??遺李⑸릺???대떦 ?좊땲硫붿씠?섏씠 ?앸궇 ???뱀? 以묎컙??痍⑥냼????
+    /// 臾댁“嫄?醫낅즺 ?대깽?몃? 諛쒖깮?쒖폒 ?ㅽ궗 ?곹깭 ?뺣━瑜?蹂댁옣?섎뒗 StateMachineBehaviour?낅땲??
+    /// </summary>
+    public class SkillStateBehaviour : StateMachineBehaviour
+    {
+        public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            // ?좊땲硫붿씠?곌? 遺李⑸맂 ?숈씪???ㅻ툕?앺듃(?뱀? 遺紐??먯꽌 EntityEvents瑜?李얠뒿?덈떎.
+            EntityEvents events = animator.GetComponent<EntityEvents>();
+            if (events == null)
+            {
+                events = animator.GetComponentInParent<EntityEvents>();
+            }
+
+            if (events != null)
+            {
+                events.InvokeAnimationStateExited(stateInfo.shortNameHash);
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Anims\Editor\AnimStateSelectorDrawer.cs
+========================================
+#if UNITY_EDITOR
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.Animations;
+using ProjectAI.Core.Entities;
+
+namespace ProjectAI.Editor
+{
+    /// <summary>
+    /// AnimStateSelector ?띿꽦???щ┛ string ?꾨뱶瑜??몄뒪?숉꽣???쒕∼?ㅼ슫?쇰줈 ?쒖떆??二쇰뒗 PropertyDrawer?낅땲??
+    /// ????ㅻ툕?앺듃??Animator瑜?遺꾩꽍?섏뿬 ?좊땲硫붿씠???곹깭 紐⑸줉??異붿텧?⑸땲??
+    /// </summary>
+    [CustomPropertyDrawer(typeof(AnimStateSelectorAttribute))]
+    public class AnimStateSelectorDrawer : PropertyDrawer
+    {
+        // 而⑦듃濡ㅻ윭 ?⑥쐞 罹먯떛?쇰줈 留??꾨젅??OnGUI ?몄텧 ??GC ?좊떦??諛⑹??⑸땲??
+        private static readonly Dictionary<AnimatorController, string[]> stateCache = new Dictionary<AnimatorController, string[]>();
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            if (property.propertyType != SerializedPropertyType.String)
+            {
+                EditorGUI.LabelField(position, label.text, "Use [AnimStateSelector] with string.");
+                return;
+            }
+
+            // ?꾩옱 吏곷젹??以묒씤 而댄룷?뚰듃(Target)媛 ?랁븳 ?ㅻ툕?앺듃 ?몃━?먯꽌 Animator瑜??먯깋?⑸땲??
+            Animator animator = null;
+            if (property.serializedObject.targetObject is Component comp)
+            {
+                animator = comp.GetComponentInChildren<Animator>(true);
+                if (animator == null)
+                {
+                    animator = comp.GetComponentInParent<Animator>(true);
+                }
+            }
+            else if (property.serializedObject.targetObject is GameObject go)
+            {
+                animator = go.GetComponentInChildren<Animator>(true);
+            }
+
+            // ?좊땲硫붿씠?곕굹 而⑦듃濡ㅻ윭瑜?李얠? 紐삵븳 寃쎌슦 ?쇰컲 string ?꾨뱶濡??쒖떆 (Fallback)
+            if (animator == null || animator.runtimeAnimatorController == null)
+            {
+                EditorGUI.PropertyField(position, property, label);
+                return;
+            }
+
+            RuntimeAnimatorController runtimeController = animator.runtimeAnimatorController;
+            AnimatorController editorController = null;
+            
+            if (runtimeController is AnimatorOverrideController overrideController)
+            {
+                editorController = overrideController.runtimeAnimatorController as AnimatorController;
+            }
+            else
+            {
+                editorController = runtimeController as AnimatorController;
+            }
+
+            if (editorController == null)
+            {
+                EditorGUI.PropertyField(position, property, label);
+                return;
+            }
+
+            // 而⑦듃濡ㅻ윭 罹먯떆 ?뚯떛
+            if (!stateCache.TryGetValue(editorController, out string[] stateNamesArray))
+            {
+                List<string> stateNames = new List<string>();
+                stateNames.Add("None");
+
+                foreach (AnimatorControllerLayer layer in editorController.layers)
+                {
+                    ExtractStatesFromStateMachine(layer.stateMachine, stateNames);
+                }
+
+                HashSet<string> uniqueNames = new HashSet<string>(stateNames);
+                uniqueNames.Remove("None"); // ?뺣젹 ??None ?쒓굅
+
+                stateNames = new List<string>(uniqueNames);
+                stateNames.Sort(); // ?뚰뙆踰??뺣젹
+
+                stateNames.Insert(0, "None"); // 臾댁“嫄?0踰??몃뜳?ㅼ뿉 None ?쎌엯
+
+                stateNamesArray = stateNames.ToArray();
+                stateCache[editorController] = stateNamesArray;
+            }
+
+            // ?꾩옱 ?띿꽦(property)????λ맂 媛믪씠 紐⑸줉??紐?踰덉㎏ ?몃뜳?ㅼ씤吏 李얠쓬
+            int selectedIndex = System.Array.IndexOf(stateNamesArray, property.stringValue);
+            if (selectedIndex < 0)
+            {
+                selectedIndex = 0; // 紐⑸줉???녾굅??鍮꾩뼱?덉쑝硫?None?쇰줈 ?ㅼ젙
+            }
+
+            // ?몄뒪?숉꽣??Popup(?쒕∼?ㅼ슫 肄ㅻ낫諛뺤뒪) 洹몃━湲?            EditorGUI.BeginChangeCheck();
+            selectedIndex = EditorGUI.Popup(position, label.text, selectedIndex, stateNamesArray);
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (selectedIndex == 0) // "None"
+                {
+                    property.stringValue = "";
+                }
+                else
+                {
+                    property.stringValue = stateNamesArray[selectedIndex];
+                }
+                property.serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+        private void ExtractStatesFromStateMachine(AnimatorStateMachine stateMachine, List<string> stateNames)
+        {
+            if (stateMachine == null)
+            {
+                return;
+            }
+
+            foreach (ChildAnimatorState stateNode in stateMachine.states)
+            {
+                stateNames.Add(stateNode.state.name);
+            }
+
+            foreach (ChildAnimatorStateMachine subStateMachineNode in stateMachine.stateMachines)
+            {
+                ExtractStatesFromStateMachine(subStateMachineNode.stateMachine, stateNames);
+            }
+        }
+    }
+}
+#endif
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Characters\NetCharacter.cs
+========================================
+using ProjectAI.Core.Entities;
+using ProjectAI.Core.Skills;
+using UnityEngine.Assertions;
+
+namespace ProjectAI.Characters
+{
+    /// <summary>
+    /// ?뚮젅?댁뼱??NPC ???앸챸泥?罹먮┃?곗쓽 ?듭떖 濡쒖쭅???곌껐?섎뒗 ?덈툕 而댄룷?뚰듃?낅땲??
+    /// </summary>
+    public class NetCharacter : NetEntity
+    {
+        public NetSkillComponent SkillComponent { get; private set; }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            SkillComponent = GetComponentInChildren<NetSkillComponent>();
+            Assert.IsNotNull(SkillComponent, "[NetCharacter] NetSkillComponent瑜?李얠쓣 ???놁뒿?덈떎.");
+        }
+
+        /// <summary>
+        /// ?몃?(而⑦듃濡ㅻ윭 ???먯꽌 罹먮┃?곗뿉寃??ㅽ궗 ?ъ슜??吏?쒗븯???쇱궗??硫붿꽌?쒖엯?덈떎.
+        /// </summary>
+        public void TryActivateSkill(ESkillType skillType)
+        {
+            // 罹먮┃???대?留?EntityEvents)???듯빐 媛?而댄룷?뚰듃?ㅼ뿉寃?吏?쒕? ?대┰?덈떎.
+            if (Events != null)
+            {
+                Events.InvokeSkillTriggered(skillType);
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Characters\NetPlayerCharacter.cs
+========================================
+using ProjectAI.Core;
+using ProjectAI.Movements;
+using UnityEngine;
+using UnityEngine.Assertions;
+
+namespace ProjectAI.Characters
+{
+    /// <summary>
+    /// ?뚮젅?댁뼱媛 議곗쥌?섎뒗 罹먮┃???꾩슜 濡쒖쭅(吏곸젒 ?대룞 紐낅졊, ?곹샇?묒슜 ?????대뒗 ?쇱궗???대옒?ㅼ엯?덈떎.
+    /// NetCharacter??怨듯넻 湲곕뒫(?ㅽ궗, ?곹깭 ?????곸냽諛쏆뒿?덈떎.
+    /// </summary>
+    public class NetPlayerCharacter : NetCharacter
+    {
+        private NetInteractor interactor;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            interactor = GetComponentInChildren<NetInteractor>();
+            Assert.IsNotNull(interactor, "[NetPlayerCharacter] NetInteractor瑜?李얠쓣 ???놁뒿?덈떎.");
+        }
+
+        /// <summary>
+        /// ?몃?(而⑦듃濡ㅻ윭)?먯꽌 罹먮┃?곗쓽 ?대룞??吏?쒗븯???쇱궗??硫붿꽌?쒖엯?덈떎.
+        /// </summary>
+        public void Move(Vector2 direction)
+        {
+            if (base.Movement is NetPlayerMovement playerMovement)
+            {
+                playerMovement.SetMoveInput(direction);
+            }
+        }
+
+        /// <summary>
+        /// ?몃?(而⑦듃濡ㅻ윭)?먯꽌 罹먮┃?곗쓽 ?곹샇?묒슜??吏?쒗븯???쇱궗??硫붿꽌?쒖엯?덈떎.
+        /// </summary>
+        public void TryInteract()
+        {
+            if (interactor != null)
+            {
+                interactor.TryInteract();
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\AppBootstrapper.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Core
+{
+    /// <summary>
+    /// 寃뚯엫 ?쒖옉 ???먮뒗 ?먮뵒?곗뿉???ъ쓣 ?ъ깮?????꾩뿭 留ㅻ땲? ?꾨━?뱀쓣 ?먮룞?쇰줈 二쇱엯?섎뒗 ?대옒?ㅼ엯?덈떎.
+    /// ?대뒓 ?ъ뿉?쒕뱺 ?뚮젅??踰꾪듉???뚮윭???뚯뒪?멸? 媛?ν븯寃??댁＜??1??怨듭떊?낅땲??
+    /// </summary>
+    public static class AppBootstrapper
+    {
+        private const string GAME_MANAGER_PATH = "Prefabs/GameManager";
+
+        // ?ъ씠 濡쒕뱶?섍린 吏곸쟾(BeforeSceneLoad)??臾댁“嫄?1???ㅽ뻾?⑸땲??
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void Bootstrap()
+        {
+            Debug.Log("[AppBootstrapper] ?듭떖 ?쒖뒪???먮룞 二쇱엯 ?뺤씤 以?..");
+
+            // ?대? GameManager媛 硫붾え由ъ뿉 議댁옱?쒕떎硫?媛??泥??щ????쒖옉?덇굅?? ?ъ뿉 ?섎룞 諛곗튂??寃쎌슦) 臾댁떆?⑸땲??
+            if (Object.FindAnyObjectByType<GameManager>() != null)
+            {
+                Debug.Log("[AppBootstrapper] GameManager媛 ?대? 議댁옱?⑸땲?? 二쇱엯??嫄대꼫?곷땲??");
+                return;
+            }
+
+            // Resources ?대뜑?먯꽌 GameManager ?꾨━?뱀쓣 遺덈윭?듬땲??
+            GameObject prefab = Resources.Load<GameObject>(GAME_MANAGER_PATH);
+            if (prefab == null)
+            {
+                Debug.LogError("[AppBootstrapper] Resources/GameManager.prefab??李얠쓣 ???놁뒿?덈떎! ?꾨━?뱀쓣 ?뺤씤??二쇱꽭??");
+                return;
+            }
+
+            // ?꾨━?뱀쓣 ?숈쟻?쇰줈 ?ъ뿉 ?앹꽦?⑸땲?? (?앹꽦?섎㈃??GameManager.Awake()媛 ?몄텧?섏뼱 DontDestroyOnLoad 泥섎━??
+            GameObject instance = Object.Instantiate(prefab);
+            instance.name = "[GameManager]";
+            
+            Debug.Log("[AppBootstrapper] GameManager ?숈쟻 二쇱엯 ?꾨즺!");
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\GameManager.cs
+========================================
+using UnityEngine.Assertions;
+using UnityEngine;
+using ProjectAI.Network;
+
+namespace ProjectAI.Core
+{
+    /// <summary>
+    /// 寃뚯엫 ?꾩껜???앸챸二쇨린瑜?愿由ы븯怨????꾪솚 媛꾩뿉 ?뚭눼?섏? ?딅뒗 ?꾩뿭 留ㅻ땲??낅땲??
+    /// </summary>
+    public class GameManager : MonoBehaviour
+    {
+        public MultiplayerServiceManager MultiplayerService { get; private set; }
+
+        private void Awake()
+        {
+            // ?대? ?ъ뿉 ?쒖꽦?붾맂 GameManager媛 ?덈떎硫?以묐났 ?앹꽦??留됯퀬 ?ㅼ뒪濡??뚭눼?⑸땲??
+            if (GameStatics.GameManager != null && GameStatics.GameManager != this)
+            {
+                Debug.LogWarning("[GameManager] 以묐났??GameManager 諛쒓껄. ?댁쟾 媛앹껜瑜??좎??섍퀬 ?덈줈 濡쒕뱶??媛앹껜瑜??뚭눼?⑸땲??");
+                // Destroy???꾨젅???앹뿉 ?ㅽ뻾?섎?濡? 洹?李곕굹???쒓컙?먮룄 濡쒖쭅???뚯? ?딅룄濡?利됱떆 爰쇰쾭由쎈땲??
+                gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(gameObject);
+                return;
+            }
+
+            // 理쒖큹 ?앹꽦 ??GameStatics Gateway???덉쟾??硫붿꽌?쒕? ?듯빐 ?먯떊???깅줉?⑸땲??
+            GameStatics.RegisterManager(this);
+            
+            MultiplayerService = GetComponent<MultiplayerServiceManager>();
+            Assert.IsNotNull(MultiplayerService, "[GameManager] MultiplayerServiceManager 而댄룷?뚰듃媛 遺李⑸릺???덉? ?딆뒿?덈떎. ?꾩닔 而댄룷?뚰듃?낅땲??");
+            
+            // ?ъ쓣 ?꾪솚?대룄 ??媛앹껜(諛?遺李⑸맂 ?ㅽ듃?뚰겕 留ㅻ땲?)媛 ??젣?섏? ?딅룄濡?蹂댄샇?⑸땲??
+            DontDestroyOnLoad(gameObject);
+            
+            Debug.Log("[GameManager] ?꾩뿭 留ㅻ땲?媛 ?깃났?곸쑝濡?珥덇린?붾릺?덉뒿?덈떎.");
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\GameStatics.cs
+========================================
+using UnityEngine.Assertions;
+using Unity.Netcode;
+using UnityEngine;
+using ProjectAI.GameModes;
+using ProjectAI.Network;
+using ProjectAI.Core.Stats;
+using ProjectAI.Core.Skills;
+using ProjectAI.Core.Pooling;
+
+
+namespace ProjectAI.Core
+{
+    /// <summary>
+    /// 寃뚯엫 ?꾨컲?먯꽌 ?ъ슜?섎뒗 ?뺤쟻 留ㅻ땲? 諛??ы띁 湲곕뒫???쒓났?섎뒗 ?대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public static class GameStatics
+    {
+
+        public static GameManager GameManager { get; private set; }
+        public static ANetGameModeBase CurrentMode { get; private set; }
+        public static SkillManager SkillManager { get; private set; }
+        public static NetworkObjectPool ObjectPool { get; private set; }
+
+
+        public static NetworkManager NetworkManager => NetworkManager.Singleton;
+
+        public static MultiplayerServiceManager MultiplayerManager => GameManager != null ? GameManager.MultiplayerService : null;
+
+        /// <summary>
+        /// ?꾩옱 ?ㅽ봽?쇱씤 ?곹깭?닿굅??濡쒓렇????, ?묒냽 以묒씤 寃쎌슦 ?쒕쾭 沅뚰븳???덈뒗吏 ?뺤씤?⑸땲??
+        /// </summary>
+        public static bool IsServerAuthorized
+        {
+            get
+            {
+                if (NetworkManager == null || !NetworkManager.IsListening)
+                {
+                    return true;
+                }
+                return NetworkManager.IsServer;
+            }
+        }
+
+        /// <summary>
+        /// ?꾩뿭 ?곕?吏 ?뚯씠?꾨씪?몄엯?덈떎.
+        /// 諛⑹뼱??李④컧, ?щ━?곗뺄 ??蹂듭옟???곕?吏 怨꾩궛 怨듭떇??異붽???寃쎌슦 ?ш린??以묒븰 ?듭젣?⑸땲??
+        /// </summary>
+        /// <param name="target">?쇨꺽??諛쏆쓣 ????ㅻ툕?앺듃</param>
+        /// <param name="baseDamage">湲곕낯 ?寃??곕?吏</param>
+        public static void ApplyDamage(GameObject target, int baseDamage)
+        {
+            Assert.IsNotNull(target, "[GameStatics] ApplyDamage: target ?ㅻ툕?앺듃媛 null?낅땲??");
+
+            Assert.IsTrue(IsServerAuthorized, "[GameStatics] ApplyDamage???쒕쾭(?먮뒗 ?ㅽ봽?쇱씤)?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!IsServerAuthorized)
+            {
+                return;
+            }
+
+            IDamageable damageable = target.GetComponentInChildren<IDamageable>();
+
+            if (damageable == null)
+            {
+                return;
+            }
+
+            int finalDamage = baseDamage;
+
+            // TODO: 諛⑹뼱?? ?곹깭?댁긽 怨듭떇 ??異붽? (?? target.GetComponent<NetStatComponent>())
+            // int armor = ...
+            // finalDamage = Mathf.Max(1, baseDamage - armor);
+
+            damageable.TakeDamage(finalDamage);
+        }
+
+        public static void RegisterManager(GameManager manager)
+        {
+            if (GameManager != null)
+            {
+                Debug.LogError("[GameStatics] ?꾧뎔媛 ?대? 議댁옱?섎뒗 GameManager瑜???뼱?곕젮怨??쒕룄?덉뒿?덈떎!");
+                return;
+            }
+
+            GameManager = manager;
+        }
+
+        public static void RegisterGameMode(ANetGameModeBase mode)
+        {
+            CurrentMode = mode;
+        }
+
+        public static void UnregisterGameMode(ANetGameModeBase mode)
+        {
+            if (CurrentMode == mode)
+            {
+                CurrentMode = null;
+            }
+        }
+
+        public static void RegisterSkillManager(SkillManager manager)
+        {
+            SkillManager = manager;
+        }
+
+        public static void UnregisterSkillManager(SkillManager manager)
+        {
+            if (SkillManager == manager)
+            {
+                SkillManager = null;
+            }
+        }
+
+        public static void RegisterObjectPool(NetworkObjectPool pool)
+        {
+            if (ObjectPool != null)
+            {
+                Debug.LogError("[GameStatics] ?꾧뎔媛 ?대? 議댁옱?섎뒗 NetworkObjectPool????뼱?곕젮怨??쒕룄?덉뒿?덈떎!");
+                return;
+            }
+
+            ObjectPool = pool;
+        }
+
+
+        public static void UnregisterObjectPool(NetworkObjectPool pool)
+        {
+            if (ObjectPool != pool)
+            {
+                return;
+            }
+
+            ObjectPool = null;
+        }
+    }
+
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\NetInteractor.cs
+========================================
+using UnityEngine;
+using UnityEngine.Assertions;
+using Unity.Netcode;
+using System.Collections.Generic;
+using ProjectAI.Core.Interfaces;
+
+namespace ProjectAI.Core
+{
+    /// <summary>
+    /// 諛섍꼍 ?댁쓽 IInteractable ?ㅻ툕?앺듃瑜?李얠븘 ?곹샇?묒슜???ㅽ뻾?섎뒗 踰붿슜 ?ㅽ듃?뚰겕 而댄룷?뚰듃?낅땲??
+    /// </summary>
+    public class NetInteractor : NetworkBehaviour
+    {
+        [Header("Interaction Settings")]
+        [Tooltip("?곹샇?묒슜???먯???諛섍꼍")]
+        [SerializeField]
+        private float interactRadius = 1.5f;
+
+        [Tooltip("?곹샇?묒슜 媛?ν븳 ?덉씠???? Interactable)")]
+        [SerializeField]
+        private LayerMask interactLayer;
+
+        private ContactFilter2D contactFilter;
+        private List<Collider2D> overlapResults = new List<Collider2D>(5);
+
+        #region Unity Lifecycle
+        private void Awake()
+        {
+            contactFilter.SetLayerMask(interactLayer);
+            contactFilter.useTriggers = true;
+        }
+
+        // ?붾쾭源낆슜: ?좊땲???먮뵒????酉곗뿉???곹샇?묒슜 諛섍꼍??鍮④컙???먯쑝濡?洹몃┰?덈떎.
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, interactRadius);
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// ?몃?(?뚮젅?댁뼱 ???낅젰, ??AI ???먯꽌 ?몄텧?섏뿬 諛섍꼍 ?댁쓽 媛??媛源뚯슫 臾쇱껜? ?곹샇?묒슜???쒕룄?⑸땲??
+        /// </summary>
+        public void TryInteract()
+        {
+            if (!IsOwner)
+            {
+                Debug.Log("[NetInteractor] TryInteract: IsOwner媛 ?꾨떃?덈떎.");
+                return;
+            }
+
+            int count = Physics2D.OverlapCircle(transform.position, interactRadius, contactFilter, overlapResults);
+            float closestDistance = float.MaxValue;
+            IInteractable closestInteractable = null;
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D col = overlapResults[i];
+                IInteractable interactable = col.GetComponentInParent<IInteractable>();
+                
+                if (interactable == null)
+                {
+                    continue;
+                }
+
+                float distanceSqr = (col.transform.position - transform.position).sqrMagnitude;
+                
+                if (distanceSqr >= closestDistance)
+                {
+                    continue;
+                }
+
+                closestDistance = distanceSqr;
+                closestInteractable = interactable;
+            }
+
+            if (closestInteractable == null)
+            {
+                Debug.Log("[NetInteractor] TryInteract: 諛섍꼍 ???곹샇?묒슜 媛?ν븳 ??곸씠 ?놁뒿?덈떎.");
+                return;
+            }
+
+            if (closestInteractable is not Component component || component.TryGetComponent(out NetworkObject netObj) == false)
+            {
+                return;
+            }
+
+            RequestInteractRpc(netObj.NetworkObjectId);
+        }
+        #endregion
+
+        #region RPCs
+        [Rpc(SendTo.Server)]
+        private void RequestInteractRpc(ulong targetObjectId)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetInteractor] RequestInteractRpc???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
+            {
+                return;
+            }
+
+            IInteractable interactable = targetObj.GetComponentInChildren<IInteractable>();
+            if (interactable == null)
+            {
+                return;
+            }
+
+            interactable.Interact(gameObject);
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\PlayerStart.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Core
+{
+    /// <summary>
+    /// ?뚮젅?댁뼱 ?ㅽ룿 ?꾩튂瑜?吏?뺥븯??怨좎쑀 ?앸퀎??而댄룷?뚰듃?낅땲??
+    /// </summary>
+    public class PlayerStart : MonoBehaviour
+    {
+        [Tooltip("???대룞 ???뱀젙 ?ы깉?먯꽌 ?????ъ슜??怨좎쑀 ?ㅽ룿 ?앸퀎??)]
+        [SerializeField]
+        private string spawnPointID = "";
+
+        public string SpawnPointID => spawnPointID;
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\SceneTransitionData.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Core
+{
+    /// <summary>
+    /// ???대룞 媛꾩뿉 ?쒕쾭(諛⑹옣)媛 ?꾩떆濡?蹂닿??댁빞 ??硫뷀??곗씠?곕? ?대뒗 ?뺤쟻 ?대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public static class SceneTransitionData
+    {
+        /// <summary>
+        /// ?ㅼ쓬 ?ъ씠 濡쒕뱶?섏뿀???? ?뚰떚?먮뱾???붾젅?ы듃??紐⑺몴 PlayerStart??ID?낅땲??
+        /// 鍮?臾몄옄?댁씪 寃쎌슦 湲곕낯(泥?踰덉㎏) ?ㅽ룿 ?ъ씤?몃? ?ъ슜?⑸땲??
+        /// </summary>
+        public static string NextSpawnPointID { get; set; } = "";
+
+        /// <summary>
+        /// ID 留ㅼ묶 ???媛뺤젣濡?醫뚰몴(Raw Coordinates)瑜??ъ슜?좎? ?щ??낅땲??
+        /// </summary>
+        public static bool ShouldUseRawCoordinates { get; set; } = false;
+
+        /// <summary>
+        /// UseRawCoordinates媛 true?????뚮젅?댁뼱?ㅼ씠 ?ㅽ룿???붾뱶 醫뚰몴?낅땲??
+        /// </summary>
+        public static Vector2 RawTargetPosition { get; set; } = Vector2.zero;
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Entities\EntityEvents.cs
+========================================
+using UnityEngine.Scripting.APIUpdating;
+using System;
+using UnityEngine;
+using ProjectAI.Core.Skills;
+
+namespace ProjectAI.Core.Entities
+{
+    /// <summary>
+    /// ?뷀떚???댁쇅遺?먯꽌 諛쒖깮?섎뒗 媛곸쥌 ?곹깭 ?대깽?몃? 以묎퀎?섎뒗 踰붿슜 Event Bus 而댄룷?뚰듃?낅땲??
+    /// </summary>
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "CharacterEvents")]
+    public class EntityEvents : MonoBehaviour
+    {
+        /// <summary>
+        /// 罹먮┃?곗쓽 ?대룞 ?띾룄媛 蹂寃쎈릺?덉쓣 ??諛쒖깮?섎뒗 ?대깽??
+        /// </summary>
+        /// <param name="velocity">?꾩옱 ?꾨젅?꾩쓽 ?대룞 ?띾룄 踰≫꽣</param>
+        public event Action<Vector2> OnVelocityChanged;
+        
+        private event Action<float> onMoveSpeedModifierChanged;
+        
+        private float cachedMoveSpeedModifier = 1f;
+
+        private bool cachedIsFacingRight = true;
+        private event Action<bool> onFacingDirectionChanged;
+
+        /// <summary>
+        /// ?몃?(???먯꽌 ?뱀젙 ?ㅽ궗??諛쒕룞???붿껌?덉쓣 ??諛쒖깮?섎뒗 ?대깽??
+        /// </summary>
+        /// <param name="skillType">諛쒕룞???붿껌???ㅽ궗??醫낅쪟</param>
+        public event Action<ESkillType> OnSkillTriggered;
+
+        /// <summary>
+        /// 媛뺤젣濡??뱀젙 ?좊땲硫붿씠???곹깭瑜??ъ깮?섎씪怨?吏?쒗븷 ??諛쒖깮?섎뒗 ?대깽??
+        /// </summary>
+        /// <param name="stateHash">?ъ깮???좊땲硫붿씠???곹깭???댁떆(Hash) 媛?/param>
+        /// <param name="transitionDuration">?좊땲硫붿씠??釉붾젋??CrossFade) ?뚯슂 ?쒓컙 (0?대㈃ 利됱떆 ?ъ깮)</param>
+        /// <param name="layer">?좊땲硫붿씠?곗쓽 ?덉씠???몃뜳??(湲곕낯媛?0)</param>
+        public event Action<int, float, int> OnPlayAnimation;
+
+        /// <summary>
+        /// ?좊땲???좊땲硫붿씠???대┰??Animation Event媛 ?몃━嫄곕릺?덉쓣 ??諛쒖깮?섎뒗 ?대깽??
+        /// </summary>
+        public event Action<EAnimationEventTag> OnAnimationEventTriggered;
+
+        /// <summary>
+        /// StateMachineBehaviour瑜??듯빐 ?좊땲硫붿씠???곹깭媛 醫낅즺(Exit)?섏뿀????諛쒖깮?섎뒗 ?대깽??
+        /// </summary>
+        public event Action<int> OnAnimationStateExited;
+
+        /// <summary>
+        /// 援щ룆 ?쒖젏??利됱떆 理쒖떊 媛믪쓣 ??踰??대젮以띾땲?? (Late Subscriber 踰꾧렇 諛⑹?)
+        /// </summary>
+        /// <param name="modifier">?곸슜 以묒씤 ?대룞 ?띾룄 諛곗쑉 (1f媛 湲곕낯)</param>
+        public event Action<float> OnMoveSpeedModifierChanged
+        {
+            add
+            {
+                onMoveSpeedModifierChanged += value;
+                // value??諛⑷툑 ???대깽?몃? 援щ룆(+=)?섎젮怨??꾨떖???몃━寃뚯씠?????섎굹瑜??섎???
+                // 援щ룆?섎뒗 利됱떆 罹먯떛??理쒖떊 媛믪쓣 ?대떦 ?몃━寃뚯씠?몄뿉寃뚮쭔 1??媛뺤젣 ?몄텧??以?
+                value?.Invoke(cachedMoveSpeedModifier);
+            }
+            remove
+            {
+                onMoveSpeedModifierChanged -= value;
+            }
+        }
+
+        /// <summary>
+        /// 罹먮┃?곌? 諛붾씪蹂대뒗 諛⑺뼢??蹂寃쎈릺?덉쓣 ??(?먮뒗 ?꾩갭?ъ옄 援щ룆 ?? 諛쒖깮?섎뒗 ?대깽??
+        /// </summary>
+        /// <param name="isFacingRight">?ㅻⅨ履쎌쓣 諛붾씪蹂대㈃ true, ?쇱そ?대㈃ false</param>
+        public event Action<bool> OnFacingDirectionChanged
+        {
+            add
+            {
+                onFacingDirectionChanged += value;
+                // value??諛⑷툑 ???대깽?몃? 援щ룆(+=)?섎젮怨??꾨떖???몃━寃뚯씠?????섎굹瑜??섎???
+                // 援щ룆?섎뒗 利됱떆 罹먯떛??理쒖떊 媛믪쓣 ?대떦 ?몃━寃뚯씠?몄뿉寃뚮쭔 1??媛뺤젣 ?몄텧??以?
+                value?.Invoke(cachedIsFacingRight);
+            }
+            remove
+            {
+                onFacingDirectionChanged -= value;
+            }
+        }
+
+        public void InvokeVelocityChanged(Vector2 velocity)
+        {
+            OnVelocityChanged?.Invoke(velocity);
+        }
+
+        public void InvokeMoveSpeedModifierChanged(float modifier)
+        {
+            cachedMoveSpeedModifier = modifier;
+            onMoveSpeedModifierChanged?.Invoke(modifier);
+        }
+
+        public void InvokeFacingDirectionChanged(bool isFacingRight)
+        {
+            cachedIsFacingRight = isFacingRight;
+            onFacingDirectionChanged?.Invoke(isFacingRight);
+        }
+
+        public void InvokeSkillTriggered(ESkillType skillType)
+        {
+            OnSkillTriggered?.Invoke(skillType);
+        }
+
+        /// <summary>
+        /// 媛뺤젣濡??뱀젙 ?좊땲硫붿씠???곹깭瑜??ъ깮?섎룄濡??대깽?몃? 諛쒖깮?쒗궢?덈떎.
+        /// </summary>
+        /// <param name="stateHash">?ъ깮???좊땲硫붿씠???곹깭???댁떆(Hash) 媛?/param>
+        /// <param name="transitionDuration">?좊땲硫붿씠??釉붾젋??CrossFade) ?뚯슂 ?쒓컙 (0?대㈃ 利됱떆 ?ъ깮)</param>
+        /// <param name="layer">?좊땲硫붿씠?곗쓽 ?덉씠???몃뜳??(湲곕낯媛?0)</param>
+        public void InvokePlayAnimation(int stateHash, float transitionDuration = 0f, int layer = 0)
+        {
+            OnPlayAnimation?.Invoke(stateHash, transitionDuration, layer);
+        }
+
+        public void InvokeAnimationEventTriggered(EAnimationEventTag eventTag)
+        {
+            OnAnimationEventTriggered?.Invoke(eventTag);
+        }
+
+        public void InvokeAnimationStateExited(int stateHash)
+        {
+            OnAnimationStateExited?.Invoke(stateHash);
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Entities\NetEntity.cs
+========================================
+using UnityEngine;
+using UnityEngine.Assertions;
+using ProjectAI.Movements;
+using Unity.Netcode;
+
+namespace ProjectAI.Core.Entities
+{
+    /// <summary>
+    /// ?앸챸泥?罹먮┃?? 諛??ъ궗泥?留덈쾿?? ??紐⑤뱺 ?곹샇?묒슜 媛?ν븳 ?낅┰ 媛앹껜??理쒖긽??湲곕컲 ?대옒?ㅼ엯?덈떎.
+    /// 怨듯넻?곸씤 ?곹깭 ?대깽??EntityEvents)瑜??꾩닔濡?媛吏묐땲??
+    /// </summary>
+    public class NetEntity : NetworkBehaviour
+    {
+        public EntityEvents Events { get; private set; }
+        
+        /// <summary>
+        /// 臾쇰━ ?대룞/?숆린?붾? ?대떦?섎뒗 而댄룷?뚰듃?낅땲?? ?ъ궗泥????대룞???녿뒗 ?뷀떚?곗쓽 寃쎌슦 null?????덉뒿?덈떎.
+        /// </summary>
+        public ANetMovement Movement { get; private set; }
+
+        protected virtual void Awake()
+        {
+            Events = GetComponentInChildren<EntityEvents>();
+            Assert.IsNotNull(Events, "NetEntity??EntityEvents ?ㅻ꼫媛 ?꾩슂?⑸땲??");
+            
+            Movement = GetComponentInChildren<ANetMovement>();
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Enums\SceneType.cs
+========================================
+namespace ProjectAI.Core.Enums
+{
+    /// <summary>
+    /// 寃뚯엫 ??議댁옱?섎뒗 紐⑤뱺 ?ъ쓽 醫낅쪟瑜??뺤쓽?섎뒗 ?닿굅?뺤엯?덈떎. (?ㅼ젣 ???뚯씪 ?대쫫怨??숈씪?섍쾶 ?묒꽦?댁빞 ?⑸땲??
+    /// </summary>
+    public enum ESceneType
+    {
+        Lobby,
+        Dungeon
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\GameModes\ANetGameModeBase.cs
+========================================
+using UnityEngine.Assertions;
+using System.Collections;
+using UnityEngine;
+using Unity.Netcode;
+using ProjectAI.Core;
+
+namespace ProjectAI.GameModes
+{
+    /// <summary>
+    /// ?ㅽ듃?뚰겕 寃뚯엫 紐⑤뱶??湲곕낯 踰좎씠???대옒?ㅼ엯?덈떎.
+    /// ?ㅽ룿 諛??쒖옉 濡쒖쭅??怨듯넻?쇰줈 泥섎━?⑸땲??
+    /// </summary>
+    public abstract class ANetGameModeBase : NetworkBehaviour
+    {
+        #region Unity Lifecycle
+        protected virtual void Awake()
+        {
+            GameStatics.RegisterGameMode(this);
+        }
+
+        protected virtual void Start()
+        {
+            AutoStartHostAsync();
+            OnGameModeStart();
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (IsServer)
+            {
+                TeleportPlayersToPlayerStart();
+            }
+
+            OnGameModeNetworkSpawn();
+        }
+
+        public override void OnDestroy()
+        {
+            GameStatics.UnregisterGameMode(this);
+            base.OnDestroy();
+        }
+        #endregion
+
+        #region Protected Methods
+        protected virtual void OnGameModeStart() { }
+
+        protected virtual void OnGameModeNetworkSpawn() { }
+
+        public void TeleportPlayersToPlayerStart()
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[ANetGameModeBase] TeleportPlayersToPlayerStart???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            Vector3 finalSpawnPosition = Vector3.zero;
+            bool isSpawnPositionFound = false;
+
+            // 1. Raw Coordinates 紐⑤뱶媛 耳쒖졇 ?덇퀬 ID媛 鍮꾩뼱?덉쑝硫???醫뚰몴 ?ъ슜
+            if (string.IsNullOrEmpty(SceneTransitionData.NextSpawnPointID) && SceneTransitionData.ShouldUseRawCoordinates)
+            {
+                finalSpawnPosition = SceneTransitionData.RawTargetPosition;
+                isSpawnPositionFound = true;
+            }
+            else // 2. ID媛 ?덇굅????醫뚰몴 紐⑤뱶媛 ?꾨땲硫?PlayerStart 留ㅼ묶 ?ъ슜
+            {
+                PlayerStart[] allStarts = FindObjectsByType<PlayerStart>(FindObjectsSortMode.None);
+                PlayerStart targetStart = null;
+                
+                foreach (PlayerStart start in allStarts)
+                {
+                    if (start.SpawnPointID == SceneTransitionData.NextSpawnPointID)
+                    {
+                        targetStart = start;
+                        break;
+                    }
+                }
+
+                if (targetStart == null && allStarts.Length > 0)
+                {
+                    targetStart = allStarts[0];
+                }
+
+                if (targetStart != null)
+                {
+                    finalSpawnPosition = targetStart.transform.position;
+                    isSpawnPositionFound = true;
+                }
+            }
+
+            // 3. 紐⑹쟻吏瑜?李얠븯?쇰㈃ ?ㅼ젣 ?붾젅?ы듃 ?섑뻾
+            Assert.IsNotNull(GameStatics.NetworkManager, "[ANetGameModeBase] NetworkManager媛 null?낅땲??");
+            
+            if (isSpawnPositionFound)
+            {
+                foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
+                {
+                    if (client.PlayerObject == null)
+                    {
+                        continue;
+                    }
+
+                    client.PlayerObject.transform.position = finalSpawnPosition;
+                }
+            }
+
+            // 4. ?붾젅?ы듃 ?꾨즺 ???곗씠??珥덇린??
+            SceneTransitionData.NextSpawnPointID = "";
+            SceneTransitionData.ShouldUseRawCoordinates = false;
+        }
+        #endregion
+
+        #region Private Methods
+        private async void AutoStartHostAsync()
+        {
+            try
+            {
+                // 1?꾨젅???湲?(湲곗〈 肄붾（?댁쓽 yield return null ??븷)
+                await System.Threading.Tasks.Task.Yield();
+
+                if (GameStatics.NetworkManager == null)
+                {
+                    return;
+                }
+
+                if (GameStatics.NetworkManager.IsClient || GameStatics.NetworkManager.IsServer)
+                {
+                    return;
+                }
+
+                Assert.IsNotNull(GameStatics.MultiplayerManager, "[ANetGameModeBase] GameStatics.MultiplayerManager媛 ?놁뒿?덈떎. 鍮꾩젙?곸쟻???곹깭?낅땲??");
+                await GameStatics.MultiplayerManager.StartHostAsync();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[ANetGameModeBase] AutoStartHostAsync ?ㅽ뻾 以??ㅻ쪟 諛쒖깮: {e}");
+            }
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\GameModes\NetDungeonGameMode.cs
+========================================
+using UnityEngine;
+using ProjectAI.Core;
+
+namespace ProjectAI.GameModes
+{
+    public class NetDungeonGameMode : ANetGameModeBase
+    {
+        // 湲곕낯 ??珥덇린??諛??ㅽ룿 ?붾젅?ы듃 濡쒖쭅? ANetGameModeBase媛 ?먮룞?쇰줈 泥섎━?⑸땲??
+        // ?ν썑 ?섏쟾 ?꾩슜 ?뱀닔 湲곕??대굹 紐ъ뒪???ㅽ룿 濡쒖쭅???꾩슂?????닿납???ъ슜?⑸땲??
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\GameModes\NetLobbyGameMode.cs
+========================================
+using UnityEngine;
+using ProjectAI.Core;
+
+namespace ProjectAI.GameModes
+{
+    public class NetLobbyGameMode : ANetGameModeBase
+    {
+        #region Public Methods
+        public void StartHostManually()
+        {
+            if (GameStatics.NetworkManager != null)
+            {
+                GameStatics.NetworkManager.StartHost();
+                GameStatics.NetworkManager.SceneManager.LoadScene("DungeonScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+            }
+        }
+
+        public void StartClientManually()
+        {
+            if (GameStatics.NetworkManager != null)
+            {
+                GameStatics.NetworkManager.StartClient();
+            }
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Interfaces\IInteractable.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Core.Interfaces
+{
+    /// <summary>
+    /// ?뚮젅?댁뼱, ???깆씠 ?곹샇?묒슜(Interact)?????덈뒗 紐⑤뱺 ?ㅻ툕?앺듃(?ы깉, ?곸옄 ????怨듯넻 洹쒓꺽?낅땲??
+    /// </summary>
+    public interface IInteractable
+    {
+        void Interact(GameObject interactor);
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Interfaces\IInteractionCondition.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Core.Interfaces
+{
+    /// <summary>
+    /// ?곹샇?묒슜 ?깃났 ?щ?瑜?寃곗젙?섎뒗 議곌굔??怨듯넻 洹쒓꺽?낅땲??
+    /// </summary>
+    public interface IInteractionCondition
+    {
+        bool CheckCondition(GameObject interactor);
+        string GetFailedMessage();
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Interfaces\ISpawnCondition.cs
+========================================
+namespace ProjectAI.Core.Interfaces
+{
+    /// <summary>
+    /// ?ㅽ룷???깆뿉??媛앹껜瑜??ㅽ룿????留뚯”?댁빞 ?섎뒗 議곌굔???뺤쓽?섎뒗 ?명꽣?섏씠?ㅼ엯?덈떎.
+    /// </summary>
+    public interface ISpawnCondition
+    {
+        /// <summary>
+        /// ?ㅽ룿 議곌굔??異⑹”?섏뿀?붿? 寃?ы빀?덈떎.
+        /// </summary>
+        /// <returns>議곌굔 異⑹” ?щ?</returns>
+        bool CheckCondition();
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Pooling\IPoolable.cs
+========================================
+namespace ProjectAI.Core.Pooling
+{
+    /// <summary>
+    /// ?ㅻ툕?앺듃 ?留????媛앹껜???섎챸 二쇨린瑜?愿由ы븯???명꽣?섏씠?ㅼ엯?덈떎.
+    /// </summary>
+    public interface IPoolable
+    {
+        /// <summary>
+        /// ??먯꽌 ?앹꽦?섏뼱 ?쒖꽦?붾맆 ???몄텧?⑸땲??
+        /// </summary>
+        void OnSpawn();
+
+        /// <summary>
+        /// ?濡?諛섑솚?섏뼱 鍮꾪솢?깊솕?????몄텧?⑸땲??
+        /// </summary>
+        void OnDespawn();
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Pooling\NetworkObjectPool.cs
+========================================
+using UnityEngine.Assertions;
+using System.Collections.Generic;
+using Unity.Netcode;
+using UnityEngine;
+using ProjectAI.Core.Skills;
+using ProjectAI.Core;
+
+namespace ProjectAI.Core.Pooling
+{
+    /// <summary>
+    /// NGO(Netcode for GameObjects)? ?곕룞?섏뿬 ?ㅻ툕?앺듃 ?留곸쓣 ?섑뻾?섎뒗 ?대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public class NetworkObjectPool : MonoBehaviour
+    {
+        /// <summary>
+        /// ?꾨━?밸퀎 ? ?곗씠?곕? 愿由ы븯???대옒?ㅼ엯?덈떎.
+        /// </summary>
+        private class PoolData
+        {
+            public Queue<NetworkObject> Queue = new Queue<NetworkObject>();
+            public NetworkObject Prefab;
+            public int InitialSize;
+            public bool ShouldExpandWhenEmpty;
+        }
+
+        /// <summary>
+        /// NGO???꾨━???몄뒪?댁뒪 ?몃뱾?щ? ?섑븨?섏뿬 ?뱀젙 ?꾨━?뱀쓽 ?留곸쓣 泥섎━?⑸땲??
+        /// </summary>
+        private class PrefabPoolHandler : INetworkPrefabInstanceHandler
+        {
+            private readonly NetworkObjectPool pool;
+            private readonly NetworkObject prefab;
+
+            public PrefabPoolHandler(NetworkObjectPool pool, NetworkObject prefab)
+            {
+                this.pool = pool;
+                this.prefab = prefab;
+            }
+
+            public NetworkObject Instantiate(ulong ownerClientId, Vector3 position, Quaternion rotation)
+            {
+                return pool.GetNetworkObjectInternal(prefab, position, rotation);
+            }
+
+            public void Destroy(NetworkObject networkObject)
+            {
+                pool.ReturnNetworkObjectInternal(networkObject);
+            }
+        }
+
+        private readonly Dictionary<NetworkObject, PoolData> pools = new Dictionary<NetworkObject, PoolData>();
+        private readonly Dictionary<NetworkObject, NetworkObject> instanceToPrefabMap = new Dictionary<NetworkObject, NetworkObject>();
+        private readonly Dictionary<NetworkObject, IPoolable> instancePoolableMap = new Dictionary<NetworkObject, IPoolable>();
+        private readonly List<NetworkObject> registeredPrefabs = new List<NetworkObject>();
+
+        [Header("Debug")]
+        [Tooltip("泥댄겕 ???섏씠?대씪?ㅼ뿉???④꺼吏??湲?以묒씤 ? 媛앹껜?ㅼ씠 ?ㅼ떆 ?섑??⑸땲??")]
+        public bool ShouldShowHiddenPoolObjects;
+
+        private bool isInitialized = false;
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            HideFlags flag = ShouldShowHiddenPoolObjects ? HideFlags.None : HideFlags.HideInHierarchy;
+            foreach (PoolData pool in pools.Values)
+            {
+                foreach (NetworkObject obj in pool.Queue)
+                {
+                    if (obj != null && obj.gameObject != null)
+                    {
+                        obj.gameObject.hideFlags = flag;
+                    }
+                }
+            }
+        }
+#endif
+
+        private void OnEnable()
+        {
+            GameStatics.RegisterObjectPool(this);
+            if (GameStatics.NetworkManager != null)
+            {
+                GameStatics.NetworkManager.OnServerStarted += InitializePools;
+                GameStatics.NetworkManager.OnClientStarted += InitializePools;
+
+                // ?대? ?쒕쾭???대씪?댁뼵?멸? 媛?숇맂 ?댄썑??OnEnable??遺덈┛ 寃쎌슦 利됱떆 珥덇린??
+                if (GameStatics.NetworkManager.IsServer || GameStatics.NetworkManager.IsClient)
+                {
+                    InitializePools();
+                }
+            }
+        }
+
+        private void InitializePools()
+        {
+            if (isInitialized)
+            {
+                return;
+            }
+
+            isInitialized = true;
+            SetupSkillProjectiles();
+            RegisterPrefabHandlers();
+        }
+
+        private void SetupSkillProjectiles()
+        {
+            Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillProjectiles: SkillManager媛 GameStatics???깅줉?섏뼱 ?덉? ?딆뒿?덈떎!");
+
+            for (int i = 0; i < GameStatics.SkillManager.SkillConfigs.Count; i++)
+            {
+                NetworkObject prefab = GameStatics.SkillManager.SkillConfigs[i].Prefab;
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                SetupPool(prefab, 10, true);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (GameStatics.NetworkManager != null)
+            {
+                GameStatics.NetworkManager.OnServerStarted -= InitializePools;
+                GameStatics.NetworkManager.OnClientStarted -= InitializePools;
+
+                if (GameStatics.NetworkManager.PrefabHandler != null)
+                {
+                    for (int i = 0; i < registeredPrefabs.Count; i++)
+                    {
+                        GameStatics.NetworkManager.PrefabHandler.RemoveHandler(registeredPrefabs[i]);
+                    }
+                }
+            }
+
+            registeredPrefabs.Clear();
+            
+            foreach (PoolData pool in pools.Values)
+            {
+                foreach (NetworkObject obj in pool.Queue)
+                {
+                    if (obj != null && obj.gameObject != null)
+                    {
+                        Destroy(obj.gameObject);
+                    }
+                }
+            }
+
+            pools.Clear();
+            instanceToPrefabMap.Clear();
+            instancePoolableMap.Clear();
+            isInitialized = false;
+            GameStatics.UnregisterObjectPool(this);
+        }
+
+        /// <summary>
+        /// ?뱀젙 ?꾨━?뱀쓽 ????ㅼ젙?섍퀬 珥덇린 媛쒖닔留뚰겮 ?앹꽦?⑸땲??
+        /// </summary>
+        public void SetupPool(NetworkObject prefab, int initialSize, bool shouldExpandWhenEmpty = true)
+        {
+            Assert.IsNotNull(prefab, "[NetworkObjectPool] SetupPool: prefab??null?낅땲??");
+
+            if (pools.ContainsKey(prefab))
+            {
+                return;
+            }
+
+            PoolData poolData = new PoolData
+            {
+                Prefab = prefab,
+                InitialSize = initialSize,
+                ShouldExpandWhenEmpty = shouldExpandWhenEmpty
+            };
+
+            pools.Add(prefab, poolData);
+
+            RegisterPrefabHandlers();
+
+            for (int i = 0; i < initialSize; i++)
+            {
+                NetworkObject instance = CreateInstance(prefab);
+                instance.gameObject.hideFlags = ShouldShowHiddenPoolObjects ? HideFlags.None : HideFlags.HideInHierarchy;
+                instance.gameObject.SetActive(false);
+                poolData.Queue.Enqueue(instance);
+                instanceToPrefabMap.Add(instance, prefab);
+            }
+        }
+
+        private void RegisterPrefabHandlers()
+        {
+            if (GameStatics.NetworkManager == null || GameStatics.NetworkManager.PrefabHandler == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<NetworkObject, PoolData> pair in pools)
+            {
+                NetworkObject prefab = pair.Value.Prefab;
+                if (!registeredPrefabs.Contains(prefab))
+                {
+                    GameStatics.NetworkManager.PrefabHandler.AddHandler(prefab, new PrefabPoolHandler(this, prefab));
+                    registeredPrefabs.Add(prefab);
+                }
+            }
+        }
+
+        private NetworkObject CreateInstance(NetworkObject prefab)
+        {
+            // 猷⑦듃???앹꽦?섎릺 HideFlags瑜??듯빐 ?먮뵒???섏씠?대씪?ㅼ뿉???④퉩?덈떎.
+            NetworkObject instance = UnityEngine.Object.Instantiate(prefab);
+            IPoolable poolable = instance.GetComponent<IPoolable>();
+
+            if (poolable != null)
+            {
+                instancePoolableMap.Add(instance, poolable);
+            }
+
+            return instance;
+        }
+
+        /// <summary>
+        /// ??먯꽌 以鍮꾨맂 ?ㅻ툕?앺듃 ?몄뒪?댁뒪瑜?媛?몄샃?덈떎. (二쇰줈 ?쒕쾭 ?ㅽ룿 ???몄텧)
+        /// </summary>
+        public NetworkObject GetNetworkObject(NetworkObject prefab, Vector3 position, Quaternion rotation)
+        {
+            return GetNetworkObjectInternal(prefab, position, rotation);
+        }
+
+        private NetworkObject GetNetworkObjectInternal(NetworkObject prefab, Vector3 position, Quaternion rotation)
+        {
+            Assert.IsNotNull(prefab, "[NetworkObjectPool] GetNetworkObjectInternal: prefab??null?낅땲??");
+
+            if (!pools.TryGetValue(prefab, out PoolData poolData))
+            {
+                Debug.LogError($"[NetworkObjectPool] Setup?????議댁옱?섏? ?딆뒿?덈떎: {prefab.name}");
+                return null;
+            }
+
+            NetworkObject instance = null;
+
+            if (poolData.Queue.Count > 0)
+            {
+                instance = poolData.Queue.Dequeue();
+            }
+            else
+            {
+                if (!poolData.ShouldExpandWhenEmpty)
+                {
+                    Debug.LogWarning($"[NetworkObjectPool] ???怨좉컝?섏뿀?듬땲?? {prefab.name}. 媛뺤젣濡??꾩떆 ?몄뒪?댁뒪瑜??뺤옣?⑸땲??");
+                }
+
+                instance = CreateInstance(prefab);
+                instanceToPrefabMap.Add(instance, prefab);
+            }
+
+            if (instance != null)
+            {
+                instance.gameObject.hideFlags = HideFlags.None;
+
+                Transform instTransform = instance.transform;
+                instTransform.position = position;
+                instTransform.rotation = rotation;
+                instance.gameObject.SetActive(true);
+
+                if (instancePoolableMap.TryGetValue(instance, out IPoolable poolable))
+                {
+                    poolable.OnSpawn();
+                }
+            }
+
+            return instance;
+        }
+
+        /// <summary>
+        /// ?쒕쾭 ?먮뒗 ?몄뒪???섍꼍?먯꽌 紐낆떆?곸쑝濡??ㅻ툕?앺듃瑜????諛섑솚?????몄텧?⑸땲??
+        /// </summary>
+        public void ReturnNetworkObject(NetworkObject instance)
+        {
+            Assert.IsNotNull(instance, "[NetworkObjectPool] ReturnNetworkObject: 諛섑솚?섎젮??instance媛 null?낅땲??");
+
+            if (instance.IsSpawned)
+            {
+                // ?ㅽ룿???곹깭?쇰㈃ ?쒕쾭留?Despawn???몄텧?????덉뒿?덈떎. 
+                // ?대씪?댁뼵?몃뒗 ?쒕쾭??Despawn 硫붿떆吏瑜?諛쏆븘 NGO 肄쒕갚?쇰줈 ?먮룞 泥섎━?⑸땲??
+                if (GameStatics.IsServerAuthorized)
+                {
+                    instance.Despawn(true);
+                }
+                else
+                {
+                    Debug.LogWarning($"[NetworkObjectPool] ?대씪?댁뼵?멸? ?ㅽ룿??媛앹껜??諛섑솚???쒕룄?덉뒿?덈떎: {instance.name}. ?쒕쾭??Despawn 硫붿떆吏瑜??湲고빀?덈떎.");
+                }
+            }
+            else
+            {
+                ReturnNetworkObjectInternal(instance);
+            }
+        }
+
+        private void ReturnNetworkObjectInternal(NetworkObject instance)
+        {
+            if (instance == null)
+            {
+                return;
+            }
+
+            if (!instanceToPrefabMap.TryGetValue(instance, out NetworkObject prefab))
+            {
+                Debug.LogWarning($"[NetworkObjectPool] ????깅줉?섏? ?딆? 媛앹껜 諛섑솚 ?쒕룄: {instance.name}. 媛뺤젣 ?뚭눼?⑸땲??");
+                if (instance.gameObject != null)
+                {
+                    Destroy(instance.gameObject);
+                }
+
+                return;
+            }
+
+            if (!pools.TryGetValue(prefab, out PoolData poolData))
+            {
+                instanceToPrefabMap.Remove(instance);
+                instancePoolableMap.Remove(instance);
+                Debug.LogWarning($"[NetworkObjectPool] ??젣?섏뿀嫄곕굹 ?좏슚?섏? ?딆? ?濡쒖쓽 諛섑솚 ?쒕룄: {prefab.name}. 媛뺤젣 ?뚭눼?⑸땲??");
+                if (instance.gameObject != null)
+                {
+                    Destroy(instance.gameObject);
+                }
+
+                return;
+            }
+
+            if (instancePoolableMap.TryGetValue(instance, out IPoolable poolable))
+            {
+                poolable.OnDespawn();
+            }
+
+            // ?대뜑 ????섏씠?대씪???④? 諛⑹떇???ъ슜?섏뿬 NGO ?쒖빟???뚰뵾?⑸땲??
+            instance.gameObject.hideFlags = ShouldShowHiddenPoolObjects ? HideFlags.None : HideFlags.HideInHierarchy;
+            instance.gameObject.SetActive(false);
+            poolData.Queue.Enqueue(instance);
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Skills\ISkillLogic.cs
+========================================
+using ProjectAI.Characters;
+
+namespace ProjectAI.Core.Skills
+{
+    /// <summary>
+    /// 媛쒕퀎 ?ㅽ궗???ㅼ젣 諛쒕룞 濡쒖쭅???대떦?섎뒗 ?명꽣?섏씠?ㅼ엯?덈떎.
+    /// SkillManager???섑빐 ?깅줉?섍퀬 ?ㅽ뻾?⑸땲??
+    /// </summary>
+    public interface ISkillLogic
+    {
+        /// <summary>
+        /// ?대떦 ?ㅽ궗???앸퀎?섎뒗 怨좎쑀 ??낆엯?덈떎.
+        /// </summary>
+        ESkillType SkillType { get; }
+
+        /// <summary>
+        /// 珥덇린????SkillManager濡쒕????곗씠???꾨━?? ?섏튂 ??瑜??명똿諛쏆뒿?덈떎.
+        /// </summary>
+        void Initialize(SkillManager manager);
+
+        /// <summary>
+        /// ?꾩옱 ?곹깭?먯꽌 ???ㅽ궗???ъ슜?????덈뒗吏 寃?ы빀?덈떎.
+        /// </summary>
+        bool CanExecute(NetCharacter caster);
+
+        /// <summary>
+        /// ?ㅽ궗???쒖쟾 ?쒖옉 濡쒖쭅???쒕쾭?먯꽌 ?ㅽ뻾?⑸땲?? (?좊땲硫붿씠???ъ깮 ??
+        /// </summary>
+        void Execute(NetCharacter caster);
+
+        /// <summary>
+        /// ?좊땲硫붿씠???ㅽ봽?덉엫 ?대깽???깆뿉 留욎떠 ?ㅽ궗???듭떖 濡쒖쭅(?ъ궗泥?諛쒖궗, ?곕?吏 ?????ㅽ뻾?⑸땲??
+        /// </summary>
+        void Action(NetCharacter caster);
+
+        /// <summary>
+        /// ?좊땲硫붿씠?섏씠 ?앸굹嫄곕굹 痍⑥냼?????몄텧?섏뼱 ?ㅽ궗 ?곹깭瑜??뺣━(荑⑦????쒖옉 ???⑸땲??
+        /// </summary>
+        void End(NetCharacter caster);
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Skills\NetSkillComponent.cs
+========================================
+using UnityEngine.Assertions;
+using UnityEngine;
+using Unity.Netcode;
+using ProjectAI.Core;
+using ProjectAI.Core.Entities;
+using System.Collections.Generic;
+using UnityEngine.Scripting.APIUpdating;
+using ProjectAI.Characters;
+
+namespace ProjectAI.Core.Skills
+{
+    /// <summary>
+    /// ?ㅽ궗 ??낃낵 ?ъ깮???좊땲硫붿씠???곹깭 ?대쫫??留ㅽ븨?섎뒗 援ъ“泥댁엯?덈떎.
+    /// </summary>
+    [System.Serializable]
+    public struct SSkillAnimMapping
+    {
+        public ESkillType SkillType;
+
+        [AnimStateSelector]
+        public string AnimStateName;
+    }
+
+    /// <summary>
+    /// 罹먮┃?곗쓽 ?ㅽ궗(留덈쾿??諛쒖궗 ?? ?낅젰??泥섎━?섍퀬 ?쒕쾭濡?RPC瑜?蹂대궡??踰붿슜 而댄룷?뚰듃?낅땲??
+    /// </summary>
+    [MovedFrom(true, "ProjectAI.Players", "Assembly-CSharp", "NetPlayerCombat")]
+    public class NetSkillComponent : NetworkBehaviour
+    {
+        [Header("Skill Settings")]
+        [Tooltip("??罹먮┃?곌? ?ъ슜?????덈뒗 ?ㅽ궗 紐⑸줉")]
+        public List<ESkillType> OwnedSkills = new List<ESkillType>();
+
+        [Tooltip("罹먮┃?곌? ?ㅽ궗???쒖쟾?????ъ깮???좊땲硫붿씠???곹깭 留ㅽ븨")]
+        public List<SSkillAnimMapping> SkillAnimations = new List<SSkillAnimMapping>();
+
+        [Tooltip("留덈쾿???깆씠 諛쒖궗??湲곗? ?꾩튂 (?놁쑝硫??먯떊 Transform 以묒떖)")]
+        [SerializeField]
+        private Transform firePoint;
+        public Transform FirePoint => firePoint;
+
+        /// <summary>
+        /// 罹먮┃?곗쓽 ?꾩옱 ?곹깭瑜?鍮꾪듃留덉뒪?щ줈 ?숆린?뷀빀?덈떎.
+        /// </summary>
+        public NetworkVariable<int> ActiveStates = new NetworkVariable<int>(
+            0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        // 濡쒖뺄/?쒕쾭 怨듭슜 荑⑦???異붿쟻???뺤뀛?덈━
+        private Dictionary<ESkillType, double> lastActivationTimes = new Dictionary<ESkillType, double>();
+
+        private Dictionary<ESkillType, int> animHashCache = new Dictionary<ESkillType, int>();
+
+        private EntityEvents entityEvents;
+        private NetCharacter ownerCharacter;
+        private ESkillType currentCastingSkill = ESkillType.None;
+
+        private void Awake()
+        {
+            Debug.Log($"[NetSkillComponent] Awake: Caching animation hashes for {SkillAnimations.Count} skills.");
+            foreach (SSkillAnimMapping mapping in SkillAnimations)
+            {
+                if (string.IsNullOrEmpty(mapping.AnimStateName))
+                {
+                    Debug.LogWarning($"[NetSkillComponent] Awake: AnimStateName is empty for skill {mapping.SkillType}. Skipping hash caching.");
+                    continue;
+                }
+
+                Debug.Log($"[NetSkillComponent] Caching animation hash for skill {mapping.SkillType}: {mapping.AnimStateName}");
+                animHashCache[mapping.SkillType] = Animator.StringToHash(mapping.AnimStateName);
+            }
+
+            entityEvents = GetComponentInParent<EntityEvents>();
+            Assert.IsNotNull(entityEvents, $"[NetSkillComponent] {gameObject.name}??EntityEvents瑜?李얠쓣 ???놁뒿?덈떎.");
+
+            ownerCharacter = GetComponentInParent<NetCharacter>();
+            Assert.IsNotNull(ownerCharacter, "[NetSkillComponent] NetCharacter瑜?李얠쓣 ???놁뒿?덈떎.");
+        }
+
+        private void OnEnable()
+        {
+            if (entityEvents != null)
+            {
+                entityEvents.OnAnimationEventTriggered += HandleAnimationEvent;
+                entityEvents.OnAnimationStateExited += HandleAnimationStateExited;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (entityEvents != null)
+            {
+                entityEvents.OnAnimationEventTriggered -= HandleAnimationEvent;
+                entityEvents.OnAnimationStateExited -= HandleAnimationStateExited;
+            }
+        }
+
+        private void HandleAnimationEvent(EAnimationEventTag eventTag)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] HandleAnimationEvent???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+
+            if (!GameStatics.IsServerAuthorized || currentCastingSkill == ESkillType.None)
+            {
+                return;
+            }
+            
+            if (eventTag == EAnimationEventTag.Action)
+            {
+                if (GameStatics.SkillManager != null)
+                {
+                    GameStatics.SkillManager.ActionSkill(currentCastingSkill, ownerCharacter);
+                }
+            }
+        }
+
+        private void HandleAnimationStateExited(int stateHash)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] HandleAnimationStateExited???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+
+            if (!GameStatics.IsServerAuthorized || currentCastingSkill == ESkillType.None)
+            {
+                return;
+            }
+
+            // ?꾩옱 ?쒖쟾 以묒씤 ?ㅽ궗???좊땲硫붿씠???댁떆? ?쇱튂?섎뒗吏 寃??
+            int expectedHash = GetSkillAnimHash(currentCastingSkill);
+            if (expectedHash == stateHash)
+            {
+                if (GameStatics.SkillManager != null)
+                {
+                    GameStatics.SkillManager.EndSkill(currentCastingSkill, ownerCharacter);
+                }
+
+                currentCastingSkill = ESkillType.None;
+            }
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (IsOwner)
+            {
+                Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+                entityEvents.OnSkillTriggered += TryActivateSkill;
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            entityEvents.OnSkillTriggered -= TryActivateSkill;
+        }
+
+        public double GetLastActivationTime(ESkillType type)
+        {
+            if (lastActivationTimes.TryGetValue(type, out double time))
+            {
+                return time;
+            }
+
+            return -999.0;
+        }
+
+        public int GetSkillAnimHash(ESkillType type)
+        {
+            if (animHashCache.TryGetValue(type, out int hash))
+            {
+                return hash;
+            }
+
+            return 0;
+        }
+
+        public void SetLastActivationTime(ESkillType type, double time)
+        {
+            lastActivationTimes[type] = time;
+        }
+
+        public bool HasState(EStateTag tag)
+        {
+            return (ActiveStates.Value & (int)tag) != 0;
+        }
+
+        public void AddState(EStateTag tag)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] AddState???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            ActiveStates.Value |= (int)tag;
+        }
+
+        public void RemoveState(EStateTag tag)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] RemoveState???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            ActiveStates.Value &= ~(int)tag;
+        }
+
+        /// <summary>
+        /// ?대씪?댁뼵??而⑦듃濡ㅻ윭)?먯꽌 ?뱀젙 ?ㅽ궗 ?ъ슜???쒕룄?⑸땲??
+        /// </summary>
+        public void TryActivateSkill(ESkillType skillType)
+        {
+            if (!OwnedSkills.Contains(skillType))
+            {
+                Debug.Log($"[NetSkillComponent] 誘몃낫???ㅽ궗 ?쒕룄: {skillType}");
+                return;
+            }
+
+            // 濡쒖뺄 ?⑥쐞 ?대씪?댁뼵???덉륫(荑⑦??? ?곹깭 寃?? 濡쒖쭅
+            if (GameStatics.SkillManager != null)
+            {
+                SSkillConfig config = GameStatics.SkillManager.GetConfig(skillType);
+                if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.ServerTime.Time < GetLastActivationTime(skillType) + config.BaseCooldown)
+                {
+                    Debug.Log($"[NetSkillComponent] ?ㅽ궗 {skillType} 荑⑦????湲?以묒엯?덈떎.");
+                    return; // 荑⑦????湲?以?
+                }
+
+                if (HasState(EStateTag.Silenced) || HasState(EStateTag.Stunned))
+                {
+                    Debug.Log($"[NetSkillComponent] ?곹깭?댁긽(移⑤У/湲곗젅)?쇰줈 ?명빐 ?ㅽ궗 {skillType} ?쒖쟾 遺덇?.");
+                    return; // ?곹깭 ?댁긽?쇰줈 ?쒖쟾 遺덇?
+                }
+            }
+
+            // ?대씪?댁뼵???꾩슜(?몄뒪???쒖쇅) 荑⑦??꾩쓣 誘몃━ ?뚮┝ (?덉륫)
+            if (GameStatics.NetworkManager != null && !GameStatics.IsServerAuthorized)
+            {
+                SetLastActivationTime(skillType, GameStatics.NetworkManager.ServerTime.Time);
+            }
+
+            RequestActivateSkillServerRpc(skillType);
+        }
+
+        [Rpc(SendTo.Server)]
+        private void RequestActivateSkillServerRpc(ESkillType skillType)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] RequestActivateSkillServerRpc???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            if (!OwnedSkills.Contains(skillType))
+            {
+                return;
+            }
+
+            if (GameStatics.SkillManager != null)
+            {
+                if (GameStatics.SkillManager.ExecuteSkill(skillType, ownerCharacter))
+                {
+                    currentCastingSkill = skillType;
+                }
+            }
+        }
+
+        /// <summary>
+        /// ?쒕쾭媛 ?ㅽ궗 諛쒕룞/濡쒖쭅 ?ㅽ뻾 ??愿?⑤맂 ?좊땲硫붿씠???ъ깮??紐⑤뱺 ?대씪?댁뼵?몄뿉寃?吏?쒗빀?덈떎.
+        /// </summary>
+        [Rpc(SendTo.ClientsAndHost)]
+        public void BroadcastPlayAnimationClientRpc(int stateHash, float transitionDuration)
+        {
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            entityEvents.InvokePlayAnimation(stateHash, transitionDuration, 0);
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Skills\SkillEnums.cs
+========================================
+using System;
+
+namespace ProjectAI.Core.Skills
+{
+    /// <summary>
+    /// ?쒖뒪?쒖뿉 議댁옱?섎뒗 紐⑤뱺 ?ㅽ궗 ?앸퀎?먯엯?덈떎.
+    /// ?ㅽ듃?뚰겕 ?꾩넚??理쒖쟻?붾릺???덉뒿?덈떎.
+    /// </summary>
+    public enum ESkillType : byte
+    {
+        None = 0,
+        BasicAttack = 1,
+        Dash = 2,
+        Fireball = 3,
+        // ?꾩슂 ??異붽?
+    }
+
+    /// <summary>
+    /// 罹먮┃?곗쓽 媛곸쥌 ?곹깭(踰꾪봽/?붾쾭?? ?쒓렇?낅땲??
+    /// Flags ?띿꽦???듯빐 鍮꾪듃 ?곗궛?쇰줈 以묒꺽 愿由ш? 媛?ν빀?덈떎.
+    /// </summary>
+    [Flags]
+    public enum EStateTag : int
+    {
+        None = 0,
+        Casting = 1 << 0,       // ?ㅽ궗 ?쒖쟾 以?        Silenced = 1 << 1,      // ?ㅽ궗 ?ъ슜 遺덇?
+        Stunned = 1 << 2,       // ?대룞 諛??ㅽ궗 遺덇?
+        Invincible = 1 << 3,    // 臾댁쟻
+        // 理쒕? 32媛쒓퉴吏 ?뺤옣 媛??(1 << 31)
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Skills\SkillManager.cs
+========================================
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using Unity.Netcode;
+using UnityEngine.Assertions;
+using ProjectAI.Core.Pooling;
+using ProjectAI.Characters;
+using ProjectAI.Core;
+
+namespace ProjectAI.Core.Skills
+{
+    /// <summary>
+    /// ?ㅽ궗???꾨━??諛?湲곕낯 荑⑦????깆쓣 ?뺤쓽?섎뒗 ?ㅼ젙 ?곗씠??援ъ“泥댁엯?덈떎.
+    /// </summary>
+    [Serializable]
+    public struct SSkillConfig
+    {
+        public ESkillType SkillType;
+        public NetworkObject Prefab;
+        public float BaseCooldown;
+    }
+
+    /// <summary>
+    /// ?쒖뒪?쒖뿉 議댁옱?섎뒗 紐⑤뱺 ?ㅽ궗 濡쒖쭅(ISkillLogic) ?몄뒪?댁뒪瑜?蹂닿??섍퀬,
+    /// ?붿껌??Enum ??낆뿉 留욎떠 ?뚮쭪? ?ㅽ궗???쇱슦?낇빐二쇰뒗 ?꾩뿭 ?깃???留ㅻ땲??낅땲??
+    /// ?쒕쾭 痢≪뿉??二쇰룄?곸쑝濡??ㅽ궗 ?먯젙???대┫ ???쒖슜?⑸땲??
+    /// </summary>
+    public class SkillManager : MonoBehaviour
+    {
+        [Header("Skill Configurations")]
+        [Tooltip("媛??ㅽ궗???꾨━?뱀씠??湲곕낯 荑⑦????곗씠?곕? 留ㅽ븨?⑸땲??")]
+        public List<SSkillConfig> SkillConfigs = new List<SSkillConfig>();
+
+        private Dictionary<ESkillType, ISkillLogic> skillLogics = new Dictionary<ESkillType, ISkillLogic>();
+
+        private void Awake()
+        {
+            GameStatics.RegisterSkillManager(this);
+            InitializeSkills();
+        }
+
+        private void Start()
+        {
+            Assert.IsNotNull(GameStatics.ObjectPool, "[SkillManager] Start: ObjectPool??GameStatics???깅줉?섏뼱 ?덉? ?딆뒿?덈떎! ??諛곗튂瑜??뺤씤?섏떗?쒖삤.");
+        }
+
+        private void OnDestroy()
+        {
+            GameStatics.UnregisterSkillManager(this);
+        }
+
+        /// <summary>
+        /// ?꾨줈?앺듃 ?댁뿉 議댁옱?섎뒗 紐⑤뱺 ISkillLogic 援ы쁽泥대뱾???숈쟻?쇰줈 李얠븘??留ㅻ땲????깅줉?⑸땲??
+        /// </summary>
+        private void InitializeSkills()
+        {
+            skillLogics.Clear();
+
+            // 由ы뵆?됱뀡???ъ슜?섏뿬 ISkillLogic??援ы쁽??紐⑤뱺 ?대옒?ㅻ? 李얠븘 ?몄뒪?댁뒪??
+            Type type = typeof(ISkillLogic);
+            IEnumerable<Type> types = null;
+
+            try
+            {
+                types = AppDomain.CurrentDomain.GetAssemblies()
+                    .SelectMany(s => s.GetTypes())
+                    .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                Debug.LogWarning($"[SkillManager] 由ы뵆?됱뀡 ?댁뀍釉붾━ 濡쒕뱶 以??덉쇅 諛쒖깮. ?쇰? ?ㅽ궗???꾨씫?????덉뒿?덈떎: {e.Message}");
+                types = e.Types.Where(t => t != null && type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+            }
+
+            foreach (Type t in types)
+            {
+                // ScriptableObject??MonoBehaviour媛 ?꾨땶 ?쒖닔 C# ?대옒?ㅻ씪怨?媛?뺥빀?덈떎.
+                if (typeof(UnityEngine.Object).IsAssignableFrom(t))
+                {
+                    Debug.LogWarning($"[SkillManager] {t.Name}? Unity Object?낅땲?? ?쒖닔 C# ?대옒??ISkillLogic) ?꾩슜 ?먮룞 ?깅줉?먯꽌??臾댁떆?????덉뒿?덈떎. ?꾩슂???섎룞 ?깅줉?섏꽭??");
+                    continue; // 留뚯빟 MonoBehaviour濡?援ы쁽?쒕떎硫??ш린??AddComponent ?깆쓣 泥섎━?댁빞 ?⑸땲?? ?꾩옱???쒖닔 C# ?대옒?ㅻ? 沅뚯옣?⑸땲??
+                }
+
+                ISkillLogic skillLogic = (ISkillLogic)Activator.CreateInstance(t);
+                if (skillLogics.ContainsKey(skillLogic.SkillType))
+                {
+                    Debug.LogError($"[SkillManager] 以묐났???ㅽ궗 ??낆씠 諛쒓껄?섏뿀?듬땲?? {skillLogic.SkillType}");
+                    continue;
+                }
+
+                skillLogic.Initialize(this); // 留ㅻ땲? ?곗씠??二쇱엯
+                skillLogics.Add(skillLogic.SkillType, skillLogic);
+                Debug.Log($"[SkillManager] ?ㅽ궗 濡쒖쭅 ?깅줉 ?꾨즺: {skillLogic.SkillType} -> {t.Name}");
+            }
+
+            if (GameStatics.ObjectPool == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < SkillConfigs.Count; i++)
+            {
+                NetworkObject prefab = SkillConfigs[i].Prefab;
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                GameStatics.ObjectPool.SetupPool(prefab, 10, true);
+            }
+        }
+
+        public SSkillConfig GetConfig(ESkillType type)
+        {
+            foreach (SSkillConfig config in SkillConfigs)
+            {
+                if (config.SkillType == type)
+                {
+                    return config;
+                }
+            }
+            
+            return default;
+        }
+
+        /// <summary>
+        /// ?ㅽ궗 ?ㅽ뻾???붿껌?⑸땲?? (?쒕쾭 ?꾩슜)
+        /// </summary>
+        public bool ExecuteSkill(ESkillType type, NetCharacter caster)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ExecuteSkill? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return false;
+            }
+
+            if (!skillLogics.TryGetValue(type, out ISkillLogic logic))
+            {
+                Debug.LogWarning($"[SkillManager] ?????녿뒗 ?ㅽ궗 ??낆엯?덈떎: {type}");
+                return false;
+            }
+
+            if (!logic.CanExecute(caster))
+            {
+                return false; // ?곹깭 ?쒖빟 ??
+            }
+
+            logic.Execute(caster);
+            return true;
+        }
+
+        public void ActionSkill(ESkillType type, NetCharacter caster)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ActionSkill? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (skillLogics.TryGetValue(type, out ISkillLogic logic))
+            {
+                logic.Action(caster);
+            }
+        }
+
+        public void EndSkill(ESkillType type, NetCharacter caster)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] EndSkill? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (skillLogics.TryGetValue(type, out ISkillLogic logic))
+            {
+                logic.End(caster);
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Skills\Abilities\BasicAttackLogic.cs
+========================================
+using UnityEngine.Assertions;
+using UnityEngine;
+using Unity.Netcode;
+using ProjectAI.Core.Pooling;
+using ProjectAI.Movements;
+using ProjectAI.Projectiles;
+using ProjectAI.Characters;
+using ProjectAI.Core;
+
+namespace ProjectAI.Core.Skills.Abilities
+{
+    /// <summary>
+    /// 湲곕낯 怨듦꺽(留덈쾿??諛쒖궗) ?ㅽ궗??荑⑦???寃利?諛??ъ궗泥??留??ㅽ룿 濡쒖쭅??援ы쁽?섎뒗 ?대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public class BasicAttackLogic : ISkillLogic
+    {
+        public ESkillType SkillType => ESkillType.BasicAttack;
+
+        private NetworkObject projectilePrefab;
+        private double cooldown;
+
+        public void Initialize(SkillManager manager)
+        {
+            SSkillConfig config = manager.GetConfig(SkillType);
+            projectilePrefab = config.Prefab;
+            cooldown = config.BaseCooldown;
+
+            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab???꾨씫?섏뿀?듬땲??");
+        }
+
+        public bool CanExecute(NetCharacter caster)
+        {
+            // 移⑤У, 湲곗젅 ?곹깭硫??ъ슜 遺덇?
+            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned))
+            {
+                Debug.Log($"[BasicAttackLogic] CanExecute ?ㅽ뙣: {caster.NetworkObjectId} ?곹깭 ?댁긽(移⑤У/湲곗젅)");
+                return false;
+            }
+
+            // 荑⑦???寃??(媛꾨떒 援ы쁽)
+            Assert.IsNotNull(GameStatics.NetworkManager, "[BasicAttackLogic] CanExecute: NetworkManager is null.");
+            
+            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetLastActivationTime(SkillType) + cooldown)
+            {
+                Debug.Log($"[BasicAttackLogic] CanExecute ?ㅽ뙣: {caster.NetworkObjectId} 荑⑦????湲?以?);
+                return false;
+            }
+
+            return true;
+        }
+
+        public void Execute(NetCharacter caster)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] Execute???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            // ?좊땲硫붿씠???ъ깮留?吏??
+            int animHash = caster.SkillComponent.GetSkillAnimHash(SkillType);
+            if (animHash == 0)
+            {
+                Debug.LogWarning($"[BasicAttackLogic] Execute ?ㅽ뙣: {SkillType} ???대떦?섎뒗 ?좊땲硫붿씠???댁떆瑜?李얠쓣 ???놁뒿?덈떎. (CasterID: {caster.NetworkObjectId})");
+                return;
+            }
+
+            caster.SkillComponent.BroadcastPlayAnimationClientRpc(animHash, 0f);
+        }
+
+        public void Action(NetCharacter caster)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] Action? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            // ?ㅼ젣 ?ㅽ봽?덉엫 ?꾨떖 ???몄텧?섎뒗 ?ъ궗泥??ㅽ룿 濡쒖쭅
+            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
+
+            Vector2 direction = Vector2.right;
+            if (caster.Movement != null)
+            {
+                direction = caster.Movement.NetIsFacingRight.Value ? Vector2.right : Vector2.left;
+            }
+
+            Vector2 origin = (Vector2)caster.transform.position;
+            if (caster.SkillComponent.FirePoint != null)
+            {
+                origin = caster.SkillComponent.FirePoint.position;
+            }
+
+            Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool???깅줉?섏뼱 ?덉? ?딆뒿?덈떎!");
+
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
+
+            NetworkObject projectileNetObj = GameStatics.ObjectPool.GetNetworkObject(projectilePrefab, origin, rotation);
+            if (projectileNetObj == null)
+            {
+                Debug.LogWarning($"[BasicAttackLogic] Action ?ㅽ뙣: ?ъ궗泥대? ??먯꽌 媛?몄삤吏 紐삵뻽?듬땲?? (CasterID: {caster.NetworkObjectId})");
+                return;
+            }
+
+            projectileNetObj.Spawn();
+
+            if (projectileNetObj.TryGetComponent(out NetProjectile projectile))
+            {
+                Debug.Log($"[BasicAttackLogic] 諛쒖궗泥?珥덇린???꾨즺. 諛⑺뼢: {direction}, CasterID: {caster.NetworkObjectId}");
+                projectile.Initialize(direction, caster.NetworkObjectId);
+            }
+        }
+
+        public void End(NetCharacter caster)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[BasicAttackLogic] End???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            // ?ㅽ궗 醫낅즺(?먮뒗 痍⑥냼) ?쒖젏??荑⑦??꾩쓣 ?명똿?섏뿬, 醫낅즺 ?쒖젏遺??荑⑦??꾩씠 ?뚮룄濡???
+            caster.SkillComponent.SetLastActivationTime(SkillType, GameStatics.NetworkManager.ServerTime.Time);
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Stats\IDamageable.cs
+========================================
+namespace ProjectAI.Core.Stats
+{
+    /// <summary>
+    /// 怨듦꺽??諛쏆쓣 ???덈뒗 紐⑤뱺 媛앹껜媛 援ы쁽?댁빞 ?섎뒗 ?쇳빐(Damage) 泥섎━ ?명꽣?섏씠?ㅼ엯?덈떎.
+    /// </summary>
+    public interface IDamageable
+    {
+        /// <summary>
+        /// 媛앹껜???곕?吏瑜?媛?⑸땲??
+        /// (?몄텧? GameStatics.ApplyDamage瑜??듯븯??寃껋쓣 沅뚯옣?⑸땲??
+        /// </summary>
+        /// <param name="damage">理쒖쥌 ?곸슜???곕?吏 ?섏튂</param>
+        void TakeDamage(int damage);
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Stats\NetHealthComponent.cs
+========================================
+using System;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.Assertions;
+
+using ProjectAI.Core.Entities;
+
+namespace ProjectAI.Core.Stats
+{
+    /// <summary>
+    /// 媛쒖껜???꾩옱 泥대젰怨??쇨꺽/?щ쭩 ?곗텧??愿由ы븯???⑥씪 梨낆엫 而댄룷?뚰듃?낅땲??
+    /// 泥대젰 利앷컧? 諛섎뱶???쒕쾭?먯꽌留?泥섎━?섎ŉ, ?곗텧? ClientRpc瑜??듯빐 利됱떆 ?숆린?붾맗?덈떎.
+    /// </summary>
+    public class NetHealthComponent : NetworkBehaviour, IDamageable
+    {
+        /// <summary>
+        /// ?꾩옱 泥대젰 (?쒕쾭?먯꽌留??섏젙 媛?? ?대씪?댁뼵?몃뒗 ?쎄린留?媛??
+        /// (二쇱쓽: 理쒕? 泥대젰(MaxHealth)? 踰꾪봽/?λ퉬 ?쒖뒪?쒓낵???곕룞???꾪빐 NetStatComponent?먯꽌 以묒븰 愿由ы븯誘濡?洹몄そ??李몄“?댁빞 ?⑸땲??
+        /// </summary>
+        public NetworkVariable<int> CurrentHealth = new NetworkVariable<int>(
+            100,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary> 泥대젰 ?섏튂 蹂寃??대깽??(UI 媛깆떊?? </summary>
+        public event Action<int> OnHealthChanged;
+
+        /// <summary> 1?뚯꽦 ?쇨꺽 ?대깽??(?뚰떚?? ?ъ슫?????곗텧 ?몃━嫄?. ?뚮씪誘명꽣??(?곕?吏, ?⑥? 泥대젰) </summary>
+        public event Action<int, int> OnHit;
+
+        /// <summary> ?щ쭩 ?대깽??</summary>
+        public event Action OnDeath;
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            CurrentHealth.OnValueChanged += HandleHealthChanged;
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            CurrentHealth.OnValueChanged -= HandleHealthChanged;
+        }
+
+        /// <summary>
+        /// NetStatComponent ???곸쐞 而⑦듃濡ㅻ윭?먯꽌 珥덇린 泥대젰???명똿?????몄텧?⑸땲??
+        /// </summary>
+        public void InitializeHealth(int maxHealth)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetHealthComponent] InitializeHealth???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            CurrentHealth.Value = maxHealth;
+        }
+
+        private void HandleHealthChanged(int previousValue, int newValue)
+        {
+            OnHealthChanged?.Invoke(newValue);
+        }
+
+        /// <summary>
+        /// IDamageable 援ы쁽泥? ?쒕쾭 ?뚯씠?꾨씪??GameStatics)?먯꽌留??몄텧?섏뼱???⑸땲??
+        /// </summary>
+        public void TakeDamage(int damage)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetHealthComponent] TakeDamage???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (damage <= 0)
+            {
+                Debug.LogWarning($"[NetHealthComponent] ?곕?吏媛 ?뚯닔?닿굅??0?낅땲?? {damage}");
+                return; // ?곕?吏媛 ?뚯닔?닿굅??0?대㈃ 臾댁떆 (?뚮났 諛⑹?)
+            }
+
+            if (CurrentHealth.Value <= 0)
+            {
+                Debug.LogWarning("[NetHealthComponent] ?대? ?щ쭩??媛쒖껜???곕?吏瑜??낇엳???⑸땲??");
+                return; // ?대? ?щ쭩??媛쒖껜
+            }
+
+            // 泥대젰 李④컧 濡쒖쭅
+            int remainingHealth = Mathf.Max(0, CurrentHealth.Value - damage);
+            CurrentHealth.Value = remainingHealth;
+
+            // ?낅┰?곸씤 ?쇨꺽/?щ쭩 ?몃━嫄?諛쒖넚 (?덉씠??而⑤뵒??諛⑹?瑜??꾪빐 remainingHealth ?숇큺)
+            if (remainingHealth <= 0)
+            {
+                DieClientRpc();
+            }
+            else
+            {
+                HitClientRpc(damage, remainingHealth);
+            }
+        }
+
+        [Rpc(SendTo.ClientsAndHost, Delivery = RpcDelivery.Reliable)]
+        private void HitClientRpc(int damage, int remainingHealth)
+        {
+            OnHit?.Invoke(damage, remainingHealth);
+        }
+
+        [Rpc(SendTo.ClientsAndHost, Delivery = RpcDelivery.Reliable)]
+        private void DieClientRpc()
+        {
+            OnDeath?.Invoke();
+            // 李멸퀬: 媛앹껜 ?뚭눼(Despawn) 諛??숇룎 ?곗텧 ?깆? NetHealthComponent?먯꽌 吏곸젒 ?섏? ?딄퀬,
+            // OnDeath ?대깽?몃? 援щ룆?섎뒗 ?몃? 而⑦듃濡ㅻ윭(NetPlayerController, NetMonsterController)???꾩엫?⑸땲??
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Cores\Stats\NetStatComponent.cs
+========================================
+using UnityEngine.Assertions;
+using Unity.Netcode;
+using UnityEngine;
+using ProjectAI.Core.Entities;
+
+namespace ProjectAI.Core.Stats
+{
+    /// <summary>
+    /// 罹먮┃?곗쓽 ?곴뎄??媛蹂??二쇱슂 ?ㅽ꺈(理쒕? 泥대젰, 怨듦꺽?? ?대룞 ?띾룄 ?????듭젣?⑸땲??
+    /// </summary>
+    public class NetStatComponent : NetworkBehaviour
+    {
+        [SerializeField]
+        private NetHealthComponent healthComponent;
+
+        [SerializeField]
+        private EntityEvents entityEvents;
+
+        /// <summary>
+        /// 理쒕? 泥대젰
+        /// (二쇱쓽: 異뷀썑 ?λ퉬/踰꾪봽 ?깆쑝濡?理쒕? 泥대젰??蹂?????ㅻⅨ ?ㅽ꺈?ㅺ낵 ?④퍡 ?쇨큵 ?듭젣?섍린 ?꾪빐, NetHealthComponent媛 ?꾨땶 ?닿납??遺꾨━?섏뼱 ?덉뒿?덈떎)
+        /// </summary>
+        public NetworkVariable<int> MaxHealth = new NetworkVariable<int>(
+            100,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
+        /// 湲곕낯 怨듦꺽??
+        /// </summary>
+        public NetworkVariable<int> AttackPower = new NetworkVariable<int>(
+            10,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
+        /// ?대룞 ?띾룄 諛곗쑉 (湲곕낯 1.0)
+        /// 踰꾪봽/?붾쾭?꾩뿉 ?곕씪 蹂?숇릺硫? ?대룞 而댄룷?뚰듃(Movement)媛 ??諛곗쑉??怨깊븯??理쒖쥌 ?띾룄瑜?寃곗젙?⑸땲??
+        /// </summary>
+        public NetworkVariable<float> MoveSpeedModifier = new NetworkVariable<float>(
+            1f,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        private void Awake()
+        {
+            healthComponent = GetComponentInChildren<NetHealthComponent>();
+            Assert.IsNotNull(healthComponent, "NetStatComponent??NetHealthComponent媛 ?꾩슂?⑸땲??");
+
+            entityEvents = GetComponentInParent<EntityEvents>();
+            Assert.IsNotNull(entityEvents, "NetStatComponent??EntityEvents媛 ?꾩슂?⑸땲??");
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            MoveSpeedModifier.OnValueChanged += HandleMoveSpeedModifierChanged;
+
+            if (IsServer && healthComponent != null)
+            {
+                // ?ㅽ룿 ?꾨즺 ?? ?ㅻ꼫濡쒖꽌 ?섏쐞 泥대젰 而댄룷?뚰듃瑜??섑뼢?앹쑝濡?珥덇린??
+                healthComponent.InitializeHealth(MaxHealth.Value);
+            }
+
+            entityEvents.InvokeMoveSpeedModifierChanged(MoveSpeedModifier.Value);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            MoveSpeedModifier.OnValueChanged -= HandleMoveSpeedModifierChanged;
+        }
+
+        private void HandleMoveSpeedModifierChanged(float previousValue, float newValue)
+        {
+            entityEvents.InvokeMoveSpeedModifierChanged(newValue);
+        }
+
+        // TODO: ?ν썑 ?덈꺼?? ?꾩씠???μ갑, 踰꾪봽???곕Ⅸ ?ㅽ꺈 蹂??濡쒖쭅(?섏젙?? 異붽? ?덉젙
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\GameModes\NetMonsterSpawner.cs
+========================================
+using UnityEngine.Assertions;
+using System;
+using UnityEngine;
+using Unity.Netcode;
+using ProjectAI.Core;
+using ProjectAI.Core.Pooling;
+using ProjectAI.Core.Interfaces;
+
+namespace ProjectAI.GameModes
+{
+    /// <summary>
+    /// 臾댁옉??踰붿쐞 ??紐ъ뒪???ㅽ룿???대떦?섎뒗 ?쒕쾭 ?꾩슜 ?ㅽ룷??而댄룷?뚰듃?낅땲??
+    /// </summary>
+    public class NetMonsterSpawner : NetworkBehaviour
+    {
+        [Header("Spawn Settings")]
+        [SerializeField]
+        [Tooltip("?ㅽ룿??紐ъ뒪???꾨━??)]
+        private NetworkObject monsterPrefab;
+
+        [SerializeField]
+        [Tooltip("?ㅽ룿 二쇨린 (珥?")]
+        private float spawnInterval = 3f;
+
+        [SerializeField]
+        [Tooltip("?ㅽ룿 諛섍꼍")]
+        private float spawnRadius = 5f;
+
+        [SerializeField]
+        [Tooltip("?ㅻ툕?앺듃 ? 珥덇린 ?뚮컢???ш린")]
+        private int initialPoolSize = 10;
+
+        [Header("Count Restrictions")]
+        [SerializeField]
+        [Tooltip("理쒕? ?ㅽ룿 ?잛닔 (?뚯닔: 臾댁젣?? 0: ?ㅽ룿 ???? 1 ?댁긽: 吏???잛닔)")]
+        private int maxSpawnCount = -1;
+
+        private int currentSpawnCount = 0;
+        private float spawnTimer;
+        private ISpawnCondition[] conditions = Array.Empty<ISpawnCondition>();
+
+        private void Awake()
+        {
+            conditions = GetComponents<ISpawnCondition>();
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            Assert.IsNotNull(monsterPrefab, "[NetMonsterSpawner] 紐ъ뒪???꾨━?뱀씠 ?꾨씫?섏뿀?듬땲??");
+
+            // ?쒕쾭/?대씪?댁뼵??怨듯넻: ?留??몃뱾???ъ쟾 ?깅줉 ?꾩닔
+            if (GameStatics.ObjectPool != null)
+            {
+                GameStatics.ObjectPool.SetupPool(monsterPrefab, initialPoolSize, true);
+            }
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            Assert.IsNotNull(GameStatics.ObjectPool, "[NetMonsterSpawner] GameStatics.ObjectPool???깅줉?섏? ?딆븯?듬땲??");
+        }
+
+        private void Update()
+        {
+            if (!GameStatics.IsServerAuthorized || !IsSpawned)
+            {
+                return;
+            }
+
+            if (maxSpawnCount == 0 || (maxSpawnCount > 0 && currentSpawnCount >= maxSpawnCount))
+            {
+                return;
+            }
+
+            // 議곌굔??以??섎굹?쇰룄 留뚯”?섏? ?딆쑝硫???대㉧ ?湲?
+            for (int i = 0; i < conditions.Length; i++)
+            {
+                if (conditions[i] != null && !conditions[i].CheckCondition())
+                {
+                    return;
+                }
+            }
+
+            spawnTimer += Time.deltaTime;
+            if (spawnTimer >= spawnInterval)
+            {
+                spawnTimer = 0f;
+                Vector2 randomPoint = UnityEngine.Random.insideUnitCircle * spawnRadius;
+                Vector3 spawnPosition = (Vector3)((Vector2)transform.position + randomPoint);
+                SpawnMonster(spawnPosition, Quaternion.identity);
+            }
+        }
+
+        private void SpawnMonster(Vector3 position, Quaternion rotation)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterSpawner] 紐ъ뒪???ㅽ룿 濡쒖쭅? ?쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            if (GameStatics.ObjectPool == null || monsterPrefab == null)
+            {
+                return;
+            }
+
+            Vector2 randomPoint = UnityEngine.Random.insideUnitCircle * spawnRadius;
+            Vector2 spawnPosition = (Vector2)transform.position + randomPoint;
+
+            NetworkObject monsterNetObj = GameStatics.ObjectPool.GetNetworkObject(monsterPrefab, spawnPosition, Quaternion.identity);
+            if (monsterNetObj != null)
+            {
+                monsterNetObj.Spawn();
+                currentSpawnCount++;
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Gameplays\InteractionConditions\RequireHostCondition.cs
+========================================
+using UnityEngine;
+using ProjectAI.Core;
+using ProjectAI.Core.Interfaces;
+using Unity.Netcode;
+
+namespace ProjectAI.Environment.Conditions
+{
+    /// <summary>
+    /// 諛⑹옣(Host) 沅뚰븳???덉뼱?쇰쭔 ?곹샇?묒슜???덉슜?섎뒗 議곌굔 而댄룷?뚰듃?낅땲??
+    /// </summary>
+    public class RequireHostCondition : MonoBehaviour, IInteractionCondition
+    {
+        #region Public Methods
+        public bool CheckCondition(GameObject interactor)
+        {
+            // [二쇱쓽] ??議곌굔 泥댄겕??"?쒕쾭"?먯꽌 ?ㅽ뻾?? 
+            // ?곕씪??NetworkManager.IsServer濡?泥댄겕?섎㈃ 臾댁“嫄?true媛 ?섏? 諛⑹옣 ???대씪?댁뼵?몃룄 ?듦낵?섎뒗 踰꾧렇媛 諛쒖깮??
+            // ?곹샇?묒슜 二쇱껜(interactor)???뚯쑀??Owner)媛 ?쒕쾭 ?먯떊(ServerClientId)?몄? ?議고빐???뺥솗??諛⑹옣留??듦낵??
+            NetworkObject netObj = interactor.GetComponentInParent<NetworkObject>();
+            if (netObj != null)
+            {
+                return netObj.OwnerClientId == NetworkManager.ServerClientId;
+            }
+
+            return false;
+        }
+
+        public string GetFailedMessage()
+        {
+            return "諛⑹옣(Host)留?議곗옉?????덉뒿?덈떎.";
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Gameplays\Portals\ANetPortalInteractable.cs
+========================================
+using UnityEngine;
+using Unity.Netcode;
+using ProjectAI.Core.Interfaces;
+using UnityEngine.Assertions;
+using ProjectAI.Core;
+
+namespace ProjectAI.Environment
+{
+    /// <summary>
+    /// 議곌굔 寃??IInteractionCondition)? ?ㅼ젣 ?대룞 濡쒖쭅(ExecutePortal)???먮쫫???듭젣?섎뒗 ?ы깉 遺紐??대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public abstract class ANetPortalInteractable : NetworkBehaviour, IInteractable
+    {
+        private IInteractionCondition[] conditions;
+
+        #region Unity Lifecycle
+        protected virtual void Awake()
+        {
+            conditions = GetComponents<IInteractionCondition>();
+        }
+        #endregion
+
+        #region Public Methods
+        public void Interact(GameObject interactor)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[ANetPortalInteractable] Interact???쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            if (CanInteract(interactor))
+            {
+                ExecutePortal(interactor);
+            }
+        }
+        #endregion
+
+        #region Protected Methods
+        protected virtual bool CanInteract(GameObject interactor)
+        {
+            foreach (IInteractionCondition condition in conditions)
+            {
+                if (!condition.CheckCondition(interactor))
+                {
+                    OnInteractFailed(interactor, condition.GetFailedMessage());
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        protected virtual void OnInteractFailed(GameObject interactor, string message)
+        {
+            Debug.Log($"[Portal] {message}");
+        }
+
+        protected abstract void ExecutePortal(GameObject interactor);
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Gameplays\Portals\NetLocationTeleportPortal.cs
+========================================
+using UnityEngine;
+using ProjectAI.Core;
+using Unity.Netcode;
+using UnityEngine.Assertions;
+
+namespace ProjectAI.Environment
+{
+    public enum EPartyTeleportMode
+    {
+        IndividualSpawnPoints, // 媛쒕퀎 ?ㅽ룿 ?ъ씤??吏??紐⑤뱶
+        SamePosition,          // ?숈씪 醫뚰몴 ?ㅽ룿 紐⑤뱶
+        AutoOffset             // ?먮룞 ?ㅽ봽??紐⑤뱶
+    }
+
+    /// <summary>
+    /// 媛숈? ???대??먯꽌 ?뱀젙 ?꾩튂濡??쒓컙?대룞?쒖폒 二쇰뒗 ?μ냼 ?대룞 ?꾩슜 ?ы깉?낅땲??
+    /// 媛쒖씤留??대룞?좎?, ?뚰떚 ?꾩껜瑜??대룞?쒗궗吏 ?좏깮?????덉뒿?덈떎.
+    /// </summary>
+    public class NetLocationTeleportPortal : ANetPortalInteractable
+    {
+        [Header("Teleport Settings")]
+        [Tooltip("泥댄겕 ???곹샇?묒슜???쇱옄留??대룞?섏? ?딄퀬, ?묒냽??紐⑤뱺 ?뚰떚?먯쓣 媛뺤젣 ?대룞?쒗궢?덈떎.")]
+        [SerializeField]
+        private bool shouldTeleportEntireParty = false;
+
+        [Tooltip("?뚰떚 ?꾩껜 ?대룞 ???ㅽ룿 諛⑹떇??寃곗젙?⑸땲??")]
+        [SerializeField]
+        private EPartyTeleportMode partyTeleportMode = EPartyTeleportMode.AutoOffset;
+
+        [Tooltip("?꾩갑??湲곕낯 紐⑹쟻吏. 媛쒖씤 ?대룞?닿굅??SamePosition / AutoOffset 紐⑤뱶????湲곗??먯씠 ?⑸땲??")]
+        [SerializeField]
+        private Transform destinationPoint;
+
+        [Tooltip("IndividualSpawnPoints 紐⑤뱶?????ъ슜??媛??뚰떚?먮퀎 紐⑹쟻吏 諛곗뿴?낅땲?? ?몄썝?섎쭔??吏?뺥빐???⑸땲??")]
+        [SerializeField]
+        private Transform[] partySpawnPoints;
+
+        #region Protected Methods
+        protected override void ExecutePortal(GameObject interactor)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[LocationTeleportPortal] ExecutePortal? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            Assert.IsNotNull(destinationPoint, "[LocationTeleportPortal] 湲곕낯 紐⑹쟻吏(destinationPoint)媛 ?ㅼ젙?섏? ?딆븯?듬땲??");
+
+            Vector3 destPos = destinationPoint.position;
+            
+            if (shouldTeleportEntireParty)
+            {
+                // 1. ?뚰떚 ?꾩껜 媛뺤젣 ?대룞
+                Assert.IsNotNull(GameStatics.NetworkManager, "[LocationTeleportPortal] GameStatics.NetworkManager is null.");
+                
+                int i = 0;
+                foreach (NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
+                {
+                    if (client.PlayerObject != null)
+                    {
+                        Vector3 targetPos = destPos;
+
+                        switch (partyTeleportMode)
+                        {
+                            case EPartyTeleportMode.IndividualSpawnPoints:
+                                if (partySpawnPoints != null && i < partySpawnPoints.Length && partySpawnPoints[i] != null)
+                                {
+                                    targetPos = partySpawnPoints[i].position;
+                                }
+                                else
+                                {
+                                    Debug.LogWarning("[LocationTeleportPortal] ?뚰떚 ?ㅽ룿 ?ъ씤?멸? 遺議깊븯嫄곕굹 ?꾨씫?섏뼱 湲곕낯 紐⑹쟻吏濡??ㅽ룿?⑸땲??");
+                                    targetPos = destPos;
+                                }
+                                
+                                break;
+                                
+                            case EPartyTeleportMode.AutoOffset:
+                                targetPos = destPos + new Vector3(i * 1.5f, 0, 0);
+                                break;
+                                
+                            case EPartyTeleportMode.SamePosition:
+                                targetPos = destPos;
+                                break;
+                        }
+
+                        Rigidbody2D rb = client.PlayerObject.GetComponentInChildren<Rigidbody2D>();
+                        if (rb != null)
+                        {
+                            rb.position = targetPos;
+                        }
+                        else
+                        {
+                            client.PlayerObject.transform.position = targetPos;
+                        }
+                        
+                        i++;
+                    }
+                }
+            }
+            else
+            {
+                // 2. ?곹샇?묒슜??媛쒖씤留??대룞
+                if (interactor != null)
+                {
+                    Rigidbody2D rb = interactor.GetComponentInChildren<Rigidbody2D>();
+                    if (rb != null)
+                    {
+                        rb.position = destPos;
+                    }
+                    else
+                    {
+                        interactor.transform.position = destPos;
+                    }
+                }
+            }
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Gameplays\Portals\NetSceneTransitionPortal.cs
+========================================
+using UnityEngine;
+using ProjectAI.Core;
+using ProjectAI.Core.Enums;
+using UnityEngine.Assertions;
+
+namespace ProjectAI.Environment
+{
+    /// <summary>
+    /// ?곹샇?묒슜 ???뚰떚 ?꾩껜瑜?吏?뺣맂 ?ъ쑝濡??대룞?쒗궎??援ъ껜?곸씤 ???대룞 ?ы깉?낅땲??
+    /// </summary>
+    public class NetSceneTransitionPortal : ANetPortalInteractable
+    {
+        [Tooltip("?대룞???????)]
+        [SerializeField]
+        private ESceneType targetScene = ESceneType.Dungeon;
+
+        [Header("Spawn Settings")]
+        [Tooltip("?대룞???ъ뿉??李⑹????뱀젙 ?ㅽ룿 ?ъ씤?몄쓽 ID (??媛믪씠 ?덉쑝硫?醫뚰몴蹂대떎 ?곗꽑?⑸땲??")]
+        [SerializeField]
+        private string targetSpawnPointID = "";
+
+        [Tooltip("泥댄겕 ???꾨옒????醫뚰몴(Raw)濡?吏곸젒 ?대룞?⑸땲??(targetSpawnPointID媛 鍮꾩썙???덉뼱???묐룞)")]
+        [SerializeField]
+        private bool shouldUseRawCoordinates = false;
+
+        [Tooltip("吏곸젒 ?대룞??紐⑺몴 ?붾뱶 醫뚰몴 (Vector2)")]
+        [SerializeField]
+        private Vector2 rawTargetPosition = Vector2.zero;
+
+        #region Protected Methods
+        protected override void ExecutePortal(GameObject interactor)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSceneTransitionPortal] ExecutePortal? ?쒕쾭?먯꽌留??몄텧?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            SceneTransitionData.NextSpawnPointID = targetSpawnPointID;
+            SceneTransitionData.ShouldUseRawCoordinates = shouldUseRawCoordinates;
+            SceneTransitionData.RawTargetPosition = rawTargetPosition;
+
+            Assert.IsNotNull(GameStatics.NetworkManager, "[NetSceneTransitionPortal] NetworkManager媛 null?낅땲??");
+            string sceneName = targetScene.ToString();
+            GameStatics.NetworkManager.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Movements\ANetMovement.cs
+========================================
+using UnityEngine.Scripting.APIUpdating;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.Assertions;
+using ProjectAI.Core.Entities;
+
+namespace ProjectAI.Movements
+{
+    /// <summary>
+    /// 紐⑤뱺 ?ㅽ듃?뚰겕 ?뷀떚???뚮젅?댁뼱, 紐ъ뒪?? ?ъ궗泥??? ?대룞 而댄룷?뚰듃??異붿긽 湲곕컲 ?대옒?ㅼ엯?덈떎.
+    /// 怨듯넻 湲곕뒫(?됰갚 ?? 諛??곹깭 ?대깽??EntityEvents)? ?듭떊?섍린 ?꾪븳 ?덈툕 ??븷???⑸땲??
+    /// </summary>
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "ANetMovement")]
+    public abstract class ANetMovement : NetworkBehaviour
+    {
+        protected EntityEvents _entityEvents;
+
+        /// <summary>
+        /// ?좊땲硫붿씠??媛깆떊???꾪븳 ?ㅽ듃?뚰겕 ?숆린???띾룄?낅땲??
+        /// </summary>
+        public NetworkVariable<Vector2> NetAnimVelocity = new NetworkVariable<Vector2>(
+            Vector2.zero,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Owner
+        );
+
+        /// <summary>
+        /// 罹먮┃?곌? ?꾩옱 ?ㅻⅨ履쎌쓣 諛붾씪蹂닿퀬 ?덈뒗吏 ?щ??낅땲?? (怨듦꺽 諛⑺뼢 ?깆뿉 ?ъ슜)
+        /// </summary>
+        public NetworkVariable<bool> NetIsFacingRight = new NetworkVariable<bool>(
+            true,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Owner
+        );
+
+        /// <summary>
+        /// 臾쇰━ ?곗궛 ?깆뿉??李몄“???ㅼ젣 臾쇰━/?대룞 ?띾룄
+        /// </summary>
+        public abstract Vector2 Velocity { get; }
+
+        /// <summary>
+        /// ?대룞???ъ슜?섎뒗 臾쇰━ 由ъ??쒕컮??而댄룷?뚰듃?낅땲??
+        /// </summary>
+        public Rigidbody2D Rb { get; protected set; }
+
+        protected virtual void Awake()
+        {
+            _entityEvents = GetComponentInParent<EntityEvents>();
+            Assert.IsNotNull(_entityEvents, "EntityEvents component is missing.");
+            Rb = GetComponentInParent<Rigidbody2D>();
+            Assert.IsNotNull(Rb, "Rigidbody2D is missing.");
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            NetAnimVelocity.OnValueChanged += HandleVelocityChanged;
+            NetIsFacingRight.OnValueChanged += HandleFacingDirectionChanged;
+            
+            // 援щ룆 吏곹썑, ?대? 媛믪씠 議댁옱?????덉쑝誘濡?珥덇린 ?곹깭 ?숆린???섎룞 ?몄텧
+            HandleVelocityChanged(Vector2.zero, NetAnimVelocity.Value);
+            HandleFacingDirectionChanged(true, NetIsFacingRight.Value);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            NetAnimVelocity.OnValueChanged -= HandleVelocityChanged;
+            NetIsFacingRight.OnValueChanged -= HandleFacingDirectionChanged;
+            base.OnNetworkDespawn();
+        }
+
+        private void HandleVelocityChanged(Vector2 previousValue, Vector2 newValue)
+        {
+            Assert.IsNotNull(_entityEvents);
+            _entityEvents.InvokeVelocityChanged(newValue);
+        }
+
+        private void HandleFacingDirectionChanged(bool previousValue, bool newValue)
+        {
+            Assert.IsNotNull(_entityEvents);
+            _entityEvents.InvokeFacingDirectionChanged(newValue);
+        }
+
+        // TODO: ?ν썑 ?됰갚 ??怨듯넻 ?쇨꺽/?대룞 濡쒖쭅 異붽?
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Movements\NetPlayerMovement.cs
+========================================
+using UnityEngine.Scripting.APIUpdating;
+using UnityEngine;
+using Unity.Netcode;
+using System.Collections.Generic;
+using UnityEngine.Assertions;
+using ProjectAI.Core;
+
+namespace ProjectAI.Movements
+{
+    /// <summary>
+    /// ?대씪?댁뼵?몄뿉???쒕쾭濡?蹂대궡???낅젰 ?곗씠???섏씠濡쒕뱶
+    /// </summary>
+    public struct SInputPayload : INetworkSerializable
+    {
+        public int SequenceId;
+        public Vector2 InputVector;
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref SequenceId);
+            serializer.SerializeValue(ref InputVector);
+        }
+    }
+
+    /// <summary>
+    /// ?쒕쾭?먯꽌 ?대씪?댁뼵?몃줈 蹂대궡???곹깭 ?곗씠???섏씠濡쒕뱶
+    /// </summary>
+    public struct SStatePayload : INetworkSerializable
+    {
+        public int SequenceId;
+        public Vector2 Position;
+        public Vector2 Velocity;
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref SequenceId);
+            serializer.SerializeValue(ref Position);
+            serializer.SerializeValue(ref Velocity);
+        }
+    }
+
+    /// <summary>
+    /// Rigidbody2D瑜??ъ슜??罹먮┃?곗쓽 臾쇰━???대룞???꾨떞?섎뒗 ?대옒?ㅼ엯?덈떎.
+    /// </summary>
+    [MovedFrom(true, "ProjectAI.Player", "Assembly-CSharp", "NetPlayerMovement")]
+    public class NetPlayerMovement : ANetMovement
+    {
+        private const int BUFFER_SIZE = 1024;
+
+        [Header("Movement Settings")]
+        [Tooltip("罹먮┃?곗쓽 湲곕낯 ?대룞 ?띾룄")]
+        [SerializeField]
+        private float moveSpeed = 5f;
+
+        [Header("Network Settings")]
+        [Tooltip("?ㅼ감媛 ??媛믩낫???묒쑝硫?臾댁떆 (?꾩＜ ?묒? ?ㅼ감)")]
+        [SerializeField]
+        private float verySmallReconciliationThreshold = 0.01f;
+
+        [Tooltip("?ㅼ감媛 ??媛믩낫???щ㈃ ?붾젅?ы듃濡?媛꾩＜?섍퀬 媛뺤젣 ?숆린?붾쭔 ?섑뻾 (ReSimulate ?앸왂)")]
+        [SerializeField]
+        private float teleportReconciliationThreshold = 2.0f;
+
+        // TODO: ?ν썑 ?쒓컖??媛앹껜 遺꾨━ ??蹂닿컙/?ㅻ깄 遺꾧린 湲곗?媛믪쑝濡??ъ슜
+        // [Tooltip("?ㅼ감媛 ??媛믩낫???묒쑝硫?媛뺤젣 ?숆린??(Snap)")]
+        // [SerializeField]
+        // private float smallReconciliationThreshold = 0.05f;
+
+        // [Tooltip("?ㅼ감媛 ??媛믩낫???щ㈃ 媛뺤젣 ?숆린??(Snap)")]
+        // [SerializeField]
+        // private float largeReconciliationThreshold = 2.0f;
+
+        private SInputPayload[] clientInputBuffer = new SInputPayload[BUFFER_SIZE];
+        private SStatePayload[] clientStateBuffer = new SStatePayload[BUFFER_SIZE];
+
+        private Queue<SInputPayload> serverInputQueue = new Queue<SInputPayload>();
+
+        private int currentSequenceId = 0;
+
+        private Vector2 currentMoveInput;
+        private float currentMoveSpeedModifier = 1f;
+
+        private ContactFilter2D physicsFilter;
+        private RaycastHit2D[] physicsHits = new RaycastHit2D[1];
+
+        public override Vector2 Velocity => base.Rb.linearVelocity;
+
+        #region Unity Lifecycle
+        protected override void Awake()
+        {
+            base.Awake();
+            Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
+
+            physicsFilter = new ContactFilter2D();
+            physicsFilter.useTriggers = false;
+            physicsFilter.useLayerMask = true;
+            physicsFilter.layerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
+        }
+
+        private void OnEnable()
+        {
+            base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
+        }
+
+        private void OnDisable()
+        {
+            base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
+        }
+
+        private void HandleMoveSpeedModifierChanged(float modifier)
+        {
+            currentMoveSpeedModifier = modifier;
+        }
+
+        private void FixedUpdate()
+        {
+            if (GameStatics.IsServerAuthorized)
+            {
+                HandleServerTick();
+            }
+
+            if (IsOwner)
+            {
+                HandleClientTick();
+            }
+
+            currentSequenceId++;
+        }
+        #endregion
+
+        #region Client Prediction
+        private void HandleClientTick()
+        {
+            int bufferIndex = (currentSequenceId % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
+            
+            SInputPayload inputPayload = new SInputPayload
+            {
+                SequenceId = currentSequenceId,
+                InputVector = currentMoveInput
+            };
+            
+            clientInputBuffer[bufferIndex] = inputPayload;
+
+            SendInputServerRpc(inputPayload);
+
+            ApplyPhysics(inputPayload.InputVector);
+
+            SStatePayload statePayload = new SStatePayload
+            {
+                SequenceId = currentSequenceId,
+                Position = base.Rb.position,
+                Velocity = base.Rb.linearVelocity
+            };
+            
+            clientStateBuffer[bufferIndex] = statePayload;
+        }
+
+        [Rpc(SendTo.Server, Delivery = RpcDelivery.Unreliable)]
+        private void SendInputServerRpc(SInputPayload inputPayload)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetPlayerMovement] SendInputServerRpc???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            
+            serverInputQueue.Enqueue(inputPayload);
+        }
+        #endregion
+
+        #region Server Logic
+        private void HandleServerTick()
+        {
+            int lastProcessedIndex = -1;
+            int processedCount = 0;
+
+            while (serverInputQueue.Count > 0)
+            {
+                SInputPayload inputPayload = serverInputQueue.Dequeue();
+                
+                if (processedCount > 0 && !IsOwner)
+                {
+                    // ?댁쟾 ?⑦궥???띾룄瑜??섎룞?쇰줈 ?곸슜?섏뿬 以묎컙 ?꾨젅???꾨씫 諛⑹? (臾쇰━ 踰??ル┝ 諛⑹? ?곸슜)
+                    ApplyManualVelocity();
+                }
+                
+                int bufferIndex = (inputPayload.SequenceId % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
+                clientInputBuffer[bufferIndex] = inputPayload;
+                
+                if (!IsOwner)
+                {
+                    ApplyPhysics(inputPayload.InputVector);
+                }
+
+                SStatePayload statePayload = new SStatePayload
+                {
+                    SequenceId = inputPayload.SequenceId,
+                    Position = base.Rb.position,
+                    Velocity = base.Rb.linearVelocity
+                };
+
+                clientStateBuffer[bufferIndex] = statePayload;
+                lastProcessedIndex = bufferIndex;
+                processedCount++;
+            }
+
+            if (lastProcessedIndex != -1)
+            {
+                SendStateClientRpc(clientStateBuffer[lastProcessedIndex]);
+            }
+        }
+
+        [Rpc(SendTo.NotServer, Delivery = RpcDelivery.Unreliable)]
+        private void SendStateClientRpc(SStatePayload statePayload)
+        {
+            if (!IsOwner)
+            {
+                // ?듭?踰?泥섎━: ?쒕쾭 ?곹깭瑜??섏떊?섎뒗 利됱떆 ?곸슜.
+                // ?댄썑 FixedUpdate ?ъ씠???숈븞 臾쇰━ ?붿쭊???좏삎 ?띾룄瑜?湲곕컲?쇰줈 ?먯뿰?ㅻ읇寃??몄궫(Dead Reckoning)??
+                base.Rb.position = statePayload.Position;
+                base.Rb.linearVelocity = statePayload.Velocity;
+                return;
+            }
+
+            int bufferIndex = (statePayload.SequenceId % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
+            SStatePayload clientState = clientStateBuffer[bufferIndex];
+
+            float sqrDistance = (clientState.Position - statePayload.Position).sqrMagnitude;
+
+            if (sqrDistance < verySmallReconciliationThreshold * verySmallReconciliationThreshold)
+            {
+                // 留ㅼ슦 ?묒? ?ㅼ감 臾댁떆
+                return;
+            }
+            
+            // ?쒓컖??媛앹껜(VisualBody)媛 遺꾨━?섏뿀?쇰?濡? 臾쇰━ 媛앹껜??
+            // ?ㅼ감 諛쒖깮 ??臾댁“嫄??쒕쾭 ?꾩튂濡?利됱떆 媛뺤젣 ?대룞(Snap)?쒗궡.
+            base.Rb.position = statePayload.Position;
+            base.Rb.linearVelocity = statePayload.Velocity;
+            
+            if (sqrDistance > teleportReconciliationThreshold * teleportReconciliationThreshold)
+            {
+                // ?쒕쾭 媛뺤젣 ?붾젅?ы듃濡?媛꾩＜. ReSimulate ?앸왂
+                return;
+            }
+
+            ReSimulate(statePayload.SequenceId);
+        }
+
+        private void ReSimulate(int serverSequenceId)
+        {
+            // ?쒕쾭 ?곹깭???꾩튂???대떦 ?쒗?ㅼ쓽 ?띾룄媛 ?곸슜?섍린 '?? ?곹깭?대?濡? 癒쇱? 1?꾨젅??媛?고빐以??
+            base.Rb.position += base.Rb.linearVelocity * Time.fixedDeltaTime;
+
+            int sequenceToReSimulate = serverSequenceId + 1;
+
+            while (sequenceToReSimulate < currentSequenceId)
+            {
+                int index = (sequenceToReSimulate % BUFFER_SIZE + BUFFER_SIZE) % BUFFER_SIZE;
+                SInputPayload input = clientInputBuffer[index];
+
+                ApplyPhysics(input.InputVector);
+
+                clientStateBuffer[index] = new SStatePayload
+                {
+                    SequenceId = sequenceToReSimulate,
+                    Position = base.Rb.position,
+                    Velocity = base.Rb.linearVelocity
+                };
+                
+                // ?ъ떆裕щ젅?댁뀡 ?꾩튂 媛깆떊. (踰꾪띁???덉륫 ?곹깭瑜?湲곕줉???꾩뿉 ?꾩닔)
+                // 1-Frame ?ㅽ봽??諛⑹?瑜??꾪빐 HandleClientTick怨??숈씪?섍쾶 媛?????곹깭瑜?踰꾪띁??湲곕줉??
+                ApplyManualVelocity();
+
+                sequenceToReSimulate++;
+            }
+        }
+        #endregion
+
+        #region Public Methods
+        public void SetMoveInput(Vector2 input)
+        {
+            if (!IsOwner)
+            {
+                return;
+            }
+
+            // ?ㅽ뵾?쒗빑(鍮꾩젙?곸쟻?쇰줈 ???낅젰媛?二쇱엯) 諛??媛곸꽑 媛??猷⑦듃 2 諛곗냽) 諛⑹????덉쟾?μ튂
+            if (input.sqrMagnitude > 1f)
+            {
+                input.Normalize();
+            }
+
+            // 醫뚯슦 ?대룞???곕Ⅸ 諛붾씪蹂대뒗 諛⑺뼢 媛깆떊 (???꾨옒 ?대룞?쒕뒗 湲곗〈 諛⑺뼢 ?좎?)
+            if (input.x > 0.01f)
+            {
+                base.NetIsFacingRight.Value = true;
+            }
+            else if (input.x < -0.01f)
+            {
+                base.NetIsFacingRight.Value = false;
+            }
+
+            currentMoveInput = input;
+            base.NetAnimVelocity.Value = input * (moveSpeed * currentMoveSpeedModifier);
+        }
+        #endregion
+
+        #region Private Methods
+        private void ApplyPhysics(Vector2 inputVector)
+        {
+            base.Rb.linearVelocity = inputVector * (moveSpeed * currentMoveSpeedModifier);
+        }
+
+        private void ApplyManualVelocity()
+        {
+            Vector2 moveAmount = base.Rb.linearVelocity * Time.fixedDeltaTime;
+
+            int hitCount = base.Rb.Cast(moveAmount.normalized, physicsFilter, physicsHits, moveAmount.magnitude);
+
+            if (hitCount == 0)
+            {
+                base.Rb.position += moveAmount;
+            }
+            else
+            {
+                float safeDistance = Mathf.Max(0f, physicsHits[0].distance - 0.01f);
+                base.Rb.position += moveAmount.normalized * safeDistance;
+            }
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Movements\NetServerMovement.cs
+========================================
+using UnityEngine.Scripting.APIUpdating;
+using UnityEngine.Assertions;
+using UnityEngine;
+using Unity.Netcode.Components;
+using ProjectAI.Core;
+
+namespace ProjectAI.Movements
+{
+    /// <summary>
+    /// ?쒕쾭 沅뚰븳?쇰줈 臾쇰━ 湲곕컲 ?대룞???섑뻾?섎뒗 踰붿슜 ?대룞 而댄룷?뚰듃?낅땲?? (紐ъ뒪?? ?ъ궗泥???怨듭슜)
+    /// ?대??곸쑝濡?遺紐⑥쓽 Rigidbody2D瑜?李몄“?섏뿬 ?꾩튂 諛??띾룄瑜??숆린?뷀빀?덈떎.
+    /// </summary>
+    [MovedFrom(true, "ProjectAI.Characters", "Assembly-CSharp", "NetCharacterMovement")]
+    public class NetServerMovement : ANetMovement
+    {
+        [Header("Movement Settings")]
+        [Tooltip("湲곕낯 ?대룞 ?띾룄")]
+        [SerializeField]
+        private float baseSpeed = 15f;
+
+        private Vector2 currentDirection = Vector2.zero;
+        private float currentSpeedModifier = 1f;
+
+        public override Vector2 Velocity => base.Rb.linearVelocity;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            Assert.IsNotNull(base.Rb, "Rigidbody2D component is missing in parent.");
+        }
+
+        private void OnEnable()
+        {
+            if (base._entityEvents != null)
+            {
+                base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (base._entityEvents != null)
+            {
+                base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
+            }
+        }
+
+        private void HandleMoveSpeedModifierChanged(float modifier)
+        {
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            currentSpeedModifier = modifier;
+            UpdateVelocity();
+        }
+
+        /// <summary>
+        /// ?대룞 諛⑺뼢???ㅼ젙?섍퀬 利됱떆 ?띾룄瑜?媛깆떊?⑸땲??
+        /// </summary>
+        public void SetDirection(Vector2 direction)
+        {
+            currentDirection = direction.normalized;
+            UpdateVelocity();
+        }
+
+        private void UpdateVelocity()
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetServerMovement] UpdateVelocity???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            base.Rb.linearVelocity = currentDirection * (baseSpeed * currentSpeedModifier);
+            // ?ㅽ듃?뚰겕 ?좊땲硫붿씠??諛?怨듯넻 ?대깽??以묎퀎 ?몃━嫄?
+            base.NetAnimVelocity.Value = base.Rb.linearVelocity;
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Networks\IMatchmakingService.cs
+========================================
+using System.Threading.Tasks;
+
+namespace ProjectAI.Network
+{
+    /// <summary>
+    /// 諛??앹꽦 諛?李멸? 愿???ㅽ듃?뚰겕 ?쒕퉬?ㅻ? 異붿긽?뷀븳 ?명꽣?섏씠?ㅼ엯?덈떎.
+    /// </summary>
+    public interface IMatchmakingService
+    {
+        Task<string> StartHostAsync();
+        Task<bool> StartClientAsync(string joinData);
+        void LeaveGame();
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Networks\MultiplayerServiceManager.cs
+========================================
+using UnityEngine;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+using System.Threading.Tasks;
+using ProjectAI.Core;
+
+namespace ProjectAI.Network
+{
+    /// <summary>
+    /// 吏?먰븯??硫?고뵆?덉씠 ?곌껐 紐⑤뱶??醫낅쪟瑜??뺤쓽?⑸땲??
+    /// </summary>
+    public enum EMultiplayerMode
+    {
+        Relay,
+        Steamworks
+    }
+
+    /// <summary>
+    /// ?꾩옱 ?쒖꽦?붾맂 留ㅼ튂硫붿씠???쒕퉬??Relay, Steam ??瑜??앹꽦 諛?愿由ы븯???섑띁 留ㅻ땲??낅땲??
+    /// </summary>
+    public class MultiplayerServiceManager : MonoBehaviour
+    {
+        [Header("Settings")]
+        [Tooltip("?ъ슜??硫?고뵆?덉씠 紐⑤뱶瑜??좏깮?⑸땲?? (Relay ?먮뒗 Steamworks)")]
+        [SerializeField]
+        private EMultiplayerMode targetMode = EMultiplayerMode.Relay;
+
+        public EMultiplayerMode CurrentMode { get; private set; }
+        public IMatchmakingService MatchmakingService { get; private set; }
+        public string LastJoinCode { get; private set; } // 諛쒓툒??肄붾뱶 ??μ슜
+
+        private void Start()
+        {
+            InitializeService();
+        }
+
+        private void InitializeService()
+        {
+            CurrentMode = targetMode;
+
+            if (CurrentMode == EMultiplayerMode.Relay)
+            {
+                MatchmakingService = new RelayMatchmakingService();
+                
+                if (GameStatics.NetworkManager != null)
+                {
+                    UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
+                    if (transport != null)
+                    {
+                        GameStatics.NetworkManager.NetworkConfig.NetworkTransport = transport;
+                    }
+                    else
+                    {
+                        Debug.LogError("[MultiplayerServiceManager] UnityTransport component is missing on NetworkManager.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[MultiplayerServiceManager] GameStatics.NetworkManager is null. Cannot set NetworkTransport.");
+                }
+            }
+            else if (CurrentMode == EMultiplayerMode.Steamworks)
+            {
+                // TODO: 3?④퀎?먯꽌 SteamMatchmakingService ?좊떦 濡쒖쭅 異붽? ?덉젙
+            }
+
+            Debug.Log($"[MultiplayerServiceManager] Initialized with mode: {CurrentMode}");
+        }
+
+        public async Task<string> StartHostAsync()
+        {
+            if (MatchmakingService == null)
+            {
+                return null;
+            }
+
+            LastJoinCode = await MatchmakingService.StartHostAsync();
+            return LastJoinCode;
+        }
+
+        public async Task<bool> StartClientAsync(string joinData)
+        {
+            if (MatchmakingService == null)
+            {
+                return false;
+            }
+
+            return await MatchmakingService.StartClientAsync(joinData);
+        }
+
+        public void LeaveGame()
+        {
+            if (MatchmakingService != null)
+            {
+                MatchmakingService.LeaveGame();
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Networks\RelayMatchmakingService.cs
+========================================
+using UnityEngine.Assertions;
+using System;
+using System.Threading.Tasks;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
+using UnityEngine;
+using ProjectAI.Core;
+
+namespace ProjectAI.Network
+{
+    /// <summary>
+    /// Unity Relay ?쒕쾭瑜??듯빐 ?몄뒪???앹꽦 諛??대씪?댁뼵???묒냽??泥섎━?섎뒗 ?ㅼ젣 ?쒕퉬??援ы쁽泥댁엯?덈떎.
+    /// </summary>
+    public class RelayMatchmakingService : IMatchmakingService
+    {
+        private const int MAX_PLAYERS = 4; // ?몄뒪???ы븿 理쒕? ?몄썝
+        private const int SHUTDOWN_TIMEOUT_MS = 3000; // ?㏓떎???湲???꾩븘??(諛由ъ큹)
+
+        public async Task<string> StartHostAsync()
+        {
+            try
+            {
+                Assert.IsNotNull(GameStatics.NetworkManager, "GameStatics.NetworkManager is null");
+
+                if (GameStatics.NetworkManager.IsListening)
+                {
+                    Debug.LogWarning("[RelayMatchmakingService] ?대? ?ㅽ듃?뚰겕???곌껐?섏뼱 ?덉뒿?덈떎. (Host ?먮뒗 Client ?ㅽ뻾 以?");
+                    return null;
+                }
+
+                await EnsureAuthenticatedAsync();
+
+                // 1. 由대젅???쒕쾭 ?좊떦 ?붿껌 (?몄뒪???쒖쇅 ?몄썝???꾨떖)
+                Allocation allocation = await RelayService.Instance.CreateAllocationAsync(MAX_PLAYERS - 1);
+
+                // 2. 議곗씤 肄붾뱶 諛쒓툒
+                string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+                Debug.Log($"[RelayMatchmakingService] 諛??앹꽦 ?깃났! Join Code: {joinCode}");
+
+                // 3. NetworkManager??Relay ?쒕쾭 ?뺣낫 ?ㅼ젙
+                if (GameStatics.NetworkManager == null)
+                {
+                    Debug.LogError("[RelayMatchmakingService] GameStatics.NetworkManager is null.");
+                    return null;
+                }
+
+                UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
+                if (transport == null)
+                {
+                    Debug.LogError("[RelayMatchmakingService] UnityTransport component is missing on NetworkManager.");
+                    return null;
+                }
+
+                transport.SetHostRelayData(
+                    allocation.RelayServer.IpV4,
+                    (ushort)allocation.RelayServer.Port,
+                    allocation.AllocationIdBytes,
+                    allocation.Key,
+                    allocation.ConnectionData
+                );
+
+                // 4. ?몄뒪???쒖옉
+                if (GameStatics.NetworkManager.StartHost())
+                {
+                    return joinCode;
+                }
+                
+                return null;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[RelayMatchmakingService] StartHostAsync ?ㅽ뙣: {e.Message}");
+                return null;
+            }
+        }
+
+        public async Task<bool> StartClientAsync(string joinData)
+        {
+            try
+            {
+                Assert.IsNotNull(GameStatics.NetworkManager, "GameStatics.NetworkManager is null");
+
+                if (GameStatics.NetworkManager.IsListening)
+                {
+                    Debug.Log("[RelayMatchmakingService] 湲곗〈 諛??곌껐??醫낅즺?섍퀬 ?덈줈??諛⑹뿉 ?묒냽?⑸땲??");
+                    LeaveGame();
+
+                    // NGO??Shutdown???꾩쟾???앸궇 ?뚭퉴吏 ?湲고빐???ㅼ쓬 ?곌껐??瑗ъ씠吏 ?딆뒿?덈떎.
+                    // ?ㅻ쭔 Shutdown 踰꾧렇濡??명빐 臾댄븳 猷⑦봽(Soft Lock)??鍮좎???寃껋쓣 留됯린 ?꾪빐 CancellationToken???ъ슜?⑸땲??
+                    // ShutdownTimeoutMs(3珥? ?ㅼ뿉 ?먮룞?쇰줈 '痍⑥냼 ?좏샇'瑜?諛쒖깮?쒗궎???좏겙 媛앹껜瑜??앹꽦?⑸땲??
+                    using (System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource(SHUTDOWN_TIMEOUT_MS))
+                    {
+                        try
+                        {
+                            while (GameStatics.NetworkManager != null && 
+                                   (GameStatics.NetworkManager.IsListening || GameStatics.NetworkManager.ShutdownInProgress))
+                            {
+                                // 留??꾨젅?꾨쭏??痍⑥냼 ?좏샇媛 ?붾뒗吏(3珥덇? 吏?щ뒗吏) ?뺤씤?⑸땲??
+                                // 留뚯빟 3珥덇? 吏?щ떎硫?利됱떆 OperationCanceledException ?먮윭瑜??섏졇 猷⑦봽 ?덉텧?⑸땲??
+                                cts.Token.ThrowIfCancellationRequested();
+                                await System.Threading.Tasks.Task.Yield();
+                            }
+                        }
+                        catch (System.OperationCanceledException)
+                        {
+                            // 3珥덇? 吏????꾩븘???덉쇅媛 諛쒖깮?덉쓣 ????怨녹쑝濡?鍮좎졇?섏샃?덈떎.
+                            Debug.LogError("[RelayMatchmakingService] 湲곗〈 諛?醫낅즺 ?湲???꾩븘??3珥? 諛쒖깮. ?묒냽??痍⑥냼?⑸땲??");
+                            return false;
+                        }
+                    }
+                }
+
+                await EnsureAuthenticatedAsync();
+
+                // 1. 議곗씤 肄붾뱶濡?由대젅???쒕쾭 ?묒냽 ?붿껌
+                JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinData);
+
+                // 2. NetworkManager??Relay ?쒕쾭 ?뺣낫 ?ㅼ젙
+                if (GameStatics.NetworkManager == null)
+                {
+                    Debug.LogError("[RelayMatchmakingService] GameStatics.NetworkManager is null.");
+                    return false;
+                }
+
+                UnityTransport transport = GameStatics.NetworkManager.GetComponent<UnityTransport>();
+                if (transport == null)
+                {
+                    Debug.LogError("[RelayMatchmakingService] UnityTransport component is missing on NetworkManager.");
+                    return false;
+                }
+
+                transport.SetClientRelayData(
+                    joinAllocation.RelayServer.IpV4,
+                    (ushort)joinAllocation.RelayServer.Port,
+                    joinAllocation.AllocationIdBytes,
+                    joinAllocation.Key,
+                    joinAllocation.ConnectionData,
+                    joinAllocation.HostConnectionData
+                );
+
+                // 3. ?대씪?댁뼵???쒖옉
+                return GameStatics.NetworkManager.StartClient();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[RelayMatchmakingService] StartClientAsync ?ㅽ뙣: {e.Message}");
+                return false;
+            }
+        }
+
+        public void LeaveGame()
+        {
+            if (GameStatics.NetworkManager != null)
+            {
+                GameStatics.NetworkManager.Shutdown();
+            }
+        }
+
+        private async Task EnsureAuthenticatedAsync()
+        {
+            if (UnityServices.State == ServicesInitializationState.Uninitialized)
+            {
+                await UnityServices.InitializeAsync();
+            }
+
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                Debug.Log($"[RelayMatchmakingService] ?듬챸 濡쒓렇???꾨즺. Player ID: {AuthenticationService.Instance.PlayerId}");
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Players\NetPlayerController.cs
+========================================
+using UnityEngine.Assertions;
+using UnityEngine;
+using Unity.Netcode;
+using ProjectAI.Characters;
+using ProjectAI.Core.Skills;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+using ProjectAI.Core;
+
+namespace ProjectAI.Players
+{
+    /// <summary>
+    /// ?뚮젅?댁뼱???낅젰, ?대룞, 移대찓???깆쓽 而댄룷?뚰듃瑜?議곗쑉?섎뒗 濡쒖뺄 ?뚮젅?댁뼱 ?꾩슜 ??Brain) 而⑦듃濡ㅻ윭?낅땲??
+    /// </summary>
+    public class NetPlayerController : NetworkBehaviour
+    {
+        private PlayerInputReader inputReader;
+        private PlayerCamera playerCamera;
+        private NetPlayerCharacter myCharacter;
+
+        #region Unity Lifecycle
+        private void Awake()
+        {
+            inputReader = GetComponentInChildren<PlayerInputReader>();
+            playerCamera = GetComponentInChildren<PlayerCamera>();
+            myCharacter = GetComponentInChildren<NetPlayerCharacter>();
+            
+            Assert.IsNotNull(inputReader, "PlayerInputReader is missing.");
+            Assert.IsNotNull(playerCamera, "PlayerCamera is missing.");
+            Assert.IsNotNull(myCharacter, "NetPlayerCharacter is missing.");
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (!IsOwner)
+            {
+                return;
+            }
+
+            inputReader.EnableInput();
+            inputReader.OnMoveInputChanged += HandleMoveInputChanged;
+            inputReader.OnInteractInputChanged += HandleInteractInputChanged;
+            inputReader.OnAttackInputChanged += HandleAttackInputChanged;
+            
+            playerCamera.InitCamera();
+            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
+            {
+                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+
+            inputReader.OnMoveInputChanged -= HandleMoveInputChanged;
+            inputReader.OnInteractInputChanged -= HandleInteractInputChanged;
+            inputReader.OnAttackInputChanged -= HandleAttackInputChanged;
+            inputReader.DisableInput();
+            
+            // 寃뚯엫 醫낅즺 ??NetworkManager媛 癒쇱? ?뚭눼?????덉쑝誘濡? ?덉쇅(Assert) ???遺?쒕윭????泥댄겕濡??대깽???댁젣
+            if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
+            {
+                GameStatics.NetworkManager.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
+            }
+        }
+        #endregion
+
+        #region Private Methods
+        private void HandleMoveInputChanged(Vector2 moveInput)
+        {
+            myCharacter.Move(moveInput);
+        }
+
+        private void HandleInteractInputChanged(bool isInteracting)
+        {
+            if (isInteracting)
+            {
+                Debug.Log("Try Interact");
+                myCharacter.TryInteract();
+            }
+            else
+            {
+                // TODO: ?섏쨷??袁??꾨Ⅴ湲?Hold) 寃뚯씠吏 罹붿뒳 ?깆쓽 濡쒖쭅???ш린??異붽??????덉뒿?덈떎.
+            }
+        }
+
+        private void HandleAttackInputChanged(bool isAttacking)
+        {
+            if (!isAttacking)
+            {
+                return;
+            }
+
+            myCharacter.TryActivateSkill(ESkillType.BasicAttack);
+        }
+
+        private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        {
+            playerCamera.InitCamera();
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Players\PlayerCamera.cs
+========================================
+using UnityEngine;
+using Unity.Cinemachine;
+using UnityEngine.Assertions;
+
+namespace ProjectAI.Players
+{
+    /// <summary>
+    /// ?뚮젅?댁뼱??移대찓???곗텧(議곗? ?ㅽ봽???????쒕꽕癒몄떊怨??곕룞?섏뿬 以묒븰 ?듭젣?섎뒗 ?대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public class PlayerCamera : MonoBehaviour
+    {
+        [SerializeField]
+        private Transform targetTransform;
+
+        private CinemachineCamera cinemachineCamera;
+
+        #region Unity Lifecycle
+        private void Update()
+        {
+            if (targetTransform == null)
+            {
+                return;
+            }
+
+            // 留덉슦??湲곕컲 ?ㅽ봽??濡쒖쭅? ?쒓굅?섏뿀?듬땲??
+            // ?꾩슂 ???ν썑 罹먮┃?곌? 諛붾씪蹂대뒗 諛⑺뼢 湲곕컲 ?ㅽ봽?뗭쑝濡?援먯껜?????덉뒿?덈떎.
+            targetTransform.localPosition = Vector2.zero;
+        }
+        #endregion
+
+        #region Public Methods
+        public void InitCamera()
+        {
+            cinemachineCamera = FindAnyObjectByType<CinemachineCamera>();
+            
+            if (cinemachineCamera == null)
+            {
+                return;
+            }
+
+            Assert.IsNotNull(targetTransform, "[PlayerCamera] InitCamera: targetTransform???좊떦?섏? ?딆븯?듬땲??");
+
+            cinemachineCamera.Follow = targetTransform;
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Players\PlayerInputReader.cs
+========================================
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace ProjectAI.Players
+{
+    /// <summary>
+    /// ?뚮젅?댁뼱???ㅻ낫??留덉슦???낅젰???쎌뼱 ?대깽?몃? 諛쒖깮?쒗궎???대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public class PlayerInputReader : MonoBehaviour
+    {
+        [Header("Input Actions")]
+        [Tooltip("WASD ?대룞??留ㅽ븨???≪뀡 (???명뭼 ?쒖뒪??")]
+        [SerializeField]
+        private InputActionReference moveAction;
+        
+
+        [Tooltip("?곹샇?묒슜(E????留ㅽ븨???≪뀡")]
+        [SerializeField]
+        private InputActionReference interactAction;
+
+        [Tooltip("怨듦꺽(留덉슦??醫뚰겢由???留ㅽ븨???≪뀡")]
+        [SerializeField]
+        private InputActionReference attackAction;
+
+        public event Action<Vector2> OnMoveInputChanged;
+        public event Action<bool> OnInteractInputChanged;
+        public event Action<bool> OnAttackInputChanged;
+        
+
+        #region Unity Lifecycle
+        // 留덉슦??愿??珥덇린???쒓굅??        #endregion
+
+        #region Public Methods
+        public void EnableInput()
+        {
+            if (moveAction != null && moveAction.action != null)
+            {
+                moveAction.action.Enable();
+                moveAction.action.performed += HandleMoveInput;
+                moveAction.action.canceled += HandleMoveInput;
+            }
+
+
+            if (interactAction != null && interactAction.action != null)
+            {
+                interactAction.action.Enable();
+                interactAction.action.performed += HandleInteractInput;
+                interactAction.action.canceled += HandleInteractInput;
+            }
+
+            if (attackAction != null && attackAction.action != null)
+            {
+                attackAction.action.Enable();
+                attackAction.action.performed += HandleAttackInput;
+                attackAction.action.canceled += HandleAttackInput;
+            }
+        }
+
+        public void DisableInput()
+        {
+            if (moveAction != null && moveAction.action != null)
+            {
+                moveAction.action.performed -= HandleMoveInput;
+                moveAction.action.canceled -= HandleMoveInput;
+                moveAction.action.Disable();
+            }
+
+
+            if (interactAction != null && interactAction.action != null)
+            {
+                interactAction.action.performed -= HandleInteractInput;
+                interactAction.action.canceled -= HandleInteractInput;
+                interactAction.action.Disable();
+            }
+
+            if (attackAction != null && attackAction.action != null)
+            {
+                attackAction.action.performed -= HandleAttackInput;
+                attackAction.action.canceled -= HandleAttackInput;
+                attackAction.action.Disable();
+            }
+        }
+        #endregion
+
+        #region Private Methods
+        private void HandleMoveInput(InputAction.CallbackContext context)
+        {
+            Vector2 moveInput = context.ReadValue<Vector2>();
+            OnMoveInputChanged?.Invoke(moveInput);
+        }
+
+
+        private void HandleInteractInput(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnInteractInputChanged?.Invoke(true);
+            }
+            else if (context.canceled)
+            {
+                OnInteractInputChanged?.Invoke(false);
+            }
+        }
+
+        private void HandleAttackInput(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnAttackInputChanged?.Invoke(true);
+            }
+            else if (context.canceled)
+            {
+                OnAttackInputChanged?.Invoke(false);
+            }
+        }
+        #endregion
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Players\VisualInterpolator.cs
+========================================
+using UnityEngine;
+
+namespace ProjectAI.Players
+{
+    /// <summary>
+    /// ?쒓컖??媛앹껜(?ㅽ봽?쇱씠????瑜?遺紐?臾쇰━ 媛앹껜)? 遺꾨━?섏뿬, 
+    /// 遺紐④? 媛뺤젣濡??쒓컙?대룞(Snap)?섎뜑?쇰룄 ?쒓컖?곸쑝濡쒕뒗 遺?쒕읇寃??곕씪媛?꾨줉(Lerp) 蹂닿컙?댁＜???대옒?ㅼ엯?덈떎.
+    /// </summary>
+    public class VisualInterpolator : MonoBehaviour
+    {
+        [Tooltip("蹂닿컙 ?띾룄. 媛믪씠 ?댁닔濡?遺紐⑥쓽 ?꾩튂濡?鍮좊Ⅴ寃?蹂듦??⑸땲??")]
+        [SerializeField]
+        private float returnSpeed = 15f;
+
+        private Vector3 previousParentPosition;
+        private Transform cachedParent;
+
+        private void Start()
+        {
+            if (transform.parent == null)
+            {
+                Debug.LogWarning("VisualInterpolator??遺紐?媛앹껜媛 ?덉뼱???뺤긽 ?숈옉?⑸땲??", this);
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (transform.parent != null)
+            {
+                // 媛앹껜媛 鍮꾪솢?깊솕?섏뿀?ㅺ? 耳쒖쭏 ???쏅궇 ?꾩튂?먯꽌 ?좎븘?ㅻ뒗 ?꾩긽??諛⑹??섍린 ?꾪빐 利됱떆 遺紐⑥뿉寃?遺숈엫
+                cachedParent = transform.parent;
+                TeleportToParent();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (transform.parent == null)
+            {
+                cachedParent = null;
+                return;
+            }
+
+            // 遺紐④? ?덈줈 吏?뺣릺嫄곕굹 蹂寃쎈릺?덉쓣 ??(Instantiate 吏곹썑 SetParent ??
+            // 湲곗〈 ?꾩튂? ??遺紐??꾩튂 媛꾩쓽 嫄곕????ㅼ감濡??명빐 ?곗＜濡??좎븘媛??踰꾧렇瑜?諛⑹???            // ?? 遺?쒕윭??蹂닿컙? ?좎??섍린 ?꾪빐 TeleportToParent() ????댁쟾 遺紐??꾩튂(湲곗???留?媛깆떊??            if (cachedParent != transform.parent)
+            {
+                cachedParent = transform.parent;
+                previousParentPosition = transform.parent.position;
+            }
+
+            // 1. 遺紐⑥쓽 ?대쾲 ?꾨젅???대룞??怨꾩궛
+            Vector3 currentParentPosition = transform.parent.position;
+            Vector3 parentDelta = currentParentPosition - previousParentPosition;
+
+            // 2. 遺紐④? ?대룞??留뚰겮 ?먯떇???붾뱶 ?꾩튂瑜?諛섎?濡?鍮쇱꽌(?곸뇙) ?쒓컖 媛앹껜媛 ?쒖옄由ъ뿉 癒몃Ъ寃???            // (二쇱쓽: 遺紐④? ?뚯쟾??寃쎌슦 沅ㅻ룄媛 ??댁쭏 ???덉쑝誘濡? 遺紐?PhysicsBody???뚯쟾?섏? ?딅뒗?ㅺ퀬 媛?뺥븿)
+            transform.position -= parentDelta;
+
+            // 3. ?섏?留?理쒖쥌 紐⑺몴??遺紐⑥쓽 ?쒓??대뜲(localPosition = 0,0,0)?대?濡??쒖꽌??Lerp ?쒖폒???곕씪遺숈쓬
+            // ?뚯뒪???쇰뱶諛?諛섏쁺: ?꾨젅???덉씠??醫낆냽???쒓굅瑜??꾪빐 Mathf.Exp 怨듭떇 ?ъ슜
+            transform.localPosition = Vector3.Lerp(transform.localPosition, Vector3.zero, 1f - Mathf.Exp(-returnSpeed * Time.deltaTime));
+
+            // 4. ?ㅼ쓬 ?꾨젅?꾩쓣 ?꾪빐 遺紐??꾩튂 媛깆떊 (罹먯떛??媛??ъ궗?⑹쑝濡??깅뒫 理쒖쟻??
+            previousParentPosition = currentParentPosition;
+        }
+        
+        /// <summary>
+        /// ?붾젅?ы듃??由ъ뒪???? 蹂닿컙 ?놁씠 利됱떆 ?쒓컖 媛앹껜???쒓컙?대룞?댁빞 ?????몄텧?⑸땲??
+        /// </summary>
+        public void TeleportToParent()
+        {
+            transform.localPosition = Vector3.zero;
+            if (transform.parent != null)
+            {
+                previousParentPosition = transform.parent.position;
+            }
+        }
+    }
+}
+
+
+
+========================================
+File: C:\UnityProjects\ProjectAI\Assets\_Game\Scripts\Projectiles\NetProjectile.cs
+========================================
+using UnityEngine.Assertions;
+using UnityEngine;
+using Unity.Netcode;
+using ProjectAI.Core;
+using ProjectAI.Core.Entities;
+using ProjectAI.Core.Stats;
+using ProjectAI.Core.Pooling;
+
+namespace ProjectAI.Projectiles
+{
+    /// <summary>
+    /// 留덈쾿?????ъ궗泥댁쓽 ?대룞 諛?異⑸룎 ?먯젙??泥섎━?섎뒗 ?쒕쾭 二쇰룄??而댄룷?뚰듃?낅땲??
+    /// </summary>
+    [RequireComponent(typeof(Rigidbody2D))]
+    public class NetProjectile : NetEntity, IPoolable
+    {
+        [Header("Projectile Settings")]
+        [Tooltip("諛쒖궗 ???먮룞 ?뚭눼???뚭퉴吏???앹〈 ?쒓컙 (珥?")]
+        [SerializeField]
+        private float lifeTime = 5f;
+
+        private ulong ownerNetworkObjectId;
+        private NetStatComponent statComponent;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            statComponent = GetComponentInChildren<NetStatComponent>();
+            Assert.IsNotNull(statComponent, "NetProjectile? ?곕?吏 泥섎━瑜??꾪빐 NetStatComponent媛 ?꾩닔?낅땲??");
+
+            Assert.IsNotNull(base.Movement, "NetProjectile? ?대룞 ?쒖뼱瑜??꾪븳 ANetMovement 而댄룷?뚰듃媛 ?꾩닔?낅땲??");
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            // ?쒕쾭?먯꽌留??섎챸 愿由?
+            if (GameStatics.IsServerAuthorized)
+            {
+                Invoke(nameof(DestroyProjectile), lifeTime);
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+
+            if (GameStatics.IsServerAuthorized)
+            {
+                CancelInvoke(nameof(DestroyProjectile));
+            }
+        }
+
+        /// <summary>
+        /// ?쒕쾭?먯꽌 ?ъ궗泥대? ?ㅽ룿????珥덇린?뷀븯??硫붿꽌?쒖엯?덈떎.
+        /// </summary>
+        public void Initialize(Vector2 direction, ulong ownerNetObjId)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetProjectile] Initialize???쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            ownerNetworkObjectId = ownerNetObjId;
+            Debug.Log($"[NetProjectile] Initialize ?몄텧?? OwnerNetObjId: {ownerNetworkObjectId}, 諛⑺뼢: {direction}");
+            
+            if (base.Movement is ProjectAI.Movements.NetServerMovement serverMovement)
+            {
+                serverMovement.SetDirection(direction);
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            Debug.Log($"[NetProjectile] ?ъ궗泥?異⑸룎 媛먯?: {collision.gameObject.name}");
+            // 異⑸룎 ?먯젙? ?ㅼ쭅 ?쒕쾭?먯꽌留?泥섎━?⑸땲??
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            // 異⑸룎 ??곸씠 ?곕?吏瑜?諛쏆쓣 ???덈뒗 媛앹껜?몄? ?뺤씤
+            IDamageable damageable = collision.GetComponentInChildren<IDamageable>();
+            
+            if (damageable != null)
+            {
+                // ?먯떊?????ъ궗泥댁뿉 ?먯떊??留욌뒗 寃껋? 臾댁떆
+                NetworkObject targetNetObj = collision.GetComponentInParent<NetworkObject>();
+                if (targetNetObj != null && targetNetObj.NetworkObjectId == ownerNetworkObjectId)
+                {
+                    Debug.Log($"[NetProjectile] ????먰빐 臾댁떆 泥섎━. TargetNetObjId: {targetNetObj.NetworkObjectId}");
+                    return;
+                }
+
+                Debug.Log($"[NetProjectile] ?곕?吏 ?곸슜 ???諛쒓껄: {collision.name}, ?곕?吏?? {statComponent.AttackPower.Value}");
+
+                GameStatics.ApplyDamage(collision.gameObject, statComponent.AttackPower.Value);
+                DestroyProjectile();
+            }
+            else
+            {
+                // 踰쎌씠???μ븷臾쇱뿉 遺?ろ옒
+                // ?⑥닚 ?몃━嫄??쇱꽌 ?깆씠 ?꾨땶 ?섍꼍 肄쒕씪?대뜑?몄? 泥댄겕 ?꾩슂
+                if (!collision.isTrigger)
+                {
+                    DestroyProjectile();
+                }
+            }
+        }
+
+        private void DestroyProjectile()
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetProjectile] DestroyProjectile? ?쒕쾭?먯꽌留??ㅽ뻾?섏뼱???⑸땲??");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+            Debug.Log($"[NetProjectile] ?ъ궗泥??뚭눼(Despawn) ?쒕룄. IsServerAuthorized: {GameStatics.IsServerAuthorized}, NetworkObjectId: {NetworkObjectId}, IsSpawned: {NetworkObject?.IsSpawned}");
+            if (NetworkObject != null && NetworkObject.IsSpawned)
+            {
+                if (GameStatics.ObjectPool != null)
+                {
+                    Debug.Log($"[NetProjectile] ObjectPool???ъ궗泥?諛섑솚 ?몄텧: {NetworkObjectId}");
+                    GameStatics.ObjectPool.ReturnNetworkObject(NetworkObject);
+                }
+                else
+                {
+                    NetworkObject.Despawn(true);
+                }
+            }
+        }
+
+        public void OnSpawn()
+        {
+        }
+
+        public void OnDespawn()
+        {
+            if (base.Movement == null || base.Movement.Rb == null)
+            {
+                return;
+            }
+
+            base.Movement.Rb.linearVelocity = Vector2.zero;
+            base.Movement.Rb.angularVelocity = 0f;
+        }
+    }
+}
+

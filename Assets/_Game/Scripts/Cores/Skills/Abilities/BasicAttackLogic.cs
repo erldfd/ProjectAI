@@ -17,7 +17,7 @@ namespace ProjectAI.Core.Skills.Abilities
         public ESkillType SkillType => ESkillType.BasicAttack;
 
         private NetworkObject projectilePrefab;
-        private double cooldown;
+        private float cooldown;
 
         public void Initialize(SkillManager manager)
         {

@@ -52,24 +52,23 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7549203637897625750, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
-      propertyPath: GlobalObjectIdHash
-      value: 292249137
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6293843580398885209}
+      addedObject: {fileID: 8814835456267757239}
+    - targetCorrespondingSourceObject: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5714968025299230292}
   m_SourcePrefab: {fileID: 100100000, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
 --- !u!1 &6931892734119305979 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2173912925434682701, guid: a21a88f633b1c0e488f292930a77a05b, type: 3}
   m_PrefabInstance: {fileID: 9086098004412268470}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6293843580398885209
+--- !u!114 &8814835456267757239
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -80,5 +79,21 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66c0c40391c83b348aafcda209896b38, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.GameModes.NetLobbyGameMode
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.GameModes.NetLobbyGameMode
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &5714968025299230292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6931892734119305979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6fb49a65bc04f74bb9b11902a667dd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.SkillManager
+  skillConfigs:
+  - SkillType: 1
+    Prefab: {fileID: 5989937830823538665, guid: 866b169e45fdadc41900453db77a7a44, type: 3}
+    BaseCooldown: 3

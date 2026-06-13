@@ -228,6 +228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
   ShowTopMostFoldoutHeaderGroup: 1
+  despawnDelay: 1.5
 --- !u!114 &6729544991482475136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -515,3 +516,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
+  dieStateName: Death_MemoryShardBugAnim
+  hitStateName: Hit_MemoryShardBugAnim
