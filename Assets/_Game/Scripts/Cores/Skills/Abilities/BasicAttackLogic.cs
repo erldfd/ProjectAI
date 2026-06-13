@@ -98,10 +98,7 @@ namespace ProjectAI.Core.Skills.Abilities
 
             Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
 
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
-
-            NetworkObject projectileNetObj = GameStatics.ObjectPool.GetNetworkObject(projectilePrefab, origin, rotation);
+            NetworkObject projectileNetObj = GameStatics.ObjectPool.GetNetworkObject(projectilePrefab, origin, Quaternion.identity);
             if (projectileNetObj == null)
             {
                 Debug.LogWarning($"[BasicAttackLogic] Action 실패: 투사체를 풀에서 가져오지 못했습니다. (CasterID: {caster.NetworkObjectId})");

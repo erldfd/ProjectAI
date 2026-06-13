@@ -100,13 +100,13 @@ namespace ProjectAI.Core.Pooling
             }
 
             isInitialized = true;
-            SetupSkillProjectiles();
+            SetupSkillPrefabs();
             RegisterPrefabHandlers();
         }
 
-        private void SetupSkillProjectiles()
+        private void SetupSkillPrefabs()
         {
-            Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillProjectiles: SkillManager가 GameStatics에 등록되어 있지 않습니다!");
+            Assert.IsNotNull(GameStatics.SkillManager, "[NetworkObjectPool] SetupSkillPrefabs: SkillManager가 GameStatics에 등록되어 있지 않습니다!");
 
             for (int i = 0; i < GameStatics.SkillManager.SkillConfigs.Count; i++)
             {
@@ -116,7 +116,7 @@ namespace ProjectAI.Core.Pooling
                     continue;
                 }
 
-                SetupPool(prefab, 10, true);
+                SetupPool(prefab, 1, true);
             }
         }
 

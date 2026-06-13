@@ -105,22 +105,6 @@ namespace ProjectAI.Core.Skills
                 skillLogics.Add(skillLogic.SkillType, skillLogic);
                 Debug.Log($"[SkillManager] 스킬 로직 등록 완료: {skillLogic.SkillType} -> {t.Name}");
             }
-
-            if (GameStatics.ObjectPool == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < skillConfigs.Count; i++)
-            {
-                NetworkObject prefab = skillConfigs[i].Prefab;
-                if (prefab == null)
-                {
-                    continue;
-                }
-
-                GameStatics.ObjectPool.SetupPool(prefab, 10, true);
-            }
         }
 
         public SSkillConfig GetConfig(ESkillType type)
