@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8851523879730136227}
   - component: {fileID: 9205784597414881130}
   - component: {fileID: 6729544991482475136}
+  - component: {fileID: 6383234895154087744}
   m_Layer: 7
   m_Name: MemoryShardBug
   m_TagString: Untagged
@@ -40,6 +41,7 @@ Transform:
   - {fileID: 4165857936645800692}
   - {fileID: 9062293682125781210}
   - {fileID: 5572053124777933895}
+  - {fileID: 6627872384182307107}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &7753034773751214432
@@ -242,7 +244,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  OwnedSkills: 01
+  OwnedSkills: 
   SkillAnimations:
   - SkillType: 1
     AnimStateName: Attack_MemoryShardBugAnim
@@ -252,6 +254,98 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+--- !u!114 &6383234895154087744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253525206431576581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dea9052e6ff812418bb8d6630399fcb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetMonsterBrain
+  ShowTopMostFoldoutHeaderGroup: 1
+  startingState: {fileID: 3571708628542363624}
+  Owner: {fileID: 0}
+  detectLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  detectTag: Player
+  detectionRadius: 8
+  attackRadius: 0.1
+--- !u!1 &1848457453959051210
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6627872384182307107}
+  - component: {fileID: 3571708628542363624}
+  - component: {fileID: 4580525188814019568}
+  - component: {fileID: 5101000113825238168}
+  m_Layer: 7
+  m_Name: AIStates
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6627872384182307107
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8282616575025238127}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3571708628542363624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c837ae29471da3419cadeb2eb133241, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterIdleState
+--- !u!114 &4580525188814019568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7401a0831a58ec14b93aa8b25385cdc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterChaseState
+--- !u!114 &5101000113825238168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b3845e55c1989142a1e04187803c4e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterAttackState
+  attackCooldown: 2
 --- !u!1 &2869384090380664040
 GameObject:
   m_ObjectHideFlags: 0
