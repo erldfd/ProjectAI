@@ -33,9 +33,12 @@ namespace ProjectAI.Players
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            
+            myCharacter.Events.OnDeathTriggered += HandleDeathTriggered;
 
             if (!IsOwner)
             {
+                Debug.Log($"[NetPlayerController] 로컬 플레이어가 아니므로 초기화 생략. (ID: {NetworkObjectId})");
                 return;
             }
 
@@ -55,10 +58,15 @@ namespace ProjectAI.Players
         {
             base.OnNetworkDespawn();
 
-            inputReader.OnMoveInputChanged -= HandleMoveInputChanged;
-            inputReader.OnInteractInputChanged -= HandleInteractInputChanged;
-            inputReader.OnAttackInputChanged -= HandleAttackInputChanged;
-            inputReader.DisableInput();
+            myCharacter.Events.OnDeathTriggered -= HandleDeathTriggered;
+
+            if (IsOwner)
+            {
+                inputReader.OnMoveInputChanged -= HandleMoveInputChanged;
+                inputReader.OnInteractInputChanged -= HandleInteractInputChanged;
+                inputReader.OnAttackInputChanged -= HandleAttackInputChanged;
+                inputReader.DisableInput();
+            }
             
             // 게임 종료 시 NetworkManager가 먼저 파괴될 수 있으므로, 예외(Assert) 대신 부드러운 널 체크로 이벤트 해제
             if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
@@ -94,12 +102,23 @@ namespace ProjectAI.Players
                 return;
             }
 
-            myCharacter.TryActivateSkill(ESkillType.BasicAttack);
+            myCharacter.TryActivateSkill(ESkillType.ProjectileAttack);
         }
 
         private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
         {
             playerCamera.InitCamera();
+        }
+
+        private void HandleDeathTriggered()
+        {
+            if (!IsOwner)
+            {
+                Debug.Log($"[NetPlayerController] 로컬 플레이어가 아니므로 사망 시 입력 차단 무시. (ID: {NetworkObjectId})");
+                return;
+            }
+
+            inputReader.DisableInput();
         }
         #endregion
     }

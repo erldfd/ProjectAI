@@ -6,26 +6,29 @@ using ProjectAI.Movements;
 using ProjectAI.Projectiles;
 using ProjectAI.Characters;
 using ProjectAI.Core;
+using System.Collections.Generic;
+using ProjectAI.Core.Stats;
 
 namespace ProjectAI.Core.Skills.Abilities
 {
     /// <summary>
-    /// 기본 공격(마법탄 발사) 스킬의 쿨타임 검증 및 투사체 풀링 스폰 로직을 구현하는 클래스입니다.
+    /// 기본 근접 평타 스킬의 쿨타임 검증 및 동작 로직을 구현하는 클래스입니다.
     /// </summary>
     public class BasicAttackLogic : ISkillLogic
     {
         public ESkillType SkillType => ESkillType.BasicAttack;
 
-        private NetworkObject projectilePrefab;
-        private double cooldown;
+        private float cooldown;
+
+        // GC(가비지 컬렉션) 발생을 막기 위해 타격 판정용 메모리를 정적(Static)으로 캐싱하여 재사용
+        private static readonly ContactFilter2D filter = new ContactFilter2D { useTriggers = true };
+        private static readonly Collider2D[] results = new Collider2D[20];
+        private static readonly HashSet<IDamageable> hitTargets = new HashSet<IDamageable>();
 
         public void Initialize(SkillManager manager)
         {
             SSkillConfig config = manager.GetConfig(SkillType);
-            projectilePrefab = config.Prefab;
             cooldown = config.BaseCooldown;
-
-            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Initialize: projectilePrefab이 누락되었습니다.");
         }
 
         public bool CanExecute(NetCharacter caster)
@@ -81,43 +84,61 @@ namespace ProjectAI.Core.Skills.Abilities
                 return;
             }
 
-            // 실제 키프레임 도달 시 호출되는 투사체 스폰 로직
-            Assert.IsNotNull(projectilePrefab, "[BasicAttackLogic] Projectile Prefab is missing in SkillManager!");
-
-            Vector2 direction = Vector2.right;
-            if (caster.Movement != null)
+            Collider2D hitbox = caster.SkillComponent.MeleeHitbox;
+            if (hitbox == null)
             {
-                direction = caster.Movement.NetIsFacingRight.Value ? Vector2.right : Vector2.left;
-            }
-
-            Vector2 origin = (Vector2)caster.transform.position;
-            if (caster.SkillComponent.FirePoint != null)
-            {
-                origin = caster.SkillComponent.FirePoint.position;
-            }
-
-            Assert.IsNotNull(GameStatics.ObjectPool, "[BasicAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
-
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
-
-            NetworkObject projectileNetObj = GameStatics.ObjectPool.GetNetworkObject(projectilePrefab, origin, rotation);
-            if (projectileNetObj == null)
-            {
-                Debug.LogWarning($"[BasicAttackLogic] Action 실패: 투사체를 풀에서 가져오지 못했습니다. (CasterID: {caster.NetworkObjectId})");
+                Debug.LogWarning($"[BasicAttackLogic] Action 실패: {caster.NetworkObjectId}에 MeleeHitbox가 설정되지 않았습니다.");
                 return;
             }
 
-            projectileNetObj.Spawn();
-
-            if (!projectileNetObj.TryGetComponent(out NetProjectile projectile))
+            // [Hitbox 사용 규칙 가이드]
+            // 1. 게임오브젝트 상태: 반드시 켜져 있어야 함 (SetActive(true))
+            // 2. 컴포넌트 상태: 꺼둬도 무방함 (Collider2D.enabled = false). OverlapCollider는 꺼진 컴포넌트의 모양도 가져와 검사 가능.
+            // 3. isTrigger 상태: 무관하나, 만약을 대비해 켜두는 것(true)을 권장.
+            
+            // 캐릭터 스탯에서 공격력 가져오기
+            int attackPower = 10; // Default
+            if (caster.StatComponent != null)
             {
-                Debug.LogWarning($"[BasicAttackLogic] 발사체 스폰 실패: NetProjectile 컴포넌트를 찾을 수 없습니다. (CasterID: {caster.NetworkObjectId})");
-                return;
+                attackPower = caster.StatComponent.AttackPower.Value;
             }
 
-            Debug.Log($"[BasicAttackLogic] 발사체 초기화 완료. 방향: {direction}, CasterID: {caster.NetworkObjectId}");
-            projectile.Initialize(direction, caster.NetworkObjectId);
+            // 캐싱된 배열을 사용하여 메모리 할당(GC) 0 달성
+            int count = Physics2D.OverlapCollider(hitbox, filter, results);
+
+            // 한 번의 휘두르기에 한 타겟이 여러 콜라이더(머리, 몸통)로 중복 피격되는 것을 방지
+            hitTargets.Clear();
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D col = results[i];
+
+                IDamageable damageable = col.GetComponentInParent<IDamageable>() ?? col.GetComponentInChildren<IDamageable>();
+                if (damageable == null)
+                {
+                    continue;
+                }
+
+                NetworkObject targetNetObj = col.GetComponentInParent<NetworkObject>();
+                
+                // 자신은 타격에서 제외
+                if (targetNetObj != null && targetNetObj.NetworkObjectId == caster.NetworkObjectId)
+                {
+                    continue;
+                }
+
+                // 이미 타격한 대상 제외
+                if (hitTargets.Contains(damageable))
+                {
+                    continue;
+                }
+
+                hitTargets.Add(damageable);
+                
+                UnityEngine.GameObject targetObj = ((UnityEngine.Component)damageable).gameObject;
+                Debug.Log($"[BasicAttackLogic] 근접 평타 적중! 타겟: {targetObj.name}, 데미지: {attackPower}");
+                GameStatics.ApplyDamage(targetObj, attackPower);
+            }
         }
 
         public void End(NetCharacter caster)

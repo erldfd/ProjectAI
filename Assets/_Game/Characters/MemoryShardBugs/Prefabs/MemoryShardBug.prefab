@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8851523879730136227}
   - component: {fileID: 9205784597414881130}
   - component: {fileID: 6729544991482475136}
+  - component: {fileID: 6383234895154087744}
   m_Layer: 7
   m_Name: MemoryShardBug
   m_TagString: Untagged
@@ -33,13 +34,14 @@ Transform:
   m_GameObject: {fileID: 253525206431576581}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.843, y: -1.642, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4165857936645800692}
   - {fileID: 9062293682125781210}
   - {fileID: 5572053124777933895}
+  - {fileID: 6627872384182307107}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &7753034773751214432
@@ -228,6 +230,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
   ShowTopMostFoldoutHeaderGroup: 1
+  despawnDelay: 1.5
 --- !u!114 &6729544991482475136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,11 +249,105 @@ MonoBehaviour:
   - SkillType: 1
     AnimStateName: Attack_MemoryShardBugAnim
   firePoint: {fileID: 0}
+  meleeHitbox: {fileID: 8280088715306235026}
   ActiveStates:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+--- !u!114 &6383234895154087744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253525206431576581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dea9052e6ff812418bb8d6630399fcb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetMonsterBrain
+  ShowTopMostFoldoutHeaderGroup: 1
+  startingState: {fileID: 3571708628542363624}
+  Owner: {fileID: 0}
+  isSensorEnabled: 1
+  detectLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  detectTag: Player
+  detectionRadius: 8
+  attackRadius: 0.5
+--- !u!1 &1848457453959051210
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6627872384182307107}
+  - component: {fileID: 3571708628542363624}
+  - component: {fileID: 4580525188814019568}
+  - component: {fileID: 5101000113825238168}
+  m_Layer: 7
+  m_Name: AIStates
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6627872384182307107
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8282616575025238127}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3571708628542363624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c837ae29471da3419cadeb2eb133241, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterIdleState
+--- !u!114 &4580525188814019568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7401a0831a58ec14b93aa8b25385cdc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterChaseState
+--- !u!114 &5101000113825238168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848457453959051210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b3845e55c1989142a1e04187803c4e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterAttackState
+  attackCooldown: 2
 --- !u!1 &2869384090380664040
 GameObject:
   m_ObjectHideFlags: 0
@@ -387,7 +484,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
-  baseSpeed: 15
+  baseSpeed: 3
 --- !u!1 &5912985425572193920
 GameObject:
   m_ObjectHideFlags: 0
@@ -401,7 +498,7 @@ GameObject:
   - component: {fileID: 756817395569927855}
   - component: {fileID: 5600359754324591189}
   m_Layer: 7
-  m_Name: Renderer
+  m_Name: Visuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -419,7 +516,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.06, y: 0.06, z: 0.06}
   m_ConstrainProportionsScale: 1
-  m_Children: []
+  m_Children:
+  - {fileID: 1244404469161758554}
   m_Father: {fileID: 8282616575025238127}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7566194960662532988
@@ -471,7 +569,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1615710987232163146, guid: 977bdfb42b14d6b448a65b407bd0da95, type: 3}
+  m_Sprite: {fileID: 2886885592960264689, guid: 9cdfb777fe0bed845a9d46804ea38f69, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -515,3 +613,83 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
+  dieStateName: Death_MemoryShardBugAnim
+  hitStateName: Hit_MemoryShardBugAnim
+--- !u!1 &8524319551336950211
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1244404469161758554}
+  - component: {fileID: 6466300395897974831}
+  m_Layer: 7
+  m_Name: MeleeHitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1244404469161758554
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8524319551336950211}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.96, y: 0, z: 0}
+  m_LocalScale: {x: 9.26, y: 2.4335938, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4165857936645800692}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &6466300395897974831
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8524319551336950211}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0

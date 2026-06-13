@@ -1,7 +1,6 @@
 using UnityEngine.Scripting.APIUpdating;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Unity.Netcode;
 
 namespace ProjectAI.Core.Entities
 {
@@ -16,29 +15,41 @@ namespace ProjectAI.Core.Entities
     {
         private static readonly int hashMoveSpeed = Animator.StringToHash("MoveSpeed");
 
+        [Header("States")]
+        [AnimStateSelector] 
+        [SerializeField] 
+        private string dieStateName;
+        private int dieStateHash;
 
-        private EntityEvents entityEvents;
+        [AnimStateSelector]
+        [SerializeField]
+        private string hitStateName;
+        private int hitStateHash;
         
-
+        private EntityEvents entityEvents;
         private Animator animator;
-
-
         private SpriteRenderer spriteRenderer;
 
         private void Awake()
         {
+            if (!string.IsNullOrEmpty(dieStateName))
+            {
+                dieStateHash = Animator.StringToHash(dieStateName);
+            }
+
+            if (!string.IsNullOrEmpty(hitStateName))
+            {
+                hitStateHash = Animator.StringToHash(hitStateName);
+            }
+
             animator = GetComponent<Animator>();
             Assert.IsNotNull(animator, "Animator is missing.");
 
             spriteRenderer = GetComponent<SpriteRenderer>();
             Assert.IsNotNull(spriteRenderer, "SpriteRenderer is missing.");
 
-            // EntityEvents가 명시적으로 할당되지 않은 경우 탐색
-            if (entityEvents == null)
-            {
-                entityEvents = GetComponentInParent<EntityEvents>();
-                Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
-            }
+            entityEvents = GetComponentInParent<EntityEvents>();
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
         }
 
         private void OnEnable()
@@ -47,14 +58,23 @@ namespace ProjectAI.Core.Entities
             entityEvents.OnVelocityChanged += HandleVelocityChanged;
             entityEvents.OnFacingDirectionChanged += HandleFacingDirectionChanged;
             entityEvents.OnPlayAnimation += HandlePlayAnimation;
+            entityEvents.OnDeathTriggered += HandleDeathTriggered;
+            entityEvents.OnHitTriggered += HandleHitTriggered;
         }
 
         private void OnDisable()
         {
-            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+            if (entityEvents == null)
+            {
+                Debug.LogWarning("[EntityAnimator] OnDisable: entityEvents가 null이므로 이벤트 해제를 생략합니다.");
+                return;
+            }
+            
             entityEvents.OnVelocityChanged -= HandleVelocityChanged;
             entityEvents.OnFacingDirectionChanged -= HandleFacingDirectionChanged;
             entityEvents.OnPlayAnimation -= HandlePlayAnimation;
+            entityEvents.OnDeathTriggered -= HandleDeathTriggered;
+            entityEvents.OnHitTriggered -= HandleHitTriggered;
         }
 
         private void HandleVelocityChanged(Vector2 velocity)
@@ -64,18 +84,43 @@ namespace ProjectAI.Core.Entities
 
         private void HandleFacingDirectionChanged(bool isFacingRight)
         {
-            // 오른쪽을 보면 flipX = false, 왼쪽을 보면 flipX = true
-            spriteRenderer.flipX = !isFacingRight;
+            // SpriteRenderer.flipX 대신 Visual 오브젝트(현재 transform)의 localScale 자체를 반전시켜
+            // 자식으로 붙어있는 Hitbox, 이펙트 등의 위치도 물리적으로 완벽하게 좌우 대칭되도록 처리합니다.
+            Vector3 scale = transform.localScale;
+            scale.x = isFacingRight ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
+            transform.localScale = scale;
         }
 
         private void HandlePlayAnimation(int stateHash, float transitionDuration, int layer)
         {
             if (stateHash == 0)
             {
+                Debug.LogWarning("[EntityAnimator] HandlePlayAnimation: stateHash가 0입니다. 무시합니다.");
                 return;
             }
 
             animator.CrossFade(stateHash, transitionDuration, layer, 0f);
+        }
+
+        private void HandleDeathTriggered()
+        {
+            if (dieStateHash == 0)
+            {
+                Debug.LogWarning("[EntityAnimator] dieStateHash가 0입니다. 사망 애니메이션을 재생할 수 없습니다.");
+                return;
+            }
+            
+            HandlePlayAnimation(dieStateHash, 0f, 0);
+        }
+
+        private void HandleHitTriggered(int damage, int remainingHealth)
+        {
+            if (hitStateHash == 0)
+            {
+                return; // 피격 애니메이션이 없는 객체일 수 있으므로 로그 생략
+            }
+            
+            HandlePlayAnimation(hitStateHash, 0f, 0);
         }
 
         /// <summary>
@@ -84,10 +129,7 @@ namespace ProjectAI.Core.Entities
         /// </summary>
         public void TriggerActionAnimationEvent()
         {
-            if (entityEvents != null)
-            {
-                entityEvents.InvokeAnimationEventTriggered(EAnimationEventTag.Action);
-            }
+            entityEvents.InvokeAnimationEventTriggered(EAnimationEventTag.Action);
         }
     }
 }

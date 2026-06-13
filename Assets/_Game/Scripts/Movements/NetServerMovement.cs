@@ -55,6 +55,21 @@ namespace ProjectAI.Movements
         /// </summary>
         public void SetDirection(Vector2 direction)
         {
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            // 좌우 이동에 따른 바라보는 방향 갱신 (위아래 이동 시에는 기존 방향 유지)
+            if (direction.x > 0.01f)
+            {
+                base.NetIsFacingRight.Value = true;
+            }
+            else if (direction.x < -0.01f)
+            {
+                base.NetIsFacingRight.Value = false;
+            }
+
             currentDirection = direction.normalized;
             UpdateVelocity();
         }

@@ -10,9 +10,7 @@ namespace ProjectAI.Core.Skills
     {
         None = 0,
         BasicAttack = 1,
-        Dash = 2,
-        Fireball = 3,
-        // 필요 시 추가
+        ProjectileAttack = 2,
     }
 
     /// <summary>

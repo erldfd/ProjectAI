@@ -99,6 +99,7 @@ namespace ProjectAI.Movements
             Vector2 newVelocity = currentDirection * (baseSpeed * currentSpeedModifier);
             base.Rb.linearVelocity = newVelocity;
             NetPhysicalVelocity.Value = newVelocity; // 클라이언트로 속도 전파
+            base.NetAnimVelocity.Value = base.Rb.linearVelocity;
         }
     }
 }

@@ -29,10 +29,13 @@ namespace ProjectAI.Core.Skills
     /// </summary>
     public class SkillManager : MonoBehaviour
     {
+
+        public List<SSkillConfig> SkillConfigs => skillConfigs;
+
         [Header("Skill Configurations")]
         [Tooltip("각 스킬의 프리팹이나 기본 쿨타임 데이터를 매핑합니다.")]
         [SerializeField]
-        private List<SSkillConfig> SkillConfigs = new List<SSkillConfig>();
+        private List<SSkillConfig> skillConfigs = new List<SSkillConfig>();
 
         private Dictionary<ESkillType, ISkillLogic> skillLogics = new Dictionary<ESkillType, ISkillLogic>();
         private Dictionary<ESkillType, SSkillConfig> skillConfigCache = new Dictionary<ESkillType, SSkillConfig>();
@@ -40,12 +43,13 @@ namespace ProjectAI.Core.Skills
         private void Awake()
         {
             GameStatics.RegisterSkillManager(this);
-            InitializeSkills();
 
-            foreach (SSkillConfig config in SkillConfigs)
+            foreach (SSkillConfig config in skillConfigs)
             {
                 skillConfigCache[config.SkillType] = config;
             }
+
+            InitializeSkills();
         }
 
         private void Start()
@@ -100,22 +104,6 @@ namespace ProjectAI.Core.Skills
                 skillLogic.Initialize(this); // 매니저 데이터 주입
                 skillLogics.Add(skillLogic.SkillType, skillLogic);
                 Debug.Log($"[SkillManager] 스킬 로직 등록 완료: {skillLogic.SkillType} -> {t.Name}");
-            }
-
-            if (GameStatics.ObjectPool == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < SkillConfigs.Count; i++)
-            {
-                NetworkObject prefab = SkillConfigs[i].Prefab;
-                if (prefab == null)
-                {
-                    continue;
-                }
-
-                GameStatics.ObjectPool.SetupPool(prefab, 10, true);
             }
         }
 

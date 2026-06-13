@@ -141,9 +141,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 267702d00836e924782326714948eb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
-  entityEvents: {fileID: 7424043328323526500}
-  animator: {fileID: 2012573263100061475}
-  spriteRenderer: {fileID: 5685368766082622782}
+  dieStateName: Death_PlayerAnim
+  hitStateName: Hit_PlayerAnim
 --- !u!1 &1910748706896630206
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,7 +245,7 @@ GameObject:
   - component: {fileID: 7556419171413634377}
   m_Layer: 7
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -346,7 +345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3084379672
+  GlobalObjectIdHash: 386762368
   InScenePlacedSourceGlobalObjectIdHash: 386762368
   DeferredDespawnTick: 0
   Ownership: 1
@@ -442,6 +441,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.NetPlayerCharacter
   ShowTopMostFoldoutHeaderGroup: 1
+  despawnDelay: 1.5
 --- !u!114 &7556419171413634377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -455,9 +455,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  OwnedSkills: 01
+  OwnedSkills: 02
   SkillAnimations:
-  - SkillType: 1
+  - SkillType: 2
     AnimStateName: Attack_PlayerAnim
   firePoint: {fileID: 0}
   ActiveStates:
@@ -522,6 +522,7 @@ MonoBehaviour:
     m_InternalValue: 1
   moveSpeed: 5
   verySmallReconciliationThreshold: 0.01
+  teleportReconciliationThreshold: 2
 --- !u!1 &8595777563588518843
 GameObject:
   m_ObjectHideFlags: 0
