@@ -104,6 +104,11 @@ namespace ProjectAI.Characters.MonsterAI
         {
             base.OnNetworkSpawn();
 
+            // 풀링 재소환 시 상태값들 안전하게 초기화
+            Target = null;
+            sensorTimer = 0f;
+            ResetSensor();
+
             if (!IsServer)
             {
                 Debug.Log($"[NetMonsterBrain] 클라이언트이므로 AI 뇌를 비활성화합니다. (ID: {NetworkObjectId})");

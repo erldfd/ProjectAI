@@ -123,5 +123,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.SkillManager
   skillConfigs:
   - SkillType: 1
+    Prefab: {fileID: 0}
+    BaseCooldown: 0.5
+  - SkillType: 2
     Prefab: {fileID: 5989937830823538665, guid: 866b169e45fdadc41900453db77a7a44, type: 3}
     BaseCooldown: 0.5

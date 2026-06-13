@@ -455,9 +455,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  OwnedSkills: 01
+  OwnedSkills: 02
   SkillAnimations:
-  - SkillType: 1
+  - SkillType: 2
     AnimStateName: Attack_PlayerAnim
   firePoint: {fileID: 0}
   ActiveStates:

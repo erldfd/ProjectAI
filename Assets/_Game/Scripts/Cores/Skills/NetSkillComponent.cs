@@ -39,6 +39,11 @@ namespace ProjectAI.Core.Skills
         private Transform firePoint;
         public Transform FirePoint => firePoint;
 
+        [Tooltip("근접 평타 범위용 콜라이더.\n[주의] 게임오브젝트는 켜두되, Collider 컴포넌트는 비활성화(enabled=false) 및 isTrigger=true로 설정하는 것을 권장합니다.")]
+        [SerializeField]
+        private Collider2D meleeHitbox;
+        public Collider2D MeleeHitbox => meleeHitbox;
+
         /// <summary>
         /// 캐릭터의 현재 상태를 비트마스크로 동기화합니다.
         /// </summary>
@@ -118,16 +123,20 @@ namespace ProjectAI.Core.Skills
 
         private void HandleAnimationStateExited(int stateHash)
         {
+            Debug.Log($"[NetSkillComponent] HandleAnimationStateExited: stateHash={stateHash}, currentCastingSkill={currentCastingSkill}");
             if (!GameStatics.IsServerAuthorized || currentCastingSkill == ESkillType.None)
             {
                 return;
             }
 
+            Debug.Log($"[NetSkillComponent] Checking if exited state hash matches current casting skill's animation hash.");
             int expectedHash = GetSkillAnimHash(currentCastingSkill);
             if (expectedHash == stateHash)
             {
+                Debug.Log($"[NetSkillComponent] Animation state exited for skill {currentCastingSkill}");
                 if (GameStatics.SkillManager != null)
                 {
+                    Debug.Log($"[NetSkillComponent] Ending skill {currentCastingSkill} for character {ownerCharacter.NetworkObjectId}");
                     GameStatics.SkillManager.EndSkill(currentCastingSkill, ownerCharacter);
                 }
 

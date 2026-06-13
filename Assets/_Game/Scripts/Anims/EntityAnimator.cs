@@ -84,8 +84,11 @@ namespace ProjectAI.Core.Entities
 
         private void HandleFacingDirectionChanged(bool isFacingRight)
         {
-            // 오른쪽을 보면 flipX = false, 왼쪽을 보면 flipX = true
-            spriteRenderer.flipX = !isFacingRight;
+            // SpriteRenderer.flipX 대신 Visual 오브젝트(현재 transform)의 localScale 자체를 반전시켜
+            // 자식으로 붙어있는 Hitbox, 이펙트 등의 위치도 물리적으로 완벽하게 좌우 대칭되도록 처리합니다.
+            Vector3 scale = transform.localScale;
+            scale.x = isFacingRight ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
+            transform.localScale = scale;
         }
 
         private void HandlePlayAnimation(int stateHash, float transitionDuration, int layer)

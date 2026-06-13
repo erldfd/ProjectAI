@@ -102,7 +102,7 @@ namespace ProjectAI.Players
                 return;
             }
 
-            myCharacter.TryActivateSkill(ESkillType.BasicAttack);
+            myCharacter.TryActivateSkill(ESkillType.ProjectileAttack);
         }
 
         private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)

@@ -3,6 +3,7 @@ using ProjectAI.Core.Skills;
 using UnityEngine;
 using UnityEngine.Assertions;
 using System.Collections;
+using ProjectAI.Core.Stats;
 
 namespace ProjectAI.Characters
 {
@@ -12,6 +13,7 @@ namespace ProjectAI.Characters
     public class NetCharacter : NetEntity
     {
         public NetSkillComponent SkillComponent { get; private set; }
+        public NetStatComponent StatComponent { get; private set; }
 
         [Header("Death Settings")]
         [SerializeField] 
@@ -26,6 +28,8 @@ namespace ProjectAI.Characters
             
             SkillComponent = GetComponentInChildren<NetSkillComponent>();
             Assert.IsNotNull(SkillComponent, "[NetCharacter] NetSkillComponent를 찾을 수 없습니다.");
+
+            StatComponent = GetComponentInChildren<NetStatComponent>();
         }
 
         /// <summary>
@@ -41,6 +45,19 @@ namespace ProjectAI.Characters
         {
             base.OnNetworkSpawn();
             base.Events.OnDeathTriggered += HandleDeathTriggered;
+
+            // 오브젝트 풀에서 재소환 시 사망 시 비활성화했던 물리 상태 원상 복구
+            Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+            foreach (Collider2D col in colliders)
+            {
+                col.enabled = true;
+            }
+
+            Rigidbody2D rb = GetComponentInChildren<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.simulated = true;
+            }
         }
 
         public override void OnNetworkDespawn()
