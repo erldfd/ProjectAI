@@ -17,10 +17,7 @@ namespace ProjectAI.Players
 
         private void Start()
         {
-            if (transform.parent == null)
-            {
-                Debug.LogWarning("VisualInterpolator는 부모 객체가 있어야 정상 동작합니다.", this);
-            }
+            UnityEngine.Assertions.Assert.IsNotNull(transform.parent, "VisualInterpolator는 부모 객체가 있어야 정상 동작합니다.");
         }
 
         private void OnEnable()

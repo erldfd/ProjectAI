@@ -33,6 +33,11 @@ namespace ProjectAI.Characters.MonsterAI
 
         private bool isFollowing = false;
 
+        public void SetFollowDistance(float distance)
+        {
+            followThreshold = distance;
+        }
+
         public override void Enter()
         {
             base.Enter();

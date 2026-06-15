@@ -25,11 +25,7 @@ namespace ProjectAI.Core
 
             // Resources 폴더에서 GameManager 프리팹을 불러옵니다.
             GameObject prefab = Resources.Load<GameObject>(GAME_MANAGER_PATH);
-            if (prefab == null)
-            {
-                Debug.LogError("[AppBootstrapper] Resources/GameManager.prefab을 찾을 수 없습니다! 프리팹을 확인해 주세요.");
-                return;
-            }
+            UnityEngine.Assertions.Assert.IsNotNull(prefab, "[AppBootstrapper] Resources/GameManager.prefab을 찾을 수 없습니다! 프리팹을 확인해 주세요.");
 
             // 프리팹을 동적으로 씬에 생성합니다. (생성되면서 GameManager.Awake()가 호출되어 DontDestroyOnLoad 처리됨)
             GameObject instance = Object.Instantiate(prefab);

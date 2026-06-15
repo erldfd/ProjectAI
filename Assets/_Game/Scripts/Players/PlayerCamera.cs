@@ -32,11 +32,7 @@ namespace ProjectAI.Players
         public void InitCamera()
         {
             cinemachineCamera = FindAnyObjectByType<CinemachineCamera>();
-            
-            if (cinemachineCamera == null)
-            {
-                return;
-            }
+            Assert.IsNotNull(cinemachineCamera, "[PlayerCamera] InitCamera: 씬에 CinemachineCamera가 존재하지 않습니다.");
 
             Assert.IsNotNull(targetTransform, "[PlayerCamera] InitCamera: targetTransform이 할당되지 않았습니다.");
 

@@ -6,6 +6,7 @@ using ProjectAI.Core.Attributes;
 using ProjectAI.Movements;
 using ProjectAI.Core.Skills;
 using ProjectAI.Characters;
+using ProjectAI.SOs;
 
 namespace ProjectAI.Characters.MonsterAI
 {
@@ -227,12 +228,18 @@ namespace ProjectAI.Characters.MonsterAI
         /// <summary>
         /// 몬스터 몸체의 스킬(기본 공격 등) 발동을 지시합니다.
         /// </summary>
-        public bool TryAttack()
+        public void ExecuteAttack()
         {
-            Assert.IsTrue(IsServer, "[NetMonsterBrain] TryAttack은 서버에서만 호출되어야 합니다.");
-
-            Character.TryActivateSkill(ESkillType.BasicAttack);
-            return true;
+            Assert.IsTrue(IsServer, "[NetMonsterBrain] ExecuteAttack은 서버에서만 호출되어야 합니다.");
+            
+            if (Character != null && Character.SkillComponent != null && Character.SkillComponent.OwnedSkills.Count > 0)
+            {
+                BaseSkillConfig skillToUse = Character.SkillComponent.OwnedSkills[0];
+                if (skillToUse != null)
+                {
+                    Character.TryActivateSkill(skillToUse.SkillId);
+                }
+            }
         }
     }
 }

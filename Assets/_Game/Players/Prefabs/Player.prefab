@@ -330,8 +330,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.5, y: 1}
+  m_Offset: {x: 0, y: -0.09}
+  m_Size: {x: 0.26, y: 0.49}
   m_Direction: 0
 --- !u!114 &2460281810773283459
 MonoBehaviour:
@@ -455,11 +455,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  OwnedSkills: 02
-  SkillAnimations:
-  - SkillType: 2
-    AnimStateName: Attack_PlayerAnim
+  OwnedSkills:
+  - {fileID: 11400000, guid: 79df9c47f3efdae4abfd2e9212b885f7, type: 2}
   firePoint: {fileID: 0}
+  meleeHitbox: {fileID: 0}
   ActiveStates:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0

@@ -6,6 +6,7 @@ using ProjectAI.Core.Skills;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using ProjectAI.Core;
+using ProjectAI.SOs;
 
 namespace ProjectAI.Players
 {
@@ -102,7 +103,14 @@ namespace ProjectAI.Players
                 return;
             }
 
-            myCharacter.TryActivateSkill(ESkillType.ProjectileAttack);
+            if (myCharacter != null && myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 0)
+            {
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[0];
+                if (skillToUse != null)
+                {
+                    myCharacter.TryActivateSkill(skillToUse.SkillId);
+                }
+            }
         }
 
         private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)

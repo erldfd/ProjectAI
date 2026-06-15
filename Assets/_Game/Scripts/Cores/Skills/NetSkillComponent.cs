@@ -1,26 +1,14 @@
 using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode;
-using ProjectAI.Core;
 using ProjectAI.Core.Entities;
 using System.Collections.Generic;
 using UnityEngine.Scripting.APIUpdating;
 using ProjectAI.Characters;
+using ProjectAI.SOs;
 
 namespace ProjectAI.Core.Skills
 {
-    /// <summary>
-    /// 스킬 타입과 재생할 애니메이션 상태 이름을 매핑하는 구조체입니다.
-    /// </summary>
-    [System.Serializable]
-    public struct SSkillAnimMapping
-    {
-        public ESkillType SkillType;
-
-        [AnimStateSelector]
-        public string AnimStateName;
-    }
-
     /// <summary>
     /// 캐릭터의 스킬(마법탄 발사 등) 입력을 처리하고 서버로 RPC를 보내는 범용 컴포넌트입니다.
     /// </summary>
@@ -29,10 +17,7 @@ namespace ProjectAI.Core.Skills
     {
         [Header("Skill Settings")]
         [Tooltip("이 캐릭터가 사용할 수 있는 스킬 목록")]
-        public List<ESkillType> OwnedSkills = new List<ESkillType>();
-
-        [Tooltip("캐릭터가 스킬을 시전할 때 재생할 애니메이션 상태 매핑")]
-        public List<SSkillAnimMapping> SkillAnimations = new List<SSkillAnimMapping>();
+        public List<BaseSkillConfig> OwnedSkills = new List<BaseSkillConfig>();
 
         [Tooltip("마법탄 등이 발사될 기준 위치 (없으면 자신 Transform 중심)")]
         [SerializeField]
@@ -54,32 +39,17 @@ namespace ProjectAI.Core.Skills
         );
 
         // 로컬 예측 쿨타임 (UI 및 클라이언트 빠른 검증용)
-        private Dictionary<ESkillType, double> localActivationTimes = new Dictionary<ESkillType, double>();
+        private Dictionary<int, double> localActivationTimes = new Dictionary<int, double>();
         
         // 서버 보안 검증 쿨타임 (서버 권한용)
-        private Dictionary<ESkillType, double> serverActivationTimes = new Dictionary<ESkillType, double>();
-
-        private Dictionary<ESkillType, int> animHashCache = new Dictionary<ESkillType, int>();
+        private Dictionary<int, double> serverActivationTimes = new Dictionary<int, double>();
 
         private EntityEvents entityEvents;
         private NetCharacter ownerCharacter;
-        private ESkillType currentCastingSkill = ESkillType.None;
+        private int currentCastingSkillId = 0;
 
         private void Awake()
         {
-            Debug.Log($"[NetSkillComponent] Awake: Caching animation hashes for {SkillAnimations.Count} skills.");
-            foreach (SSkillAnimMapping mapping in SkillAnimations)
-            {
-                if (string.IsNullOrEmpty(mapping.AnimStateName))
-                {
-                    Debug.LogWarning($"[NetSkillComponent] Awake: AnimStateName is empty for skill {mapping.SkillType}. Skipping hash caching.");
-                    continue;
-                }
-
-                Debug.Log($"[NetSkillComponent] Caching animation hash for skill {mapping.SkillType}: {mapping.AnimStateName}");
-                animHashCache[mapping.SkillType] = Animator.StringToHash(mapping.AnimStateName);
-            }
-
             entityEvents = GetComponentInParent<EntityEvents>();
             Assert.IsNotNull(entityEvents, $"[NetSkillComponent] {gameObject.name}에 EntityEvents를 찾을 수 없습니다.");
 
@@ -107,7 +77,7 @@ namespace ProjectAI.Core.Skills
 
         private void HandleAnimationEvent(EAnimationEventTag eventTag)
         {
-            if (!GameStatics.IsServerAuthorized || currentCastingSkill == ESkillType.None)
+            if (!GameStatics.IsServerAuthorized || currentCastingSkillId == 0)
             {
                 return;
             }
@@ -116,31 +86,31 @@ namespace ProjectAI.Core.Skills
             {
                 if (GameStatics.SkillManager != null)
                 {
-                    GameStatics.SkillManager.ActionSkill(currentCastingSkill, ownerCharacter);
+                    GameStatics.SkillManager.ActionSkill(currentCastingSkillId, ownerCharacter);
                 }
             }
         }
 
         private void HandleAnimationStateExited(int stateHash)
         {
-            Debug.Log($"[NetSkillComponent] HandleAnimationStateExited: stateHash={stateHash}, currentCastingSkill={currentCastingSkill}");
-            if (!GameStatics.IsServerAuthorized || currentCastingSkill == ESkillType.None)
+            Debug.Log($"[NetSkillComponent] HandleAnimationStateExited: stateHash={stateHash}, currentCastingSkillId={currentCastingSkillId}");
+            if (!GameStatics.IsServerAuthorized || currentCastingSkillId == 0)
             {
                 return;
             }
 
             Debug.Log($"[NetSkillComponent] Checking if exited state hash matches current casting skill's animation hash.");
-            int expectedHash = GetSkillAnimHash(currentCastingSkill);
+            int expectedHash = GetSkillAnimHash(currentCastingSkillId);
             if (expectedHash == stateHash)
             {
-                Debug.Log($"[NetSkillComponent] Animation state exited for skill {currentCastingSkill}");
+                Debug.Log($"[NetSkillComponent] Animation state exited for skill ID {currentCastingSkillId}");
                 if (GameStatics.SkillManager != null)
                 {
-                    Debug.Log($"[NetSkillComponent] Ending skill {currentCastingSkill} for character {ownerCharacter.NetworkObjectId}");
-                    GameStatics.SkillManager.EndSkill(currentCastingSkill, ownerCharacter);
+                    Debug.Log($"[NetSkillComponent] Ending skill ID {currentCastingSkillId} for character {ownerCharacter.NetworkObjectId}");
+                    GameStatics.SkillManager.EndSkill(currentCastingSkillId, ownerCharacter);
                 }
 
-                currentCastingSkill = ESkillType.None;
+                currentCastingSkillId = 0;
                 RemoveState(EStateTag.Casting);
             }
         }
@@ -164,9 +134,9 @@ namespace ProjectAI.Core.Skills
             entityEvents.OnSkillTriggered -= TryActivateSkill;
         }
 
-        public double GetLocalActivationTime(ESkillType type)
+        public double GetLocalActivationTime(int skillId)
         {
-            if (localActivationTimes.TryGetValue(type, out double time))
+            if (localActivationTimes.TryGetValue(skillId, out double time))
             {
                 return time;
             }
@@ -174,9 +144,9 @@ namespace ProjectAI.Core.Skills
             return -999.0;
         }
 
-        public double GetServerActivationTime(ESkillType type)
+        public double GetServerActivationTime(int skillId)
         {
-            if (serverActivationTimes.TryGetValue(type, out double time))
+            if (serverActivationTimes.TryGetValue(skillId, out double time))
             {
                 return time;
             }
@@ -184,24 +154,27 @@ namespace ProjectAI.Core.Skills
             return -999.0;
         }
 
-        public int GetSkillAnimHash(ESkillType type)
+        public int GetSkillAnimHash(int skillId)
         {
-            if (animHashCache.TryGetValue(type, out int hash))
+            if (GameStatics.SkillManager != null)
             {
-                return hash;
+                BaseSkillConfig config = GameStatics.SkillManager.GetConfig(skillId);
+                if (config != null)
+                {
+                    return config.AnimHash;
+                }
             }
-
             return 0;
         }
 
-        public void SetLocalActivationTime(ESkillType type, double time)
+        public void SetLocalActivationTime(int skillId, double time)
         {
-            localActivationTimes[type] = time;
+            localActivationTimes[skillId] = time;
         }
 
-        public void SetServerActivationTime(ESkillType type, double time)
+        public void SetServerActivationTime(int skillId, double time)
         {
-            serverActivationTimes[type] = time;
+            serverActivationTimes[skillId] = time;
         }
 
         public bool HasState(EStateTag tag)
@@ -236,27 +209,37 @@ namespace ProjectAI.Core.Skills
         /// <summary>
         /// 클라이언트(컨트롤러)에서 특정 스킬 사용을 시도합니다.
         /// </summary>
-        public void TryActivateSkill(ESkillType skillType)
+        public void TryActivateSkill(int skillId)
         {
-            if (!OwnedSkills.Contains(skillType))
+            bool hasSkill = false;
+            foreach (BaseSkillConfig config in OwnedSkills)
             {
-                Debug.Log($"[NetSkillComponent] 미보유 스킬 시도: {skillType}");
+                if (config != null && config.SkillId == skillId)
+                {
+                    hasSkill = true;
+                    break;
+                }
+            }
+
+            if (!hasSkill)
+            {
+                Debug.LogWarning($"[NetSkillComponent] 클라이언트 로컬 검증 실패: 미보유 스킬(ID: {skillId}) 시도 차단됨.");
                 return;
             }
 
             // 로컬 단위 클라이언트 예측(쿨타임, 상태 검사) 로직
             if (GameStatics.SkillManager != null)
             {
-                SSkillConfig config = GameStatics.SkillManager.GetConfig(skillType);
-                if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.ServerTime.Time < GetLocalActivationTime(skillType) + config.BaseCooldown)
+                BaseSkillConfig config = GameStatics.SkillManager.GetConfig(skillId);
+                if (GameStatics.NetworkManager != null && config != null && GameStatics.NetworkManager.ServerTime.Time < GetLocalActivationTime(skillId) + config.BaseCooldown)
                 {
-                    Debug.Log($"[NetSkillComponent] 스킬 {skillType} 로컬 쿨타임 대기 중입니다.");
+                    Debug.Log($"[NetSkillComponent] 스킬 ID {skillId} 로컬 쿨타임 대기 중입니다.");
                     return; // 쿨타임 대기 중
                 }
 
                 if (HasState(EStateTag.Silenced) || HasState(EStateTag.Stunned) || HasState(EStateTag.Casting))
                 {
-                    Debug.Log($"[NetSkillComponent] 상태이상(침묵/기절/시전중)으로 인해 스킬 {skillType} 시전 불가.");
+                    Debug.Log($"[NetSkillComponent] 상태이상(침묵/기절/시전중)으로 인해 스킬 ID {skillId} 시전 불가.");
                     return; // 상태 이상으로 시전 불가
                 }
             }
@@ -264,14 +247,14 @@ namespace ProjectAI.Core.Skills
             // 로컬(클라이언트/호스트) 쿨타임을 즉시 미리 돌림 (예측 및 즉각적인 UI 반영)
             if (GameStatics.NetworkManager != null)
             {
-                SetLocalActivationTime(skillType, GameStatics.NetworkManager.ServerTime.Time);
+                SetLocalActivationTime(skillId, GameStatics.NetworkManager.ServerTime.Time);
             }
 
-            RequestActivateSkillServerRpc(skillType);
+            RequestActivateSkillServerRpc(skillId);
         }
 
         [Rpc(SendTo.Server)]
-        private void RequestActivateSkillServerRpc(ESkillType skillType)
+        private void RequestActivateSkillServerRpc(int skillId)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] RequestActivateSkillServerRpc는 서버에서만 실행되어야 합니다.");
             
@@ -280,30 +263,41 @@ namespace ProjectAI.Core.Skills
                 return;
             }
             
-            if (!OwnedSkills.Contains(skillType))
+            bool hasSkill = false;
+            foreach (BaseSkillConfig config in OwnedSkills)
             {
+                if (config != null && config.SkillId == skillId)
+                {
+                    hasSkill = true;
+                    break;
+                }
+            }
+
+            if (!hasSkill)
+            {
+                Debug.LogWarning($"[NetSkillComponent] 서버 보안 검증 실패: 클라이언트(Owner: {OwnerClientId})가 미보유 스킬(ID: {skillId}) 시도를 보냈습니다!");
                 return;
             }
 
             if (GameStatics.SkillManager != null)
             {
-                if (GameStatics.SkillManager.ExecuteSkill(skillType, ownerCharacter))
+                if (GameStatics.SkillManager.ExecuteSkill(skillId, ownerCharacter))
                 {
-                    currentCastingSkill = skillType;
+                    currentCastingSkillId = skillId;
                     AddState(EStateTag.Casting);
                 }
                 else
                 {
-                    RollbackLocalCooldownClientRpc(skillType);
+                    RollbackLocalCooldownClientRpc(skillId);
                 }
             }
         }
 
         [Rpc(SendTo.Owner)]
-        private void RollbackLocalCooldownClientRpc(ESkillType skillType)
+        private void RollbackLocalCooldownClientRpc(int skillId)
         {
-            Debug.Log($"[NetSkillComponent] 스킬 {skillType} 서버 발동 실패. 로컬 예측 쿨타임 롤백.");
-            SetLocalActivationTime(skillType, -999.0);
+            Debug.Log($"[NetSkillComponent] 스킬 ID {skillId} 서버 발동 실패. 로컬 예측 쿨타임 롤백.");
+            SetLocalActivationTime(skillId, -999.0);
         }
 
         /// <summary>

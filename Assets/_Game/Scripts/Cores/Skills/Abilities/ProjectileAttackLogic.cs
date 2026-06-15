@@ -6,6 +6,7 @@ using ProjectAI.Movements;
 using ProjectAI.Projectiles;
 using ProjectAI.Characters;
 using ProjectAI.Core;
+using ProjectAI.SOs;
 
 namespace ProjectAI.Core.Skills.Abilities
 {
@@ -16,19 +17,12 @@ namespace ProjectAI.Core.Skills.Abilities
     {
         public ESkillType SkillType => ESkillType.ProjectileAttack;
 
-        private NetworkObject projectilePrefab;
-        private float cooldown;
-
         public void Initialize(SkillManager manager)
         {
-            SSkillConfig config = manager.GetConfig(SkillType);
-            projectilePrefab = config.Prefab;
-            cooldown = config.BaseCooldown;
-
-            Assert.IsNotNull(projectilePrefab, "[ProjectileAttackLogic] Initialize: projectilePrefab이 누락되었습니다.");
+            // Stateless로 변경되어 단일 캐싱 불필요
         }
 
-        public bool CanExecute(NetCharacter caster)
+        public bool CanExecute(NetCharacter caster, BaseSkillConfig config)
         {
             // 침묵, 기절, 시전 중 상태면 사용 불가
             if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned) || caster.SkillComponent.HasState(EStateTag.Casting))
@@ -40,7 +34,7 @@ namespace ProjectAI.Core.Skills.Abilities
             // 쿨타임 검사 (간단 구현)
             Assert.IsNotNull(GameStatics.NetworkManager, "[ProjectileAttackLogic] CanExecute: NetworkManager is null.");
             
-            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetServerActivationTime(SkillType) + cooldown)
+            if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetServerActivationTime(config.SkillId) + config.BaseCooldown)
             {
                 Debug.Log($"[ProjectileAttackLogic] CanExecute 실패: {caster.NetworkObjectId} 서버 쿨타임 대기 중");
                 return false;
@@ -49,7 +43,7 @@ namespace ProjectAI.Core.Skills.Abilities
             return true;
         }
 
-        public void Execute(NetCharacter caster)
+        public void Execute(NetCharacter caster, BaseSkillConfig config)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[ProjectileAttackLogic] Execute는 서버에서만 호출되어야 합니다.");
             
@@ -59,20 +53,20 @@ namespace ProjectAI.Core.Skills.Abilities
             }
 
             // 서버 측 쿨타임 기록 (발동 시점)
-            caster.SkillComponent.SetServerActivationTime(SkillType, GameStatics.NetworkManager.ServerTime.Time);
+            caster.SkillComponent.SetServerActivationTime(config.SkillId, GameStatics.NetworkManager.ServerTime.Time);
 
             // 애니메이션 재생만 지시
-            int animHash = caster.SkillComponent.GetSkillAnimHash(SkillType);
+            int animHash = caster.SkillComponent.GetSkillAnimHash(config.SkillId);
             if (animHash == 0)
             {
-                Debug.LogWarning($"[ProjectileAttackLogic] Execute 실패: {SkillType} 에 해당하는 애니메이션 해시를 찾을 수 없습니다. (CasterID: {caster.NetworkObjectId})");
+                Debug.LogWarning($"[ProjectileAttackLogic] Execute 실패: ID {config.SkillId} 에 해당하는 애니메이션 해시를 찾을 수 없습니다. (CasterID: {caster.NetworkObjectId})");
                 return;
             }
 
             caster.SkillComponent.BroadcastPlayAnimationClientRpc(animHash, 0f);
         }
 
-        public void Action(NetCharacter caster)
+        public void Action(NetCharacter caster, BaseSkillConfig config)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[ProjectileAttackLogic] Action은 서버에서만 호출되어야 합니다.");
             
@@ -82,7 +76,8 @@ namespace ProjectAI.Core.Skills.Abilities
             }
 
             // 실제 키프레임 도달 시 호출되는 투사체 스폰 로직
-            Assert.IsNotNull(projectilePrefab, "[ProjectileAttackLogic] Projectile Prefab is missing in SkillManager!");
+            NetworkObject projectilePrefab = config.Prefab;
+            Assert.IsNotNull(projectilePrefab, "[ProjectileAttackLogic] Projectile Prefab is missing in Skill Config!");
 
             Vector2 direction = Vector2.right;
             if (caster.Movement != null)
@@ -117,7 +112,7 @@ namespace ProjectAI.Core.Skills.Abilities
             projectile.Initialize(direction, caster.NetworkObjectId);
         }
 
-        public void End(NetCharacter caster)
+        public void End(NetCharacter caster, BaseSkillConfig config)
         {
             // 현재 종료 시점 특이사항 없음
         }

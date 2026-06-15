@@ -27,8 +27,8 @@ namespace ProjectAI.Core.Entities
         /// <summary>
         /// 외부(뇌)에서 특정 스킬의 발동을 요청했을 때 발생하는 이벤트
         /// </summary>
-        /// <param name="skillType">발동을 요청할 스킬의 종류</param>
-        public event Action<ESkillType> OnSkillTriggered;
+        /// <param name="skillId">발동을 요청할 스킬의 종류</param>
+        public event Action<int> OnSkillTriggered;
 
         /// <summary>
         /// 강제로 특정 애니메이션 상태를 재생하라고 지시할 때 발생하는 이벤트
@@ -113,9 +113,9 @@ namespace ProjectAI.Core.Entities
             onFacingDirectionChanged?.Invoke(isFacingRight);
         }
 
-        public void InvokeSkillTriggered(ESkillType skillType)
+        public void InvokeSkillTriggered(int skillId)
         {
-            OnSkillTriggered?.Invoke(skillType);
+            OnSkillTriggered?.Invoke(skillId);
         }
 
         /// <summary>

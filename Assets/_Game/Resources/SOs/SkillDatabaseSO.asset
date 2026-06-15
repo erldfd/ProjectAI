@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 656f3c7b07fa4e34db0d38c9837fb7f0, type: 3}
+  m_Name: SkillDatabaseSO
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.SOs.SkillDatabaseSO
+  SkillConfigs:
+  - {fileID: 11400000, guid: 6520008124f0d2943ac8f7ed3c0dd42a, type: 2}
+  - {fileID: 11400000, guid: 79df9c47f3efdae4abfd2e9212b885f7, type: 2}
+  - {fileID: 11400000, guid: a6a71777cf1bc314bad8f1d0bab88910, type: 2}

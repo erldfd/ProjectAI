@@ -11,16 +11,14 @@ namespace ProjectAI.Core.Entities
         public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
             // 애니메이터가 부착된 동일한 오브젝트(혹은 부모)에서 EntityEvents를 찾습니다.
-            EntityEvents events = animator.GetComponent<EntityEvents>();
+            EntityEvents events = animator.GetComponentInParent<EntityEvents>();
             if (events == null)
             {
-                events = animator.GetComponentInParent<EntityEvents>();
+                Debug.LogWarning("SkillStateBehaviour: EntityEvents component not found in parent hierarchy.");
+                return;
             }
 
-            if (events != null)
-            {
-                events.InvokeAnimationStateExited(stateInfo.shortNameHash);
-            }
+            events.InvokeAnimationStateExited(stateInfo.shortNameHash);
         }
     }
 }
