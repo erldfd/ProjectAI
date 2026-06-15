@@ -244,12 +244,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  OwnedSkills: 01
-  SkillAnimations:
-  - SkillType: 1
-    AnimStateName: Attack_MemoryShardBugAnim
+  OwnedSkills:
+  - {fileID: 11400000, guid: 6520008124f0d2943ac8f7ed3c0dd42a, type: 2}
   firePoint: {fileID: 0}
-  meleeHitbox: {fileID: 8280088715306235026}
+  meleeHitbox: {fileID: 6466300395897974831}
   ActiveStates:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0

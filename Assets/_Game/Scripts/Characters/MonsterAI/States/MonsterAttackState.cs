@@ -40,11 +40,8 @@ namespace ProjectAI.Characters.MonsterAI
 
             if (Time.time >= lastAttackTime + attackCooldown)
             {
-                bool success = Brain.TryAttack();
-                if (success)
-                {
-                    lastAttackTime = Time.time;
-                }
+                Brain.ExecuteAttack();
+                lastAttackTime = Time.time;
             }
         }
     }

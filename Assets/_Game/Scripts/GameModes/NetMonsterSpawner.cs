@@ -104,11 +104,8 @@ namespace ProjectAI.GameModes
                 return;
             }
             
-            if (GameStatics.ObjectPool == null || monsterPrefab == null)
-            {
-                Debug.LogWarning($"[NetMonsterSpawner] 스폰 실패: ObjectPool({GameStatics.ObjectPool != null}) 또는 monsterPrefab({monsterPrefab != null})이 null입니다.");
-                return;
-            }
+            Assert.IsNotNull(GameStatics.ObjectPool, "[NetMonsterSpawner] 스폰 실패: ObjectPool이 null입니다.");
+            Assert.IsNotNull(monsterPrefab, "[NetMonsterSpawner] 스폰 실패: monsterPrefab이 null입니다.");
 
             Vector2 randomPoint = UnityEngine.Random.insideUnitCircle * spawnRadius;
             Vector2 spawnPosition = (Vector2)transform.position + randomPoint;

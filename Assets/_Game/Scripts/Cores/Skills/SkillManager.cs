@@ -8,19 +8,11 @@ using UnityEngine.Assertions;
 using ProjectAI.Core.Pooling;
 using ProjectAI.Characters;
 using ProjectAI.Core;
+using ProjectAI.SOs;
 
 namespace ProjectAI.Core.Skills
 {
-    /// <summary>
-    /// 스킬의 프리팹 및 기본 쿨타임 등을 정의하는 설정 데이터 구조체입니다.
-    /// </summary>
-    [Serializable]
-    public struct SSkillConfig
-    {
-        public ESkillType SkillType;
-        public NetworkObject Prefab;
-        public float BaseCooldown;
-    }
+
 
     /// <summary>
     /// 시스템에 존재하는 모든 스킬 로직(ISkillLogic) 인스턴스를 보관하고,
@@ -30,24 +22,18 @@ namespace ProjectAI.Core.Skills
     public class SkillManager : MonoBehaviour
     {
 
-        public List<SSkillConfig> SkillConfigs => skillConfigs;
+        private SkillDatabaseSO skillDatabase;
 
-        [Header("Skill Configurations")]
-        [Tooltip("각 스킬의 프리팹이나 기본 쿨타임 데이터를 매핑합니다.")]
-        [SerializeField]
-        private List<SSkillConfig> skillConfigs = new List<SSkillConfig>();
+        public IReadOnlyList<BaseSkillConfig> SkillConfigs => skillDatabase.SkillConfigs;
 
         private Dictionary<ESkillType, ISkillLogic> skillLogics = new Dictionary<ESkillType, ISkillLogic>();
-        private Dictionary<ESkillType, SSkillConfig> skillConfigCache = new Dictionary<ESkillType, SSkillConfig>();
 
         private void Awake()
         {
             GameStatics.RegisterSkillManager(this);
-
-            foreach (SSkillConfig config in skillConfigs)
-            {
-                skillConfigCache[config.SkillType] = config;
-            }
+            
+            skillDatabase = Resources.Load<SkillDatabaseSO>("SOs/SkillDatabaseSO");
+            UnityEngine.Assertions.Assert.IsNotNull(skillDatabase, "[SkillManager] Awake: Resources/SOs/SkillDatabaseSO 로드 실패");
 
             InitializeSkills();
         }
@@ -107,20 +93,13 @@ namespace ProjectAI.Core.Skills
             }
         }
 
-        public SSkillConfig GetConfig(ESkillType type)
+        public BaseSkillConfig GetConfig(int skillId)
         {
-            if (skillConfigCache.TryGetValue(type, out SSkillConfig config))
-            {
-                return config;
-            }
-            
-            return default;
+            UnityEngine.Assertions.Assert.IsNotNull(skillDatabase, "[SkillManager] GetConfig: skillDatabase is null");
+            return skillDatabase.GetConfig(skillId);
         }
 
-        /// <summary>
-        /// 스킬 실행을 요청합니다. (서버 전용)
-        /// </summary>
-        public bool ExecuteSkill(ESkillType type, NetCharacter caster)
+        public bool ExecuteSkill(int skillId, NetCharacter caster)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ExecuteSkill은 서버에서만 호출되어야 합니다.");
             
@@ -129,22 +108,29 @@ namespace ProjectAI.Core.Skills
                 return false;
             }
 
-            if (!skillLogics.TryGetValue(type, out ISkillLogic logic))
+            BaseSkillConfig config = GetConfig(skillId);
+            if (config == null)
             {
-                Debug.LogWarning($"[SkillManager] 알 수 없는 스킬 타입입니다: {type}");
+                Debug.LogWarning($"[SkillManager] ExecuteSkill 실패: SkillId {skillId} 에 해당하는 Config를 찾을 수 없습니다.");
                 return false;
             }
 
-            if (!logic.CanExecute(caster))
+            if (!skillLogics.TryGetValue(config.SkillType, out ISkillLogic logic))
+            {
+                Debug.LogWarning($"[SkillManager] 알 수 없는 스킬 타입입니다: {config.SkillType}");
+                return false;
+            }
+
+            if (!logic.CanExecute(caster, config))
             {
                 return false; // 상태 제약 등
             }
 
-            logic.Execute(caster);
+            logic.Execute(caster, config);
             return true;
         }
 
-        public void ActionSkill(ESkillType type, NetCharacter caster)
+        public void ActionSkill(int skillId, NetCharacter caster)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] ActionSkill은 서버에서만 호출되어야 합니다.");
             
@@ -153,13 +139,19 @@ namespace ProjectAI.Core.Skills
                 return;
             }
 
-            if (skillLogics.TryGetValue(type, out ISkillLogic logic))
+            BaseSkillConfig config = GetConfig(skillId);
+            if (config == null)
             {
-                logic.Action(caster);
+                return;
+            }
+
+            if (skillLogics.TryGetValue(config.SkillType, out ISkillLogic logic))
+            {
+                logic.Action(caster, config);
             }
         }
 
-        public void EndSkill(ESkillType type, NetCharacter caster)
+        public void EndSkill(int skillId, NetCharacter caster)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[SkillManager] EndSkill은 서버에서만 호출되어야 합니다.");
             
@@ -168,9 +160,15 @@ namespace ProjectAI.Core.Skills
                 return;
             }
 
-            if (skillLogics.TryGetValue(type, out ISkillLogic logic))
+            BaseSkillConfig config = GetConfig(skillId);
+            if (config == null)
             {
-                logic.End(caster);
+                return;
+            }
+
+            if (skillLogics.TryGetValue(config.SkillType, out ISkillLogic logic))
+            {
+                logic.End(caster, config);
             }
         }
     }
