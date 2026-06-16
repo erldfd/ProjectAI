@@ -110,7 +110,7 @@ namespace ProjectAI.Characters.MonsterAI
             sensorTimer = 0f;
             ResetSensor();
 
-            if (!IsServer)
+            if (!GameStatics.IsServerAuthorized)
             {
                 Debug.Log($"[NetMonsterBrain] 클라이언트이므로 AI 뇌를 비활성화합니다. (ID: {NetworkObjectId})");
                 // 클라이언트는 무거운 AI FSM 연산을 수행하지 않습니다.
@@ -123,23 +123,34 @@ namespace ProjectAI.Characters.MonsterAI
 
             foreach (AMonsterState state in stateComponents)
             {
-                state.Initialize(this, StateMachine);
-                StateMachine.AddState(state);
+                if (state.IsRootState)
+                {
+                    state.Initialize(this, StateMachine);
+                    StateMachine.AddState(state);
+                }
             }
 
             if (startingState != null)
             {
+                Assert.IsTrue(startingState.IsRootState, "[NetMonsterBrain] startingState는 반드시 루트 상태(isRootState = true)여야 합니다.");
                 StateMachine.Initialize(startingState.GetType());
             }
-            else if (stateComponents.Length > 0)
+            else
             {
-                StateMachine.Initialize(stateComponents[0].GetType());
+                foreach (AMonsterState state in stateComponents)
+                {
+                    if (state.IsRootState)
+                    {
+                        StateMachine.Initialize(state.GetType());
+                        break;
+                    }
+                }
             }
         }
 
         private void Update()
         {
-            if (!IsServer)
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
@@ -159,7 +170,7 @@ namespace ProjectAI.Characters.MonsterAI
 
         private void UpdateSensors()
         {
-            Assert.IsTrue(IsServer, "[NetMonsterBrain] UpdateSensors는 서버에서만 호출되어야 합니다.");
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] UpdateSensors는 서버에서만 호출되어야 합니다.");
 
             if (Target != null)
             {
@@ -217,7 +228,7 @@ namespace ProjectAI.Characters.MonsterAI
         /// </summary>
         public void SetMoveDirection(Vector2 direction)
         {
-            Assert.IsTrue(IsServer, "[NetMonsterBrain] SetMoveDirection은 서버에서만 호출되어야 합니다.");
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] SetMoveDirection은 서버에서만 호출되어야 합니다.");
 
             if (Character.Movement is NetServerMovement serverMovement)
             {
@@ -230,7 +241,7 @@ namespace ProjectAI.Characters.MonsterAI
         /// </summary>
         public void ExecuteAttack()
         {
-            Assert.IsTrue(IsServer, "[NetMonsterBrain] ExecuteAttack은 서버에서만 호출되어야 합니다.");
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] ExecuteAttack은 서버에서만 호출되어야 합니다.");
             
             if (Character != null && Character.SkillComponent != null && Character.SkillComponent.OwnedSkills.Count > 0)
             {

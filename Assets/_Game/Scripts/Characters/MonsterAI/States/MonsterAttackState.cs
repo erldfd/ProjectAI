@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using ProjectAI.Core.Skills;
 
 namespace ProjectAI.Characters.MonsterAI
 {
     /// <summary>
-    /// 사거리 내의 타겟에게 일정 주기로 공격을 시도하는 상태입니다.
+    /// 사거리 내의 타겟에게 일정 주기로 공격을 시도하는 하위 상태입니다.
+    /// 타겟 유무에 따른 상위 상태로의 전환은 부모 상태(CombatState)가 담당합니다.
     /// </summary>
     public class MonsterAttackState : AMonsterState
     {
@@ -23,12 +25,7 @@ namespace ProjectAI.Characters.MonsterAI
         public override void Tick()
         {
             base.Tick();
-
-            if (Brain.Target == null)
-            {
-                StateMachine.ChangeState<MonsterIdleState>();
-                return;
-            }
+            Assert.IsNotNull(Brain.Target, "[MonsterAttackState] Target이 null입니다. 부모 상태가 null 처리를 누락했습니다.");
 
             float sqrDist = ((Vector2)Brain.transform.position - (Vector2)Brain.Target.position).sqrMagnitude;
             

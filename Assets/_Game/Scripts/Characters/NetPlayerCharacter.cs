@@ -2,6 +2,7 @@ using ProjectAI.Core;
 using ProjectAI.Movements;
 using UnityEngine;
 using UnityEngine.Assertions;
+using ProjectAI.Characters.Summons;
 
 namespace ProjectAI.Characters
 {
@@ -11,13 +12,17 @@ namespace ProjectAI.Characters
     /// </summary>
     public class NetPlayerCharacter : NetCharacter
     {
+        public NetSummonController SummonController { get; private set; }
         private NetInteractor interactor;
 
         protected override void Awake()
         {
             base.Awake();
             interactor = GetComponentInChildren<NetInteractor>();
+            SummonController = GetComponentInChildren<NetSummonController>();
+            
             Assert.IsNotNull(interactor, "[NetPlayerCharacter] NetInteractor를 찾을 수 없습니다.");
+            Assert.IsNotNull(SummonController, "[NetPlayerCharacter] NetSummonController를 찾을 수 없습니다. 플레이어 프리팹에 추가해 주세요.");
         }
 
         /// <summary>

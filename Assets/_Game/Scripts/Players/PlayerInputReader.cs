@@ -23,9 +23,14 @@ namespace ProjectAI.Players
         [SerializeField]
         private InputActionReference attackAction;
 
+        [Tooltip("범용 스킬1 발동에 매핑된 액션")]
+        [SerializeField]
+        private InputActionReference skill1Action;
+
         public event Action<Vector2> OnMoveInputChanged;
         public event Action<bool> OnInteractInputChanged;
         public event Action<bool> OnAttackInputChanged;
+        public event Action<bool> OnSkill1InputChanged;
         
 
         #region Unity Lifecycle
@@ -56,6 +61,13 @@ namespace ProjectAI.Players
                 attackAction.action.performed += HandleAttackInput;
                 attackAction.action.canceled += HandleAttackInput;
             }
+
+            if (skill1Action != null && skill1Action.action != null)
+            {
+                skill1Action.action.Enable();
+                skill1Action.action.performed += HandleSkill1Input;
+                skill1Action.action.canceled += HandleSkill1Input;
+            }
         }
 
         public void DisableInput()
@@ -80,6 +92,13 @@ namespace ProjectAI.Players
                 attackAction.action.performed -= HandleAttackInput;
                 attackAction.action.canceled -= HandleAttackInput;
                 attackAction.action.Disable();
+            }
+
+            if (skill1Action != null && skill1Action.action != null)
+            {
+                skill1Action.action.performed -= HandleSkill1Input;
+                skill1Action.action.canceled -= HandleSkill1Input;
+                skill1Action.action.Disable();
             }
         }
         #endregion
@@ -113,6 +132,18 @@ namespace ProjectAI.Players
             else if (context.canceled)
             {
                 OnAttackInputChanged?.Invoke(false);
+            }
+        }
+
+        private void HandleSkill1Input(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnSkill1InputChanged?.Invoke(true);
+            }
+            else if (context.canceled)
+            {
+                OnSkill1InputChanged?.Invoke(false);
             }
         }
         #endregion

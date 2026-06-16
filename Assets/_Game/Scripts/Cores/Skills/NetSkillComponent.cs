@@ -164,6 +164,7 @@ namespace ProjectAI.Core.Skills
                     return config.AnimHash;
                 }
             }
+            
             return 0;
         }
 
