@@ -5,7 +5,8 @@ using ProjectAI.Core.Attributes;
 namespace ProjectAI.Characters.MonsterAI
 {
     /// <summary>
-    /// 소환수(Summon)가 적을 탐지하지 않았을 때, 주인(Owner)을 따라다니는 대기 상태입니다.
+    /// 소환수(Summon)가 적을 탐지하지 않았을 때, 주인(Owner)을 따라다니는 하위 상태입니다.
+    /// 적 감지 시 상위 상태로의 전환은 부모 상태(PeaceState)가 담당합니다.
     /// </summary>
     public class SummonFollowState : AMonsterState
     {
@@ -59,13 +60,6 @@ namespace ProjectAI.Characters.MonsterAI
         public override void Tick()
         {
             base.Tick();
-
-            // 적(Target)이 발견되면 추적 상태로 전환
-            if (Brain.Target != null)
-            {
-                StateMachine.ChangeState<MonsterChaseState>();
-                return;
-            }
 
             // 주인이 없으면 제자리에 대기
             if (Brain.Owner == null)

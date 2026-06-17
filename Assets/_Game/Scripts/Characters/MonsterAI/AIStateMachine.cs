@@ -59,7 +59,11 @@ namespace ProjectAI.Characters.MonsterAI
 
         public void Tick()
         {
-            Assert.IsNotNull(CurrentState, "CurrentState is null during Tick");
+            if (CurrentState == null)
+            {
+                return;
+            }
+
             CurrentState.Tick();
         }
     }

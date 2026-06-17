@@ -47,6 +47,7 @@ namespace ProjectAI.Players
             inputReader.OnMoveInputChanged += HandleMoveInputChanged;
             inputReader.OnInteractInputChanged += HandleInteractInputChanged;
             inputReader.OnAttackInputChanged += HandleAttackInputChanged;
+            inputReader.OnSkill1InputChanged += HandleSkill1InputChanged;
             
             playerCamera.InitCamera();
             if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
@@ -66,6 +67,7 @@ namespace ProjectAI.Players
                 inputReader.OnMoveInputChanged -= HandleMoveInputChanged;
                 inputReader.OnInteractInputChanged -= HandleInteractInputChanged;
                 inputReader.OnAttackInputChanged -= HandleAttackInputChanged;
+                inputReader.OnSkill1InputChanged -= HandleSkill1InputChanged;
                 inputReader.DisableInput();
             }
             
@@ -103,9 +105,26 @@ namespace ProjectAI.Players
                 return;
             }
 
-            if (myCharacter != null && myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 0)
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 0)
             {
                 BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[0];
+                if (skillToUse != null)
+                {
+                    myCharacter.TryActivateSkill(skillToUse.SkillId);
+                }
+            }
+        }
+
+        private void HandleSkill1InputChanged(bool isSkill1Pressed)
+        {
+            if (!isSkill1Pressed)
+            {
+                return;
+            }
+
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 1)
+            {
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[1];
                 if (skillToUse != null)
                 {
                     myCharacter.TryActivateSkill(skillToUse.SkillId);

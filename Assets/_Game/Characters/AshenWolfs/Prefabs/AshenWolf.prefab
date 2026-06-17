@@ -1,5 +1,65 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &74831077743351018
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3749479934214032461}
+  - component: {fileID: 3781201898579721147}
+  - component: {fileID: 3286422099474200197}
+  m_Layer: 7
+  m_Name: Childs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3749479934214032461
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74831077743351018}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9182590240573633736}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3781201898579721147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74831077743351018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b3845e55c1989142a1e04187803c4e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterAttackChildState
+  isRootState: 0
+  attackCooldown: 2
+--- !u!114 &3286422099474200197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74831077743351018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7401a0831a58ec14b93aa8b25385cdc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterChaseChildState
+  isRootState: 0
 --- !u!1 &241306677100875897
 GameObject:
   m_ObjectHideFlags: 0
@@ -16,7 +76,6 @@ GameObject:
   - component: {fileID: 4944438689536386590}
   - component: {fileID: 3460810399386613988}
   - component: {fileID: 9177875624014436927}
-  - component: {fileID: 304011742927502619}
   - component: {fileID: 5018962428655812574}
   m_Layer: 7
   m_Name: AshenWolf
@@ -42,6 +101,7 @@ Transform:
   - {fileID: 6490210254809074349}
   - {fileID: 3694894124405866562}
   - {fileID: 2437686309752024536}
+  - {fileID: 5939919474716857789}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &7685482110708514998
@@ -57,7 +117,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDamping: 0
+  m_LinearDamping: 100
   m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -129,7 +189,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 797668309
+  GlobalObjectIdHash: 1185525890
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -231,30 +291,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
   ShowTopMostFoldoutHeaderGroup: 1
   despawnDelay: 1.5
---- !u!114 &304011742927502619
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241306677100875897}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9aeb21508a3b764489489274472e38c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
-  ShowTopMostFoldoutHeaderGroup: 1
-  OwnedSkills: 01
-  SkillAnimations:
-  - SkillType: 1
-    AnimStateName: Attack_AshenWolfAnim
-  firePoint: {fileID: 0}
-  meleeHitbox: {fileID: 155777077703035129}
-  ActiveStates:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
 --- !u!114 &5018962428655812574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,15 +304,112 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetMonsterBrain
   ShowTopMostFoldoutHeaderGroup: 1
-  startingState: {fileID: 1559338209846613126}
+  startingState: {fileID: 493780703586058628}
   Owner: {fileID: 0}
   isSensorEnabled: 1
   detectLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   detectTag: Enemy
   detectionRadius: 8
   attackRadius: 1.5
+--- !u!1 &2087426384601168963
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9182590240573633736}
+  - component: {fileID: 1533209372491132812}
+  m_Layer: 7
+  m_Name: CombatParentState
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9182590240573633736
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2087426384601168963}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3749479934214032461}
+  m_Father: {fileID: 2437686309752024536}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1533209372491132812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2087426384601168963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c10d32c0c90fce4b9bf2cb721c01cc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterCombatParentState
+  isRootState: 1
+  subStates:
+  - {fileID: 3286422099474200197}
+  - {fileID: 3781201898579721147}
+--- !u!1 &2495213345559271917
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1439876676971472660}
+  - component: {fileID: 493780703586058628}
+  m_Layer: 7
+  m_Name: PeaceParentState
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1439876676971472660
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2495213345559271917}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 698980792028344175}
+  m_Father: {fileID: 2437686309752024536}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &493780703586058628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2495213345559271917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 656282f342cafef4082beeb18e13e1b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterPeaceParentState
+  isRootState: 1
+  subStates:
+  - {fileID: 2172757031782666336}
 --- !u!1 &3765622567543753970
 GameObject:
   m_ObjectHideFlags: 0
@@ -286,10 +419,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2437686309752024536}
-  - component: {fileID: 2375228546934405958}
-  - component: {fileID: 7180155928947915096}
-  - component: {fileID: 1559338209846613126}
-  - component: {fileID: 725183172190046921}
   m_Layer: 7
   m_Name: AIStates
   m_TagString: Untagged
@@ -309,65 +438,64 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1439876676971472660}
+  - {fileID: 9182590240573633736}
+  m_Father: {fileID: 3797649054102531681}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6427741301141960899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5939919474716857789}
+  - component: {fileID: 6766268771607252604}
+  m_Layer: 7
+  m_Name: Functions
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5939919474716857789
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6427741301141960899}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3797649054102531681}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2375228546934405958
+--- !u!114 &6766268771607252604
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3765622567543753970}
+  m_GameObject: {fileID: 6427741301141960899}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b3845e55c1989142a1e04187803c4e1, type: 3}
+  m_Script: {fileID: 11500000, guid: 9aeb21508a3b764489489274472e38c1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterAttackState
-  attackCooldown: 2
---- !u!114 &7180155928947915096
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3765622567543753970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7401a0831a58ec14b93aa8b25385cdc4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterChaseState
---- !u!114 &1559338209846613126
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3765622567543753970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c837ae29471da3419cadeb2eb133241, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterIdleState
---- !u!114 &725183172190046921
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3765622567543753970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1eaab689f941b048a32e8eedaeec376, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.SummonFollowState
-  followThreshold: 3
-  stopDistance: 1.5
-  customDetectLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  customDetectTag: 
-  customDetectRadius: 8
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
+  ShowTopMostFoldoutHeaderGroup: 1
+  OwnedSkills: []
+  firePoint: {fileID: 0}
+  meleeHitbox: {fileID: 155777077703035129}
+  ActiveStates:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!1 &7194707752221078910
 GameObject:
   m_ObjectHideFlags: 0
@@ -449,6 +577,72 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+--- !u!1 &7476562468804509218
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 698980792028344175}
+  - component: {fileID: 8783962249512292390}
+  - component: {fileID: 2172757031782666336}
+  m_Layer: 7
+  m_Name: Childs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &698980792028344175
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7476562468804509218}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1439876676971472660}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8783962249512292390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7476562468804509218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c837ae29471da3419cadeb2eb133241, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterIdleChildState
+  isRootState: 0
+--- !u!114 &2172757031782666336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7476562468804509218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1eaab689f941b048a32e8eedaeec376, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.SummonFollowChildState
+  isRootState: 0
+  followThreshold: 3
+  stopDistance: 1.5
+  customDetectLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  customDetectTag: Enemy
+  customDetectRadius: 8
 --- !u!1 &8260428574450833809
 GameObject:
   m_ObjectHideFlags: 0

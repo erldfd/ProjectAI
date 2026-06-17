@@ -3,7 +3,8 @@ using UnityEngine;
 namespace ProjectAI.Characters.MonsterAI
 {
     /// <summary>
-    /// 몬스터가 타겟을 찾기 전 대기하는 기본 상태입니다.
+    /// 몬스터가 타겟을 찾기 전 대기하는 비전투 하위 상태입니다.
+    /// 타겟 발견 시 상위 상태로의 전환은 부모 상태(PeaceState)가 담당합니다.
     /// </summary>
     public class MonsterIdleState : AMonsterState
     {
@@ -16,12 +17,7 @@ namespace ProjectAI.Characters.MonsterAI
         public override void Tick()
         {
             base.Tick();
-
-            if (Brain.Target != null)
-            {
-                StateMachine.ChangeState<MonsterChaseState>();
-                return;
-            }
+            // 부모 상태(MonsterPeaceState)가 타겟 감지 전환을 담당하므로 로직 최소화
         }
     }
 }

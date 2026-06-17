@@ -21,6 +21,7 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public bool CanExecute(NetCharacter caster, BaseSkillConfig config)
         {
+            Debug.Log($"[SummonSkillLogic] CanExecute 호출: CasterID={caster.NetworkObjectId}, SkillID={config.SkillId}");
             if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned) || caster.SkillComponent.HasState(EStateTag.Casting))
             {
                 return false;
@@ -28,6 +29,7 @@ namespace ProjectAI.Core.Skills.Abilities
 
             Assert.IsNotNull(GameStatics.NetworkManager, "[SummonSkillLogic] CanExecute: NetworkManager is null.");
             
+            Debug.Log($"[SummonSkillLogic] ServerTime={GameStatics.NetworkManager.ServerTime.Time}, LastActivation={caster.SkillComponent.GetServerActivationTime(config.SkillId)}, Cooldown={config.BaseCooldown}");
             if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetServerActivationTime(config.SkillId) + config.BaseCooldown)
             {
                 return false;
@@ -48,15 +50,13 @@ namespace ProjectAI.Core.Skills.Abilities
             caster.SkillComponent.SetServerActivationTime(config.SkillId, GameStatics.NetworkManager.ServerTime.Time);
 
             int animHash = caster.SkillComponent.GetSkillAnimHash(config.SkillId);
-            if (animHash != 0)
+            if (animHash == 0)
             {
-                caster.SkillComponent.BroadcastPlayAnimationClientRpc(animHash, 0f);
+                Debug.LogWarning($"[SummonSkillLogic] Execute 실패: ID {config.SkillId} 에 해당하는 애니메이션 해시를 찾을 수 없습니다. (CasterID: {caster.NetworkObjectId})");
+                return;
             }
-            else
-            {
-                // 애니메이션이 없을 경우 즉시 Action 호출 (MVP 기준)
-                Action(caster, config);
-            }
+
+            caster.SkillComponent.BroadcastPlayAnimationClientRpc(animHash, 0f);
         }
 
         public void Action(NetCharacter caster, BaseSkillConfig config)
@@ -96,20 +96,22 @@ namespace ProjectAI.Core.Skills.Abilities
             if (summonNetObj.TryGetComponent(out NetMonsterBrain brain))
             {
                 brain.Owner = caster.transform;
-                SummonFollowState followState = brain.GetComponentInChildren<SummonFollowState>();
+                SummonFollowState followState = brain.GetComponentInChildren<SummonFollowState>(true);
                 if (followState != null)
                 {
                     followState.SetFollowDistance(followDistance);
                 }
             }
 
-            // 디스폰 타이머 세팅
-            if (!summonNetObj.TryGetComponent(out NetSummonDespawnTimer timer))
+            // 디스폰 타이머 세팅: 소환자(캐스터)의 컨트롤러에 위임
+            if (caster is NetPlayerCharacter playerCaster && playerCaster.SummonController != null)
             {
-                Debug.LogError($"[SummonSkillLogic] 소환수 프리팹에 NetSummonDespawnTimer가 없습니다. NGO에서는 동적 추가가 불가하므로 프리팹을 확인하세요.");
-                return;
+                playerCaster.SummonController.AddSummon(summonNetObj, duration);
             }
-            timer.StartTimer(duration);
+            else
+            {
+                Debug.LogWarning($"[SummonSkillLogic] 캐스터({caster.NetworkObjectId})가 NetPlayerCharacter가 아니거나 SummonController가 없어 지속 시간이 관리되지 않습니다.");
+            }
         }
 
         public void End(NetCharacter caster, BaseSkillConfig config)
