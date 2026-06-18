@@ -32,10 +32,32 @@ namespace ProjectAI.Core.Stats
         /// <summary> 사망 이벤트 </summary>
         public event Action OnDeath;
 
+        /// <summary>
+        /// 이 컴포넌트를 소유하고 있는 루트 엔티티 참조
+        /// </summary>
+        public NetEntity OwnerEntity { get; private set; }
+
+        public void SetOwner(NetEntity owner)
+        {
+            OwnerEntity = owner;
+        }
+
+        /// <summary> IDamageable 구현: 엔티티의 StatComponent 참조 </summary>
+        public float DepthRadius => (OwnerEntity != null && OwnerEntity.StatComponent != null) ? OwnerEntity.StatComponent.DepthRadius : 0.5f;
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
             CurrentHealth.OnValueChanged += HandleHealthChanged;
+
+            // [Review Fix] 클라이언트 체력 UI 초기화 명시적 호출
+            OnHealthChanged?.Invoke(CurrentHealth.Value);
+
+            // [Review Fix] NGO Late Joiner(지연 접속자) 사망 상태 동기화
+            if (CurrentHealth.Value <= 0)
+            {
+                OnDeath?.Invoke();
+            }
         }
 
         public override void OnNetworkDespawn()

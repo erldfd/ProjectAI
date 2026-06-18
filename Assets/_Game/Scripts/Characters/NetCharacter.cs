@@ -13,7 +13,6 @@ namespace ProjectAI.Characters
     public class NetCharacter : NetEntity
     {
         public NetSkillComponent SkillComponent { get; private set; }
-        public NetStatComponent StatComponent { get; private set; }
 
         [Header("Death Settings")]
         [SerializeField] 
@@ -29,7 +28,20 @@ namespace ProjectAI.Characters
             SkillComponent = GetComponentInChildren<NetSkillComponent>();
             Assert.IsNotNull(SkillComponent, "[NetCharacter] NetSkillComponent를 찾을 수 없습니다.");
 
-            StatComponent = GetComponentInChildren<NetStatComponent>();
+            // NGO 불확실성 방지를 위해 로컬 이벤트는 Awake에서 미리 구독
+            if (base.Events != null)
+            {
+                base.Events.OnDeathTriggered += HandleDeathTriggered;
+            }
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (base.Events != null)
+            {
+                base.Events.OnDeathTriggered -= HandleDeathTriggered;
+            }
         }
 
         /// <summary>
@@ -44,7 +56,6 @@ namespace ProjectAI.Characters
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            base.Events.OnDeathTriggered += HandleDeathTriggered;
 
             // 오브젝트 풀에서 재소환 시 사망 시 비활성화했던 물리 상태 원상 복구
             Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
@@ -63,7 +74,6 @@ namespace ProjectAI.Characters
         public override void OnNetworkDespawn()
         {
             base.OnNetworkDespawn();
-            base.Events.OnDeathTriggered -= HandleDeathTriggered;
         }
 
         protected virtual void HandleDeathTriggered()

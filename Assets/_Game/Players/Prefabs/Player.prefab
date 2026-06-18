@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 5492215015462340555}
   - component: {fileID: 5685368766082622782}
   - component: {fileID: 2012573263100061475}
-  - component: {fileID: 603659602711010670}
   - component: {fileID: 7392090773525951533}
+  - component: {fileID: 7004415424436437297}
   m_Layer: 7
   m_Name: Visuals
   m_TagString: Untagged
@@ -28,12 +28,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 364007198314449804}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 2025237631764657180}
+  m_Father: {fileID: 4857257171616819894}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5685368766082622782
 SpriteRenderer:
@@ -116,19 +116,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &603659602711010670
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 364007198314449804}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 20de1c88b53f1b64e81efbafda2d605b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.VisualInterpolator
-  returnSpeed: 15
 --- !u!114 &7392090773525951533
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,6 +130,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.CharacterAnimator
   dieStateName: Death_PlayerAnim
   hitStateName: Hit_PlayerAnim
+--- !u!70 &7004415424436437297
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364007198314449804}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 3.1402555, y: 6.7599998}
+  m_Direction: 0
 --- !u!1 &1910748706896630206
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,8 +231,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Combat.NetStatComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  healthComponent: {fileID: 6843124876706042281}
-  entityEvents: {fileID: 7424043328323526500}
   MaxHealth:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
@@ -224,6 +246,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  DepthRadius: 0.5
 --- !u!1 &3626505526009901997
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,6 +264,8 @@ GameObject:
   - component: {fileID: 4331196854782625124}
   - component: {fileID: 7424043328323526500}
   - component: {fileID: 9116605749001047819}
+  - component: {fileID: 1818300491571915337}
+  - component: {fileID: 4766689643646096320}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -261,7 +286,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5492215015462340555}
+  - {fileID: 4857257171616819894}
   - {fileID: 3341739915210019796}
   - {fileID: 8747926093647349720}
   - {fileID: 2530959775932788280}
@@ -329,8 +354,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.09}
-  m_Size: {x: 0.26, y: 0.49}
+  m_Offset: {x: 0, y: -0.21}
+  m_Size: {x: 0.26, y: 0.16}
   m_Direction: 0
 --- !u!114 &2460281810773283459
 MonoBehaviour:
@@ -425,6 +450,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.NetPlayerCharacter
   ShowTopMostFoldoutHeaderGroup: 1
   despawnDelay: 1.5
+--- !u!114 &1818300491571915337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d4adc48b9a2c84f8721ee155ed09a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Render.ZOrderSorter
+  SortingOffset: 0
+  IsStatic: 0
+--- !u!210 &4766689643646096320
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &6281186371400394751
 GameObject:
   m_ObjectHideFlags: 0
@@ -574,6 +626,52 @@ MonoBehaviour:
   moveSpeed: 5
   verySmallReconciliationThreshold: 0.01
   teleportReconciliationThreshold: 2
+--- !u!1 &8007858309872490680
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4857257171616819894}
+  - component: {fileID: 2653407448688326833}
+  m_Layer: 7
+  m_Name: LerpNode
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4857257171616819894
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8007858309872490680}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5492215015462340555}
+  m_Father: {fileID: 2025237631764657180}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2653407448688326833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8007858309872490680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20de1c88b53f1b64e81efbafda2d605b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Player.VisualInterpolator
+  returnSpeed: 15
 --- !u!1 &8595777563588518843
 GameObject:
   m_ObjectHideFlags: 0
