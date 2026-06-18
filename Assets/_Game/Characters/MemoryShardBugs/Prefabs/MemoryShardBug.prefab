@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8851523879730136227}
   - component: {fileID: 9205784597414881130}
   - component: {fileID: 6383234895154087744}
+  - component: {fileID: 516037977417424350}
   m_Layer: 7
   m_Name: MemoryShardBug
   m_TagString: Untagged
@@ -102,7 +103,7 @@ BoxCollider2D:
     serializedVersion: 2
     m_Bits: 4294967295
   m_IsTrigger: 0
-  m_UsedByEffector: 1
+  m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
@@ -253,6 +254,20 @@ MonoBehaviour:
   detectTag: Player
   detectionRadius: 8
   attackRadius: 0.5
+--- !u!114 &516037977417424350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253525206431576581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d4adc48b9a2c84f8721ee155ed09a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Render.ZOrderSorter
+  SortingOffset: 0
+  IsStatic: 0
 --- !u!1 &391511918895946312
 GameObject:
   m_ObjectHideFlags: 0
@@ -512,8 +527,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Stats.NetStatComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  healthComponent: {fileID: 3807347638555274319}
-  entityEvents: {fileID: 8851523879730136227}
   MaxHealth:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
@@ -529,6 +542,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  DepthRadius: 0.5
 --- !u!1 &5308749790570713212
 GameObject:
   m_ObjectHideFlags: 0

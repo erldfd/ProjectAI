@@ -166,7 +166,6 @@ namespace ProjectAI.Tests
             
             var logic = new BasicAttackLogic();
             var config = ScriptableObject.CreateInstance<BaseSkillConfig>();
-            config.SkillId = 1;
             
             Debug.Log("[TEST] 깊이 차이가 허용치(1.0f)를 초과(1.5f)하는 타겟 공격 시도 (빗나감 예상)");
             logic.Action(casterCharacter, config);
