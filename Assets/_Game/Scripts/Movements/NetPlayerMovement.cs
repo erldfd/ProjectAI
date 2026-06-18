@@ -110,6 +110,12 @@ namespace ProjectAI.Movements
         private void HandleMoveSpeedModifierChanged(float modifier)
         {
             currentMoveSpeedModifier = modifier;
+
+            // [Review Fix] 이속 버프/디버프 획득 시 즉각적인 애니메이션 속도 갱신
+            if (IsOwner && currentMoveInput.sqrMagnitude > 0.01f)
+            {
+                base.NetAnimVelocity.Value = currentMoveInput * (moveSpeed * currentMoveSpeedModifier);
+            }
         }
 
         private void FixedUpdate()
@@ -310,7 +316,17 @@ namespace ProjectAI.Movements
         #region Private Methods
         private void ApplyPhysics(Vector2 inputVector)
         {
-            base.Rb.linearVelocity = inputVector * (moveSpeed * currentMoveSpeedModifier);
+            // [Review Fix] 악의적인 클라이언트의 스피드핵 패킷 변조 방어
+            // TODO: 추후 비정상 패킷 감지 시, 단순히 방어만 하지 말고 즉시 네트워크 연결을 끊고 게임에서 강퇴(Kick) 처리하는 강력한 제재 로직 추가 필요
+            Assert.IsTrue(inputVector.sqrMagnitude <= 1.01f, "[Security] 비정상적인 이동 입력(스피드핵 의심)이 감지되었습니다.");
+            if (inputVector.sqrMagnitude > 1f)
+            {
+                inputVector.Normalize();
+            }
+
+            // 2.5D 벨트스크롤: Y축(깊이) 이동 시 원근법에 맞춰 속도를 보정합니다.
+            Vector2 scaledInput = new Vector2(inputVector.x, inputVector.y * base.depthSpeedRatio);
+            base.Rb.linearVelocity = scaledInput * (moveSpeed * currentMoveSpeedModifier);
         }
 
         private void ApplyManualVelocity()
