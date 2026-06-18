@@ -224,6 +224,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  DepthRadius: 0.5
 --- !u!1 &3626505526009901997
 GameObject:
   m_ObjectHideFlags: 0

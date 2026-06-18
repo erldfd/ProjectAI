@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using ProjectAI.Movements;
+using ProjectAI.Core.Stats;
 using Unity.Netcode;
 
 namespace ProjectAI.Core.Entities
@@ -18,12 +19,20 @@ namespace ProjectAI.Core.Entities
         /// </summary>
         public ANetMovement Movement { get; private set; }
 
+        public NetStatComponent StatComponent { get; private set; }
+
         protected virtual void Awake()
         {
             Events = GetComponentInChildren<EntityEvents>();
             Assert.IsNotNull(Events, "NetEntity는 EntityEvents 오너가 필요합니다.");
             
             Movement = GetComponentInChildren<ANetMovement>();
+            
+            StatComponent = GetComponentInChildren<NetStatComponent>();
+            if (StatComponent != null)
+            {
+                StatComponent.SetOwner(this);
+            }
         }
 
         public override void OnNetworkSpawn()

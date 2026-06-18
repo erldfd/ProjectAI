@@ -10,10 +10,7 @@ namespace ProjectAI.Core.Stats
     /// </summary>
     public class NetStatComponent : NetworkBehaviour
     {
-        [SerializeField]
         private NetHealthComponent healthComponent;
-
-        [SerializeField]
         private EntityEvents entityEvents;
 
         /// <summary>
@@ -45,13 +42,49 @@ namespace ProjectAI.Core.Stats
             NetworkVariableWritePermission.Server
         );
 
+        [Header("Collision & Hitbox")]
+        [Tooltip("캐릭터의 Z축(깊이) 두께 반지름입니다. 타격 유효성 판정에 사용됩니다.")]
+        public float DepthRadius = 0.5f;
+
+        /// <summary>
+        /// 이 스탯 컴포넌트를 소유하고 있는 루트 엔티티 참조
+        /// </summary>
+        public NetEntity OwnerEntity { get; private set; }
+
+        public void SetOwner(NetEntity owner)
+        {
+            OwnerEntity = owner;
+            
+            // HealthComponent가 존재한다면, 스탯이 Health를 통제하는 계층형(탑다운) 구조이므로 Owner를 하달함
+            if (healthComponent != null)
+            {
+                healthComponent.SetOwner(owner);
+            }
+        }
+
         private void Awake()
         {
             healthComponent = GetComponentInChildren<NetHealthComponent>();
-            Assert.IsNotNull(healthComponent, "NetStatComponent는 NetHealthComponent가 필요합니다.");
 
             entityEvents = GetComponentInParent<EntityEvents>();
             Assert.IsNotNull(entityEvents, "NetStatComponent는 EntityEvents가 필요합니다.");
+
+            // NGO 초기화 불확실성 방지를 위해 로컬 이벤트는 Awake에서 미리 구독
+            if (healthComponent != null)
+            {
+                healthComponent.OnHit += HandleHit;
+                healthComponent.OnDeath += HandleDeath;
+            }
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (healthComponent != null)
+            {
+                healthComponent.OnHit -= HandleHit;
+                healthComponent.OnDeath -= HandleDeath;
+            }
         }
 
         public override void OnNetworkSpawn()
@@ -60,12 +93,8 @@ namespace ProjectAI.Core.Stats
 
             MoveSpeedModifier.OnValueChanged += HandleMoveSpeedModifierChanged;
             
-            healthComponent.OnHit += HandleHit;
-            healthComponent.OnDeath += HandleDeath;
-
-            if (IsServer)
+            if (healthComponent != null && GameStatics.IsServerAuthorized)
             {
-                // 스폰 완료 시, 오너로서 하위 체력 컴포넌트를 하향식으로 초기화
                 healthComponent.InitializeHealth(MaxHealth.Value);
             }
 
@@ -76,9 +105,6 @@ namespace ProjectAI.Core.Stats
         {
             base.OnNetworkDespawn();
             MoveSpeedModifier.OnValueChanged -= HandleMoveSpeedModifierChanged;
-            
-            healthComponent.OnHit -= HandleHit;
-            healthComponent.OnDeath -= HandleDeath;
         }
 
         private void HandleHit(int damage, int remainingHealth)
