@@ -21,6 +21,9 @@ namespace ProjectAI.Projectiles
 
         private ulong ownerNetworkObjectId;
         private NetStatComponent statComponent;
+        
+        // [Fix] 투사체가 공중에 스폰될 경우를 대비해 순수한 바닥 Y좌표(깊이)를 캐싱
+        private float cachedDepthY;
 
         protected override void Awake()
         {
@@ -64,7 +67,7 @@ namespace ProjectAI.Projectiles
         /// <summary>
         /// 서버에서 투사체를 스폰할 때 초기화하는 메서드입니다.
         /// </summary>
-        public void Initialize(Vector2 direction, ulong ownerNetObjId)
+        public void Initialize(Vector2 direction, ulong ownerNetObjId, float depthY)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetProjectile] Initialize는 서버에서만 실행되어야 합니다.");
             
@@ -74,7 +77,8 @@ namespace ProjectAI.Projectiles
             }
 
             ownerNetworkObjectId = ownerNetObjId;
-            Debug.Log($"[NetProjectile] Initialize 호출됨. OwnerNetObjId: {ownerNetworkObjectId}, 방향: {direction}");
+            cachedDepthY = depthY;
+            Debug.Log($"[NetProjectile] Initialize 호출됨. OwnerNetObjId: {ownerNetworkObjectId}, 방향: {direction}, 설정된 깊이(Y): {cachedDepthY}");
             
             if (base.Movement is ProjectAI.Movements.NetProjectileMovement projectileMovement)
             {
@@ -101,28 +105,53 @@ namespace ProjectAI.Projectiles
             {
                 damageable = collision.GetComponentInChildren<IDamageable>();
             }
-            
+            // 2.5D 깊이 판정 기본값 설정 (장애물/벽일 경우를 대비하여 bounds 사용)
+            float targetDepthRadius = collision.bounds.extents.y;
+            float targetY = collision.bounds.center.y;
+            bool isTargetDamageable = false;
+
             if (damageable != null)
             {
+                isTargetDamageable = true;
+                targetDepthRadius = damageable.DepthRadius;
+                NetworkObject targetNetObj = damageable.OwnerEntity != null ? damageable.OwnerEntity.NetworkObject : null;
+                
                 // 자신이 쏜 투사체에 자신이 맞는 것은 무시
-                NetworkObject targetNetObj = collision.GetComponentInParent<NetworkObject>();
                 if (targetNetObj != null && targetNetObj.NetworkObjectId == ownerNetworkObjectId)
                 {
                     Debug.Log($"[NetProjectile] 팀킬/자해 무시 처리. TargetNetObjId: {targetNetObj.NetworkObjectId}");
                     return;
                 }
+                
+                // 타겟의 기준 위치는 가급적 부모의 Root 위치를 사용
+                targetY = targetNetObj != null ? targetNetObj.transform.position.y : collision.transform.position.y;
+            }
 
-                Debug.Log($"[NetProjectile] 데미지 적용 대상 발견: {collision.name}, 데미지량: {statComponent.AttackPower.Value}");
+            // 2.5D 벨트스크롤 깊이(Z축 역할) 판정 (캐싱된 깊이 사용)
+            float projectileDepthRadius = statComponent != null ? statComponent.DepthRadius : 0.5f;
+            float depthDifference = Mathf.Abs(cachedDepthY - targetY);
+            float allowedTolerance = projectileDepthRadius + targetDepthRadius;
 
-                GameStatics.ApplyDamage(collision.gameObject, statComponent.AttackPower.Value);
+            if (depthDifference > allowedTolerance)
+            {
+                // 깊이가 다르면 데미지 대상이든 벽이든 무시하고 관통함
+                Debug.Log($"[NetProjectile] 깊이(Y축) 차이가 너무 커서 관통(무시)됨! 차이: {depthDifference}, 허용치: {allowedTolerance}");
+                return;
+            }
+
+            if (isTargetDamageable)
+            {
+                float damageAmount = statComponent != null ? statComponent.AttackPower.Value : 0f;
+                Debug.Log($"[NetProjectile] 데미지 적용 대상 발견: {collision.name}, 데미지량: {damageAmount}");
+                GameStatics.ApplyDamage(collision.gameObject, (int)damageAmount);
                 DestroyProjectile();
             }
             else
             {
-                // 벽이나 장애물에 부딪힘
-                // 단순 트리거/센서 등이 아닌 환경 콜라이더인지 체크 필요
+                // 벽이나 장애물에 부딪힘 (깊이가 일치하는 경우에만 여기까지 도달함)
                 if (!collision.isTrigger)
                 {
+                    Debug.Log($"[NetProjectile] 깊이가 일치하는 물리 장애물(벽)에 부딪혀 파괴됨: {collision.gameObject.name}");
                     DestroyProjectile();
                 }
             }

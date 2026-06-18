@@ -92,6 +92,11 @@ namespace ProjectAI.Core.Skills.Abilities
             }
 
             Assert.IsNotNull(GameStatics.ObjectPool, "[ProjectileAttackLogic] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
+            if (GameStatics.ObjectPool == null)
+            {
+                Debug.LogWarning("[ProjectileAttackLogic] ObjectPool is null.");
+                return;
+            }
 
             NetworkObject projectileNetObj = GameStatics.ObjectPool.GetNetworkObject(projectilePrefab, origin, Quaternion.identity);
             if (projectileNetObj == null)
@@ -109,7 +114,8 @@ namespace ProjectAI.Core.Skills.Abilities
             }
 
             Debug.Log($"[ProjectileAttackLogic] 발사체 초기화 완료. 방향: {direction}, CasterID: {caster.NetworkObjectId}");
-            projectile.Initialize(direction, caster.NetworkObjectId);
+            // [Fix] 투사체가 지팡이 위치(공중)에서 스폰되더라도 원래 발사자의 물리 바닥 Y축(순수 깊이)을 기억하도록 넘깁니다.
+            projectile.Initialize(direction, caster.NetworkObjectId, caster.transform.position.y);
         }
 
         public void End(NetCharacter caster, BaseSkillConfig config)
