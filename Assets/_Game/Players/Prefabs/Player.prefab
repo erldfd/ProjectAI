@@ -369,7 +369,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 386762368
+  GlobalObjectIdHash: 3084379672
   InScenePlacedSourceGlobalObjectIdHash: 386762368
   DeferredDespawnTick: 0
   Ownership: 1
@@ -399,6 +399,7 @@ MonoBehaviour:
   attackAction: {fileID: 1120369429361536294, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   skill1Action: {fileID: -2099379676528639254, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   skill2Action: {fileID: 2411907206095950430, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  skill3Action: {fileID: 7476244043514120974, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
 --- !u!210 &4766689643646096320
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -529,6 +530,11 @@ MonoBehaviour:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
+  CurrentStance:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!114 &1719421460051599931
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -546,6 +552,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 79df9c47f3efdae4abfd2e9212b885f7, type: 2}
   - {fileID: 11400000, guid: a6a71777cf1bc314bad8f1d0bab88910, type: 2}
   - {fileID: 11400000, guid: d3d323bae04672347bd63396f4372c86, type: 2}
+  - {fileID: 11400000, guid: 50a83bc6965795d49a97215f3d97d088, type: 2}
   firePoint: {fileID: 0}
   meleeHitbox: {fileID: 0}
   ActiveStates:

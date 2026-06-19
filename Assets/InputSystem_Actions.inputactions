@@ -61,7 +61,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Next",
+                    "name": "Skill3",
                     "type": "Button",
                     "id": "b7230bb6-fc9b-4f52-8b25-f5e19cb2c2ba",
                     "expectedControlType": "",
@@ -312,11 +312,11 @@
                 {
                     "name": "",
                     "id": "cbac6039-9c09-46a1-b5f2-4e5124ccb5ed",
-                    "path": "<Keyboard>/2",
+                    "path": "<Keyboard>/o",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Next",
+                    "action": "Skill3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -327,7 +327,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "Next",
+                    "action": "Skill3",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

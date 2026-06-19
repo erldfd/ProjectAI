@@ -31,11 +31,16 @@ namespace ProjectAI.Players
         [SerializeField]
         private InputActionReference skill2Action;
 
+        [Tooltip("범용 스킬3 발동에 매핑된 액션 (태세 전환 등)")]
+        [SerializeField]
+        private InputActionReference skill3Action;
+
         public event Action<Vector2> OnMoveInputChanged;
         public event Action<bool> OnInteractInputChanged;
         public event Action<bool> OnAttackInputChanged;
         public event Action<bool> OnSkill1InputChanged;
         public event Action<bool> OnSkill2InputChanged;
+        public event Action<bool> OnSkill3InputChanged;
         
 
         #region Unity Lifecycle
@@ -80,6 +85,13 @@ namespace ProjectAI.Players
                 skill2Action.action.performed += HandleSkill2Input;
                 skill2Action.action.canceled += HandleSkill2Input;
             }
+
+            if (skill3Action != null && skill3Action.action != null)
+            {
+                skill3Action.action.Enable();
+                skill3Action.action.performed += HandleSkill3Input;
+                skill3Action.action.canceled += HandleSkill3Input;
+            }
         }
 
         public void DisableInput()
@@ -118,6 +130,13 @@ namespace ProjectAI.Players
                 skill2Action.action.performed -= HandleSkill2Input;
                 skill2Action.action.canceled -= HandleSkill2Input;
                 skill2Action.action.Disable();
+            }
+
+            if (skill3Action != null && skill3Action.action != null)
+            {
+                skill3Action.action.performed -= HandleSkill3Input;
+                skill3Action.action.canceled -= HandleSkill3Input;
+                skill3Action.action.Disable();
             }
         }
         #endregion
@@ -175,6 +194,18 @@ namespace ProjectAI.Players
             else if (context.canceled)
             {
                 OnSkill2InputChanged?.Invoke(false);
+            }
+        }
+
+        private void HandleSkill3Input(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnSkill3InputChanged?.Invoke(true);
+            }
+            else if (context.canceled)
+            {
+                OnSkill3InputChanged?.Invoke(false);
             }
         }
         #endregion

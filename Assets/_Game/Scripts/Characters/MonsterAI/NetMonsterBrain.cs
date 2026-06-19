@@ -18,12 +18,23 @@ namespace ProjectAI.Characters.MonsterAI
     public class NetMonsterBrain : NetworkBehaviour
     {
         private const float SENSOR_UPDATE_INTERVAL = 0.15f;
+        private const int MAX_COLLIDER_RESULTS = 10;
+        private const float LOST_TARGET_MULTIPLIER = 1.5f;
+        private const float DEFENSIVE_DETECT_RADIUS_MULTIPLIER = 0.25f;
 
         public NetCharacter Character { get; private set; }
         public AIStateMachine StateMachine { get; private set; }
+
+        /// <summary>
+        /// 소환수일 경우 주인이 스킬로 지정해준 타겟
+        /// </summary>
         public Transform PriorityTarget { get; set; }
         public Transform Target { get; private set; }
+        
+        [Tooltip("소환수인 경우 주인(Owner) 할당")]
+        public Transform Owner { get; set; }
         public float AttackRadius => attackRadius;
+        public float TetherRadius => tetherRadius;
         public bool IsSensorEnabled 
         { 
             get => isSensorEnabled; 
@@ -34,9 +45,6 @@ namespace ProjectAI.Characters.MonsterAI
         [Tooltip("초기 시작 상태 (비워두면 첫 번째 상태가 기본값이 됩니다)")]
         [SerializeField]
         private AMonsterState startingState;
-
-        [Tooltip("소환수인 경우 주인(Owner) 할당")]
-        public Transform Owner;
 
         [Tooltip("센서(탐지) 작동 여부")]
         [SerializeField]
@@ -54,7 +62,11 @@ namespace ProjectAI.Characters.MonsterAI
         [Tooltip("탐지 반경")]
         [SerializeField]
         private float detectionRadius = 8f;
-        
+
+        [Tooltip("소환수가 주인을 벗어날 수 있는 최대 거리 (테더링 반경)")]
+        [SerializeField]
+        private float tetherRadius = 15f;
+
         [Tooltip("공격 사거리")]
         [SerializeField]
         private float attackRadius = 1.5f;
@@ -63,9 +75,7 @@ namespace ProjectAI.Characters.MonsterAI
         [SerializeField]
         private float priorityChaseMultiplier = 3f;
 
-
-        private const int MAX_COLLIDER_RESULTS = 10;
-        private const float LOST_TARGET_MULTIPLIER = 1.5f;
+        private ESummonStance currentStance = ESummonStance.Aggressive;
 
         private AMonsterState[] stateComponents;
         private Collider2D[] hitColliders = new Collider2D[MAX_COLLIDER_RESULTS];
@@ -119,11 +129,32 @@ namespace ProjectAI.Characters.MonsterAI
             enemyFilter.layerMask = currentDetectLayer;
         }
 
+        public void SetStance(ESummonStance stance)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] SetStance는 서버에서만 호출되어야 합니다.");
+            if (!GameStatics.IsServerAuthorized)
+            {
+                Debug.LogWarning("[NetMonsterBrain] SetStance: 클라이언트에서 실행 시도 (무시됨)");
+                return;
+            }
+
+            currentStance = stance;
+            if (currentStance == ESummonStance.Defensive)
+            {
+                // 즉시 전투 중단 및 타겟 해제
+                Target = null;
+                PriorityTarget = null;
+            }
+
+            Debug.Log($"[NetMonsterBrain] 태세 변경됨: {currentStance}");
+        }
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
             // 풀링 재소환 시 상태값들 안전하게 초기화
+            currentStance = ESummonStance.Aggressive;
             PriorityTarget = null;
             Target = null;
             sensorTimer = 0f;
@@ -191,22 +222,61 @@ namespace ProjectAI.Characters.MonsterAI
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] UpdateSensors는 서버에서만 호출되어야 합니다.");
 
-            if (PriorityTarget == null || !PriorityTarget.gameObject.activeInHierarchy)
+            // 호위 태세 페널티 적용
+            float effectiveDetectRadius = (currentStance == ESummonStance.Defensive) 
+                ? currentDetectRadius * DEFENSIVE_DETECT_RADIUS_MULTIPLIER 
+                : currentDetectRadius;
+
+            float effectiveTetherRadius = (currentStance == ESummonStance.Defensive)
+                ? tetherRadius * DEFENSIVE_DETECT_RADIUS_MULTIPLIER
+                : tetherRadius;
+
+            float maxReach = effectiveTetherRadius + attackRadius;
+            float sqrMaxReach = maxReach * maxReach;
+
+            // 타겟 기반 테더링 검사: 타겟이 한계선을 벗어났는지 확인
+            if (Owner != null)
             {
-                PriorityTarget = null;
+                if (Target != null)
+                {
+                    float sqrDistTargetToOwner = ((Vector2)Owner.position - (Vector2)Target.position).sqrMagnitude;
+                    if (sqrDistTargetToOwner > sqrMaxReach)
+                    {
+                        Debug.Log("[NetMonsterBrain] 타겟이 테더 범위를 벗어나 포기합니다.");
+                        Target = null;
+                    }
+                }
+
+                if (PriorityTarget != null)
+                {
+                    float sqrDistPriorityToOwner = ((Vector2)Owner.position - (Vector2)PriorityTarget.position).sqrMagnitude;
+                    if (sqrDistPriorityToOwner > sqrMaxReach)
+                    {
+                        PriorityTarget = null;
+                    }
+                }
             }
-            else
+
+            if (PriorityTarget != null)
             {
-                float sqrDist = ((Vector2)transform.position - (Vector2)PriorityTarget.position).sqrMagnitude;
-                float priorityThreshold = currentDetectRadius * priorityChaseMultiplier;
-                if (sqrDist > priorityThreshold * priorityThreshold)
+                if (!PriorityTarget.gameObject.activeInHierarchy)
                 {
                     PriorityTarget = null;
                 }
                 else
                 {
-                    Target = PriorityTarget;
-                    return;
+                    float sqrDist = ((Vector2)transform.position - (Vector2)PriorityTarget.position).sqrMagnitude;
+                    float priorityThreshold = effectiveDetectRadius * priorityChaseMultiplier;
+                    
+                    if (sqrDist > priorityThreshold * priorityThreshold)
+                    {
+                        PriorityTarget = null;
+                    }
+                    else
+                    {
+                        Target = PriorityTarget;
+                        return;
+                    }
                 }
             }
 
@@ -219,45 +289,58 @@ namespace ProjectAI.Characters.MonsterAI
                 else
                 {
                     float sqrDist = ((Vector2)transform.position - (Vector2)Target.position).sqrMagnitude;
-                    float threshold = currentDetectRadius * LOST_TARGET_MULTIPLIER;
+                    float threshold = effectiveDetectRadius * LOST_TARGET_MULTIPLIER;
                     if (sqrDist > threshold * threshold) // 탐지 거리 밖으로 벗어남
                     {
                         Target = null;
                     }
                 }
             }
-            else
+
+            if (Target != null)
             {
-                // ContactFilter2D를 이용한 최신 표준 탐색 API
-                int count = Physics2D.OverlapCircle(transform.position, currentDetectRadius, enemyFilter, hitColliders);
-                if (count > 0)
+                return;
+            }
+
+            // ContactFilter2D를 이용한 최신 표준 탐색 API
+            int count = Physics2D.OverlapCircle(transform.position, effectiveDetectRadius, enemyFilter, hitColliders);
+            if (count > 0)
+            {
+                float minSqrDist = float.MaxValue;
+                Transform closestTarget = null;
+                Vector2 myPos = transform.position;
+
+                for (int i = 0; i < count; i++)
                 {
-                    float minSqrDist = float.MaxValue;
-                    Transform closestTarget = null;
-                    Vector2 myPos = transform.position;
-
-                    for (int i = 0; i < count; i++)
+                    if (hitColliders[i].gameObject == gameObject)
                     {
-                        if (hitColliders[i].gameObject == gameObject)
-                        {
-                            continue; // 자기 자신 제외 (표준)
-                        }
+                        continue; // 자기 자신 제외 (표준)
+                    }
 
-                        if (!string.IsNullOrEmpty(currentDetectTag) && !hitColliders[i].CompareTag(currentDetectTag))
-                        {
-                            continue; // 태그 교집합 필터링
-                        }
+                    if (!string.IsNullOrEmpty(currentDetectTag) && !hitColliders[i].CompareTag(currentDetectTag))
+                    {
+                        continue; // 태그 교집합 필터링
+                    }
 
-                        float sqrDist = (myPos - (Vector2)hitColliders[i].transform.position).sqrMagnitude;
-                        if (sqrDist < minSqrDist)
+                    if (Owner != null)
+                    {
+                        float sqrDistTargetToOwner = ((Vector2)Owner.position - (Vector2)hitColliders[i].transform.position).sqrMagnitude;
+                        
+                        if (sqrDistTargetToOwner > sqrMaxReach)
                         {
-                            minSqrDist = sqrDist;
-                            closestTarget = hitColliders[i].transform;
+                            continue; // 테더 한계선 + 공격 사거리 밖의 적은 아예 무시
                         }
                     }
-                    
-                    Target = closestTarget;
+
+                    float sqrDist = (myPos - (Vector2)hitColliders[i].transform.position).sqrMagnitude;
+                    if (sqrDist < minSqrDist)
+                    {
+                        minSqrDist = sqrDist;
+                        closestTarget = hitColliders[i].transform;
+                    }
                 }
+                
+                Target = closestTarget;
             }
         }
 
@@ -268,10 +351,13 @@ namespace ProjectAI.Characters.MonsterAI
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] SetMoveDirection은 서버에서만 호출되어야 합니다.");
 
-            if (Character.Movement is NetServerMovement serverMovement)
+            if (!(Character.Movement is NetServerMovement serverMovement))
             {
-                serverMovement.SetDirection(direction);
+                Debug.LogWarning("[NetMonsterBrain] SetMoveDirection: Character.Movement가 NetServerMovement가 아닙니다.");
+                return;
             }
+
+            serverMovement.SetDirection(direction);
         }
 
         /// <summary>
@@ -282,14 +368,20 @@ namespace ProjectAI.Characters.MonsterAI
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] ExecuteAttack은 서버에서만 호출되어야 합니다.");
             Assert.IsNotNull(Character, "[NetMonsterBrain] Character 컴포넌트가 null입니다.");
             
-            if (Character.SkillComponent != null && Character.SkillComponent.OwnedSkills.Count > 0)
+            if (Character.SkillComponent == null || Character.SkillComponent.OwnedSkills.Count == 0)
             {
-                BaseSkillConfig skillToUse = Character.SkillComponent.OwnedSkills[0];
-                if (skillToUse != null)
-                {
-                    Character.TryActivateSkill(skillToUse.SkillId);
-                }
+                Debug.LogWarning("[NetMonsterBrain] ExecuteAttack: SkillComponent가 없거나 등록된 스킬이 없습니다.");
+                return;
             }
+
+            BaseSkillConfig skillToUse = Character.SkillComponent.OwnedSkills[0];
+            if (skillToUse == null)
+            {
+                Debug.LogWarning("[NetMonsterBrain] ExecuteAttack: 첫 번째 스킬이 null입니다.");
+                return;
+            }
+
+            Character.TryActivateSkill(skillToUse.SkillId);
         }
     }
 }

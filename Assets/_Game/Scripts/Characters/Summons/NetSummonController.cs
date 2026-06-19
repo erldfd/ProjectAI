@@ -4,6 +4,8 @@ using Unity.Netcode;
 using System;
 using System.Collections.Generic;
 using ProjectAI.Core;
+using ProjectAI.Core.Skills;
+using ProjectAI.Characters.MonsterAI;
 
 namespace ProjectAI.Characters.Summons
 {
@@ -38,7 +40,49 @@ namespace ProjectAI.Characters.Summons
             NetworkVariableWritePermission.Server
         );
 
+        public NetworkVariable<ESummonStance> CurrentStance = new NetworkVariable<ESummonStance>(
+            ESummonStance.Aggressive,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
         public Transform CurrentPriorityTarget { get; private set; }
+
+        public void ToggleStance()
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] ToggleStance는 서버에서만 호출되어야 합니다.");
+            if (!GameStatics.IsServerAuthorized)
+            {
+                Debug.LogWarning("[NetSummonController] ToggleStance: 클라이언트에서 실행 시도 (무시됨)");
+                return;
+            }
+
+            CurrentStance.Value = (CurrentStance.Value == ESummonStance.Aggressive) 
+                ? ESummonStance.Defensive 
+                : ESummonStance.Aggressive;
+
+            if (CurrentStance.Value == ESummonStance.Defensive)
+            {
+                CurrentPriorityTarget = null;
+            }
+
+            for (int i = 0; i < ActiveSummons.Count; i++)
+            {
+                if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
+                {
+                    continue;
+                }
+
+                if (!summonNetObj.TryGetComponent(out NetMonsterBrain brain))
+                {
+                    continue;
+                }
+
+                brain.SetStance(CurrentStance.Value);
+            }
+
+            Debug.Log($"[NetSummonController] 소환수 태세 변경됨: {CurrentStance.Value}");
+        }
 
         public void AddSummon(NetworkObject summonObj, float duration)
         {
@@ -46,6 +90,7 @@ namespace ProjectAI.Characters.Summons
             Assert.IsNotNull(summonObj, "[NetSummonController] AddSummon: summonObj 인자가 null입니다.");
             if (!GameStatics.IsServerAuthorized)
             {
+                Debug.LogWarning("[NetSummonController] AddSummon: 클라이언트에서 실행 시도 (무시됨)");
                 return;
             }
 
@@ -60,16 +105,19 @@ namespace ProjectAI.Characters.Summons
                 CurrentPriorityTarget = null;
             }
 
-            if (CurrentPriorityTarget != null)
+            if (!summonObj.TryGetComponent(out NetMonsterBrain brain))
             {
-                if (summonObj.TryGetComponent(out ProjectAI.Characters.MonsterAI.NetMonsterBrain brain))
-                {
-                    brain.PriorityTarget = CurrentPriorityTarget;
-                }
-                else
+                if (CurrentPriorityTarget != null)
                 {
                     Debug.LogWarning($"[NetSummonController] 소환수({summonObj.name})에 NetMonsterBrain 컴포넌트가 없어 마킹 지시가 불가능합니다.");
                 }
+                return;
+            }
+
+            brain.SetStance(CurrentStance.Value);
+            if (CurrentPriorityTarget != null)
+            {
+                brain.PriorityTarget = CurrentPriorityTarget;
             }
         }
 
@@ -89,14 +137,13 @@ namespace ProjectAI.Characters.Summons
                 {
                     DespawnSummon(ActiveSummons[i].SummonNetworkObjectId);
                     ActiveSummons.RemoveAt(i);
+                    continue;
                 }
-                else
+
+                // 시간이 안 끝났더라도 외부에서 이미 파괴되거나 Despawn 되었는지 검증
+                if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.ContainsKey(ActiveSummons[i].SummonNetworkObjectId))
                 {
-                    // 시간이 안 끝났더라도 외부에서 이미 파괴되거나 Despawn 되었는지 검증
-                    if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.ContainsKey(ActiveSummons[i].SummonNetworkObjectId))
-                    {
-                        ActiveSummons.RemoveAt(i);
-                    }
+                    ActiveSummons.RemoveAt(i);
                 }
             }
         }
@@ -117,6 +164,8 @@ namespace ProjectAI.Characters.Summons
 
         private void DespawnSummon(ulong objId)
         {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] DespawnSummon은 서버에서만 호출되어야 합니다.");
+
             if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(objId, out NetworkObject netObj))
             {
                 Debug.LogWarning($"[NetSummonController] DespawnSummon 실패: ID {objId}에 해당하는 네트워크 객체를 찾을 수 없습니다.");
@@ -138,6 +187,7 @@ namespace ProjectAI.Characters.Summons
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] SetPriorityTarget은 서버에서만 호출되어야 합니다.");
             if (!GameStatics.IsServerAuthorized)
             {
+                Debug.LogWarning("[NetSummonController] SetPriorityTarget: 클라이언트에서 실행 시도 (무시됨)");
                 return;
             }
 
@@ -145,13 +195,17 @@ namespace ProjectAI.Characters.Summons
 
             for (int i = 0; i < ActiveSummons.Count; i++)
             {
-                if (GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
+                if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
                 {
-                    if (summonNetObj.TryGetComponent(out ProjectAI.Characters.MonsterAI.NetMonsterBrain brain))
-                    {
-                        brain.PriorityTarget = target;
-                    }
+                    continue;
                 }
+
+                if (!summonNetObj.TryGetComponent(out NetMonsterBrain brain))
+                {
+                    continue;
+                }
+
+                brain.PriorityTarget = target;
             }
         }
     }

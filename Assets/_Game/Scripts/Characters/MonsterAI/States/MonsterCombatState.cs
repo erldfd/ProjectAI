@@ -29,22 +29,22 @@ namespace ProjectAI.Characters.MonsterAI
                     SubStateMachine.AddState(state);
                 }
             }
-
         }
 
         public override void Enter()
         {
-            if (subStates.Count > 0 && subStates[0] != null)
+            if (subStates.Count == 0 || subStates[0] == null)
             {
-                if (SubStateMachine.CurrentState == null)
-                {
-                    SubStateMachine.Initialize(subStates[0].GetType());
-                }
-                else
-                {
-                    base.Enter();
-                }
+                return;
             }
+
+            if (SubStateMachine.CurrentState == null)
+            {
+                SubStateMachine.Initialize(subStates[0].GetType());
+                return;
+            }
+
+            base.Enter();
         }
 
         public override void Tick()
