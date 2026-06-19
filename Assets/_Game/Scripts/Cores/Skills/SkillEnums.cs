@@ -12,6 +12,17 @@ namespace ProjectAI.Core.Skills
         BasicAttack = 1,
         ProjectileAttack = 2,
         Summon = 3,
+        MarkTarget = 4,
+        ToggleStance = 5,
+    }
+
+    /// <summary>
+    /// 소환수의 전술 태세를 나타내는 열거형입니다.
+    /// </summary>
+    public enum ESummonStance : byte
+    {
+        Aggressive = 0, // 자유 공격 (기본)
+        Defensive = 1,  // 플레이어 호위 및 제한적 공격
     }
 
     /// <summary>

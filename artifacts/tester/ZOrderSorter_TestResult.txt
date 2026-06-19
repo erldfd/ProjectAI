@@ -1,0 +1,14 @@
+--- ZOrderSorter Test Results ---
+
+[Test 1] Y Change -> SortingOrder Update (Offset included)
+Expected: 570, Actual: 570 => PASS
+
+[Test 2] Child Local Y Change (Jump) -> SortingOrder remains stable
+Initial Order: 200, After Jump Order: 200
+Root Y: -2, Child World Y: 3
+Is Stable? => PASS
+
+[Test 3] IsStatic = true -> LateUpdate doesn't change order
+Static Order (should remain 100): 100 => PASS
+Dynamic Order (should update to 500): 500 => PASS
+--- End of Tests ---

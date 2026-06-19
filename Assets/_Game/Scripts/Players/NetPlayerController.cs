@@ -48,6 +48,8 @@ namespace ProjectAI.Players
             inputReader.OnInteractInputChanged += HandleInteractInputChanged;
             inputReader.OnAttackInputChanged += HandleAttackInputChanged;
             inputReader.OnSkill1InputChanged += HandleSkill1InputChanged;
+            inputReader.OnSkill2InputChanged += HandleSkill2InputChanged;
+            inputReader.OnSkill3InputChanged += HandleSkill3InputChanged;
             
             playerCamera.InitCamera();
             if (GameStatics.NetworkManager != null && GameStatics.NetworkManager.SceneManager != null)
@@ -68,6 +70,8 @@ namespace ProjectAI.Players
                 inputReader.OnInteractInputChanged -= HandleInteractInputChanged;
                 inputReader.OnAttackInputChanged -= HandleAttackInputChanged;
                 inputReader.OnSkill1InputChanged -= HandleSkill1InputChanged;
+                inputReader.OnSkill2InputChanged -= HandleSkill2InputChanged;
+                inputReader.OnSkill3InputChanged -= HandleSkill3InputChanged;
                 inputReader.DisableInput();
             }
             
@@ -125,6 +129,40 @@ namespace ProjectAI.Players
             if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 1)
             {
                 BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[1];
+                if (skillToUse != null)
+                {
+                    myCharacter.TryActivateSkill(skillToUse.SkillId);
+                }
+            }
+        }
+
+        private void HandleSkill2InputChanged(bool isSkill2Pressed)
+        {
+            if (!isSkill2Pressed)
+            {
+                return;
+            }
+
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 2)
+            {
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[2];
+                if (skillToUse != null)
+                {
+                    myCharacter.TryActivateSkill(skillToUse.SkillId);
+                }
+            }
+        }
+
+        private void HandleSkill3InputChanged(bool isSkill3Pressed)
+        {
+            if (!isSkill3Pressed)
+            {
+                return;
+            }
+
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 3)
+            {
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[3];
                 if (skillToUse != null)
                 {
                     myCharacter.TryActivateSkill(skillToUse.SkillId);

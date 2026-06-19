@@ -6,8 +6,10 @@ using UnityEngine.Assertions;
 namespace ProjectAI.Environment
 {
     /// <summary>
-    /// 상호작용 시 파티 전체를 지정된 씬으로 이동시키는 구체적인 씬 이동 포탈입니다.
+    /// 씬(Scene) 이동 전용 포탈입니다.
+    /// NetworkManager.SceneManager.LoadScene()을 통해 서버 단위로 씬을 전환합니다.
     /// </summary>
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Environment", "Assembly-CSharp", "SceneTransitionPortal")]
     public class NetSceneTransitionPortal : ANetPortalInteractable
     {
         [Tooltip("이동할 대상 씬")]

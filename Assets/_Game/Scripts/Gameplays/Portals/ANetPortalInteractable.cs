@@ -9,6 +9,7 @@ namespace ProjectAI.Environment
     /// <summary>
     /// 조건 검사(IInteractionCondition)와 실제 이동 로직(ExecutePortal)의 흐름을 통제하는 포탈 부모 클래스입니다.
     /// </summary>
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, "ProjectAI.Environment", "Assembly-CSharp", "APortalInteractable")]
     public abstract class ANetPortalInteractable : NetworkBehaviour, IInteractable
     {
         private IInteractionCondition[] conditions;
@@ -30,10 +31,12 @@ namespace ProjectAI.Environment
                 return;
             }
             
-            if (CanInteract(interactor))
+            if (!CanInteract(interactor))
             {
-                ExecutePortal(interactor);
+                return;
             }
+            
+            ExecutePortal(interactor);
         }
         #endregion
 

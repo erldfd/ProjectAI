@@ -99,9 +99,7 @@ namespace ProjectAI.Core.Skills.Abilities
 
             // 캐싱된 배열을 사용하여 메모리 할당(GC) 0 달성
             int count = Physics2D.OverlapCollider(hitbox, filter, results);
-            Debug.Log(hitbox.transform.position);
-            Debug.Log(hitbox.bounds.center);
-
+            
             // 한 번의 휘두르기에 한 타겟이 여러 콜라이더(머리, 몸통)로 중복 피격되는 것을 방지
             hitTargets.Clear();
             Debug.Log($"[BasicAttackLogic] Action: {count}개의 콜라이더와 충돌 감지 (CasterID: {caster.NetworkObjectId})");
