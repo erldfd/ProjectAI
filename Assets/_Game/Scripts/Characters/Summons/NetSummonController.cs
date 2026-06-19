@@ -73,7 +73,7 @@ namespace ProjectAI.Characters.Summons
                     continue;
                 }
 
-                if (!summonNetObj.TryGetComponent(out NetMonsterBrain brain))
+                if (!summonNetObj.TryGetComponent(out NetSummonBrain brain))
                 {
                     continue;
                 }
@@ -105,11 +105,11 @@ namespace ProjectAI.Characters.Summons
                 CurrentPriorityTarget = null;
             }
 
-            if (!summonObj.TryGetComponent(out NetMonsterBrain brain))
+            if (!summonObj.TryGetComponent(out NetSummonBrain brain))
             {
                 if (CurrentPriorityTarget != null)
                 {
-                    Debug.LogWarning($"[NetSummonController] 소환수({summonObj.name})에 NetMonsterBrain 컴포넌트가 없어 마킹 지시가 불가능합니다.");
+                    Debug.LogWarning($"[NetSummonController] 소환수({summonObj.name})에 NetSummonBrain 컴포넌트가 없어 마킹 지시가 불가능합니다.");
                 }
                 return;
             }
@@ -200,7 +200,7 @@ namespace ProjectAI.Characters.Summons
                     continue;
                 }
 
-                if (!summonNetObj.TryGetComponent(out NetMonsterBrain brain))
+                if (!summonNetObj.TryGetComponent(out NetSummonBrain brain))
                 {
                     continue;
                 }

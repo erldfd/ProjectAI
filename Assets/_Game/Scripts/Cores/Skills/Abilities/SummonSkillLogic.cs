@@ -93,7 +93,7 @@ namespace ProjectAI.Core.Skills.Abilities
             summonNetObj.SpawnWithOwnership(caster.OwnerClientId);
 
             // 두뇌 및 AI 상태 설정
-            if (summonNetObj.TryGetComponent(out NetMonsterBrain brain))
+            if (summonNetObj.TryGetComponent(out NetSummonBrain brain))
             {
                 brain.Owner = caster.transform;
                 SummonFollowState followState = brain.GetComponentInChildren<SummonFollowState>(true);

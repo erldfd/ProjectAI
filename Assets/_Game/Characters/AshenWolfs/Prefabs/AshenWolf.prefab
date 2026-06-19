@@ -76,8 +76,8 @@ GameObject:
   - component: {fileID: 4944438689536386590}
   - component: {fileID: 3460810399386613988}
   - component: {fileID: 9177875624014436927}
-  - component: {fileID: 5018962428655812574}
   - component: {fileID: 4982416335115366232}
+  - component: {fileID: -2030513272138450567}
   m_Layer: 7
   m_Name: AshenWolf
   m_TagString: Untagged
@@ -292,29 +292,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
   ShowTopMostFoldoutHeaderGroup: 1
   despawnDelay: 1.5
---- !u!114 &5018962428655812574
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241306677100875897}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9dea9052e6ff812418bb8d6630399fcb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetMonsterBrain
-  ShowTopMostFoldoutHeaderGroup: 1
-  startingState: {fileID: 493780703586058628}
-  Owner: {fileID: 0}
-  isSensorEnabled: 1
-  detectLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  detectTag: Enemy
-  detectionRadius: 3
-  attackRadius: 0.5
-  priorityChaseMultiplier: 1.5
 --- !u!114 &4982416335115366232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -329,6 +306,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Render.ZOrderSorter
   SortingOffset: 0
   IsStatic: 0
+--- !u!114 &-2030513272138450567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241306677100875897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27dfd07a4296bc84c9e4970178561eb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetMonsterBrain
+  ShowTopMostFoldoutHeaderGroup: 1
+  startingState: {fileID: 493780703586058628}
+  isSensorEnabled: 1
+  detectLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  detectTag: Player
+  detectionRadius: 8
+  attackRadius: 0.5
 --- !u!1 &2087426384601168963
 GameObject:
   m_ObjectHideFlags: 0
@@ -425,7 +423,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterPeaceParentState
   isRootState: 1
   subStates:
-  - {fileID: 2172757031782666336}
   - {fileID: 8783962249512292390}
 --- !u!1 &3765622567543753970
 GameObject:

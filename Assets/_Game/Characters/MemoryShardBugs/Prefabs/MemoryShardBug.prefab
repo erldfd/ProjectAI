@@ -16,8 +16,8 @@ GameObject:
   - component: {fileID: 2903177497797824953}
   - component: {fileID: 8851523879730136227}
   - component: {fileID: 9205784597414881130}
-  - component: {fileID: 6383234895154087744}
   - component: {fileID: 516037977417424350}
+  - component: {fileID: 6752938643811712921}
   m_Layer: 7
   m_Name: MemoryShardBug
   m_TagString: Enemy
@@ -232,29 +232,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.Character
   ShowTopMostFoldoutHeaderGroup: 1
   despawnDelay: 1.5
---- !u!114 &6383234895154087744
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 253525206431576581}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9dea9052e6ff812418bb8d6630399fcb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetMonsterBrain
-  ShowTopMostFoldoutHeaderGroup: 1
-  startingState: {fileID: 0}
-  Owner: {fileID: 0}
-  isSensorEnabled: 1
-  detectLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  detectTag: Player
-  detectionRadius: 3
-  attackRadius: 0.5
-  priorityChaseMultiplier: 3
 --- !u!114 &516037977417424350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,6 +246,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Render.ZOrderSorter
   SortingOffset: 0
   IsStatic: 0
+--- !u!114 &6752938643811712921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253525206431576581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27dfd07a4296bc84c9e4970178561eb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetMonsterBrain
+  ShowTopMostFoldoutHeaderGroup: 1
+  startingState: {fileID: 0}
+  isSensorEnabled: 1
+  detectLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  detectTag: Player
+  detectionRadius: 8
+  attackRadius: 1.5
 --- !u!1 &391511918895946312
 GameObject:
   m_ObjectHideFlags: 0
