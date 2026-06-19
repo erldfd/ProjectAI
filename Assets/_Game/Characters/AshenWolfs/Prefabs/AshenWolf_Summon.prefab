@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &4165640406131662833
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 241306677100875897, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_Name
+      value: AshenWolf_Summon
+      objectReference: {fileID: 0}
+    - target: {fileID: 493780703586058628, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: subStates.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 493780703586058628, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: 'subStates.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2875685675600875409}
+    - target: {fileID: 493780703586058628, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: 'subStates.Array.data[1]'
+      value: 
+      objectReference: {fileID: 4623425231881686999}
+    - target: {fileID: 816268044231496283, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3647320257
+      objectReference: {fileID: 0}
+    - target: {fileID: 816268044231496283, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 797668309
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.9298471
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.4857965
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3797649054102531681, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: -2030513272138450567, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 241306677100875897, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5436447075042078815}
+  m_SourcePrefab: {fileID: 100100000, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+--- !u!114 &2875685675600875409 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2172757031782666336, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+  m_PrefabInstance: {fileID: 4165640406131662833}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1eaab689f941b048a32e8eedaeec376, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.SummonFollowChildState
+--- !u!1 &4221588931067170696 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 241306677100875897, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+  m_PrefabInstance: {fileID: 4165640406131662833}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5436447075042078815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4221588931067170696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dea9052e6ff812418bb8d6630399fcb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.NetSummonBrain
+  ShowTopMostFoldoutHeaderGroup: 1
+  startingState: {fileID: 4545558159171608181}
+  isSensorEnabled: 1
+  detectLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  detectTag: Enemy
+  detectionRadius: 8
+  attackRadius: 0.5
+  tetherRadius: 5
+  priorityChaseMultiplier: 3
+--- !u!114 &4545558159171608181 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 493780703586058628, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+  m_PrefabInstance: {fileID: 4165640406131662833}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 656282f342cafef4082beeb18e13e1b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterPeaceParentState
+--- !u!114 &4623425231881686999 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8783962249512292390, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+  m_PrefabInstance: {fileID: 4165640406131662833}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c837ae29471da3419cadeb2eb133241, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterIdleChildState

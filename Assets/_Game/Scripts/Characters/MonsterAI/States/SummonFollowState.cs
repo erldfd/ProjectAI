@@ -61,14 +61,19 @@ namespace ProjectAI.Characters.MonsterAI
         {
             base.Tick();
 
+            if (!(Brain is NetSummonBrain summonBrain))
+            {
+                return;
+            }
+
             // 주인이 없으면 제자리에 대기
-            if (Brain.Owner == null)
+            if (summonBrain.Owner == null)
             {
                 Brain.SetMoveDirection(Vector2.zero);
                 return;
             }
 
-            float sqrDist = ((Vector2)Brain.transform.position - (Vector2)Brain.Owner.position).sqrMagnitude;
+            float sqrDist = ((Vector2)Brain.transform.position - (Vector2)summonBrain.Owner.position).sqrMagnitude;
 
             if (sqrDist > followThreshold * followThreshold)
             {
@@ -84,7 +89,7 @@ namespace ProjectAI.Characters.MonsterAI
             if (isFollowing)
             {
                 // 주인을 향해 이동
-                Vector2 dir = ((Vector2)Brain.Owner.position - (Vector2)Brain.transform.position).normalized;
+                Vector2 dir = ((Vector2)summonBrain.Owner.position - (Vector2)Brain.transform.position).normalized;
                 Brain.SetMoveDirection(dir);
             }
         }

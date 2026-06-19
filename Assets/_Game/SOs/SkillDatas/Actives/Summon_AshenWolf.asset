@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: 267258500
   SkillType: 3
   BaseCooldown: 5
-  Prefab: {fileID: 816268044231496283, guid: 6b42f464003e6e54c96bf9dfdd030ea1, type: 3}
+  Prefab: {fileID: 3646970766116130218, guid: cd9d42ac88346a84896357d19b96aae0, type: 3}
   AnimState: 4
   animHash: -838301677
   Duration: 10
