@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3749479934214032461}
-  - component: {fileID: 3781201898579721147}
   - component: {fileID: 3286422099474200197}
+  - component: {fileID: 3781201898579721147}
   m_Layer: 7
   m_Name: Childs
   m_TagString: Untagged
@@ -33,6 +33,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 9182590240573633736}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3286422099474200197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74831077743351018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7401a0831a58ec14b93aa8b25385cdc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterChaseChildState
+  isRootState: 0
 --- !u!114 &3781201898579721147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47,19 +60,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterAttackChildState
   isRootState: 0
   attackCooldown: 2
---- !u!114 &3286422099474200197
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 74831077743351018}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7401a0831a58ec14b93aa8b25385cdc4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.MonsterChaseChildState
-  isRootState: 0
 --- !u!1 &241306677100875897
 GameObject:
   m_ObjectHideFlags: 0
@@ -312,8 +312,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   detectTag: Enemy
-  detectionRadius: 8
-  attackRadius: 1.5
+  detectionRadius: 3
+  attackRadius: 0.5
+  priorityChaseMultiplier: 1.5
 --- !u!114 &4982416335115366232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -425,6 +426,7 @@ MonoBehaviour:
   isRootState: 1
   subStates:
   - {fileID: 2172757031782666336}
+  - {fileID: 8783962249512292390}
 --- !u!1 &3765622567543753970
 GameObject:
   m_ObjectHideFlags: 0
@@ -503,7 +505,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Skills.NetSkillComponent
   ShowTopMostFoldoutHeaderGroup: 1
-  OwnedSkills: []
+  OwnedSkills:
+  - {fileID: 11400000, guid: 6520008124f0d2943ac8f7ed3c0dd42a, type: 2}
   firePoint: {fileID: 0}
   meleeHitbox: {fileID: 155777077703035129}
   ActiveStates:
@@ -813,8 +816,8 @@ Transform:
   m_GameObject: {fileID: 8804583189262181035}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.66, y: 0, z: 0}
-  m_LocalScale: {x: 5.983667, y: 2.4336667, z: 1}
+  m_LocalPosition: {x: 2.49, y: 0, z: 0}
+  m_LocalScale: {x: 6.34, y: 4.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 237505449085752706}
@@ -826,7 +829,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8804583189262181035}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -920,4 +923,5 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  depthSpeedRatio: 0.6
   baseSpeed: 15

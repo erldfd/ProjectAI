@@ -12,6 +12,7 @@ namespace ProjectAI.Core.Skills
         BasicAttack = 1,
         ProjectileAttack = 2,
         Summon = 3,
+        MarkTarget = 4,
     }
 
     /// <summary>

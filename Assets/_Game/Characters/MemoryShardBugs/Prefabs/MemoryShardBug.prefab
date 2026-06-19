@@ -20,7 +20,7 @@ GameObject:
   - component: {fileID: 516037977417424350}
   m_Layer: 7
   m_Name: MemoryShardBug
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -252,8 +252,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   detectTag: Player
-  detectionRadius: 8
+  detectionRadius: 3
   attackRadius: 0.5
+  priorityChaseMultiplier: 3
 --- !u!114 &516037977417424350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -598,6 +599,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  depthSpeedRatio: 0.6
   baseSpeed: 3
 --- !u!1 &5912985425572193920
 GameObject:

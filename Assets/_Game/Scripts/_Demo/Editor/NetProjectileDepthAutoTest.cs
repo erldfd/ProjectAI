@@ -47,7 +47,7 @@ namespace ProjectAI.Demo.Editor
         static NetProjectileDepthAutoTest()
         {
             // Unity 로드 완료 후 실행
-            EditorApplication.delayCall += RunTests;
+            //EditorApplication.delayCall += RunTests;
         }
 
         private static void LogCallback(string condition, string stackTrace, LogType type)

@@ -38,9 +38,12 @@ namespace ProjectAI.Characters.Summons
             NetworkVariableWritePermission.Server
         );
 
+        public Transform CurrentPriorityTarget { get; private set; }
+
         public void AddSummon(NetworkObject summonObj, float duration)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] AddSummon은 서버에서만 호출되어야 합니다.");
+            Assert.IsNotNull(summonObj, "[NetSummonController] AddSummon: summonObj 인자가 null입니다.");
             if (!GameStatics.IsServerAuthorized)
             {
                 return;
@@ -51,6 +54,23 @@ namespace ProjectAI.Characters.Summons
                 SummonNetworkObjectId = summonObj.NetworkObjectId,
                 EndTime = (float)GameStatics.NetworkManager.ServerTime.Time + duration
             });
+
+            if (CurrentPriorityTarget != null && !CurrentPriorityTarget.gameObject.activeInHierarchy)
+            {
+                CurrentPriorityTarget = null;
+            }
+
+            if (CurrentPriorityTarget != null)
+            {
+                if (summonObj.TryGetComponent(out ProjectAI.Characters.MonsterAI.NetMonsterBrain brain))
+                {
+                    brain.PriorityTarget = CurrentPriorityTarget;
+                }
+                else
+                {
+                    Debug.LogWarning($"[NetSummonController] 소환수({summonObj.name})에 NetMonsterBrain 컴포넌트가 없어 마킹 지시가 불가능합니다.");
+                }
+            }
         }
 
         private void Update()
@@ -90,8 +110,6 @@ namespace ProjectAI.Characters.Summons
                 {
                     DespawnSummon(ActiveSummons[i].SummonNetworkObjectId);
                 }
-
-                ActiveSummons.Clear();
             }
 
             base.OnNetworkDespawn();
@@ -113,6 +131,28 @@ namespace ProjectAI.Characters.Summons
             {
                 netObj.Despawn();
             }
-    }
+        }
+
+        public void SetPriorityTarget(Transform target)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] SetPriorityTarget은 서버에서만 호출되어야 합니다.");
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            CurrentPriorityTarget = target;
+
+            for (int i = 0; i < ActiveSummons.Count; i++)
+            {
+                if (GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
+                {
+                    if (summonNetObj.TryGetComponent(out ProjectAI.Characters.MonsterAI.NetMonsterBrain brain))
+                    {
+                        brain.PriorityTarget = target;
+                    }
+                }
+            }
+        }
     }
 }

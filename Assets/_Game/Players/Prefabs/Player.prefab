@@ -160,7 +160,7 @@ CapsuleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -260,12 +260,12 @@ GameObject:
   - component: {fileID: 4505519427039758495}
   - component: {fileID: 2460281810773283459}
   - component: {fileID: 1911014795776420748}
+  - component: {fileID: 4766689643646096320}
   - component: {fileID: 7826379961964236550}
   - component: {fileID: 4331196854782625124}
   - component: {fileID: 7424043328323526500}
   - component: {fileID: 9116605749001047819}
   - component: {fileID: 1818300491571915337}
-  - component: {fileID: 4766689643646096320}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -398,6 +398,20 @@ MonoBehaviour:
   interactAction: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   attackAction: {fileID: 1120369429361536294, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   skill1Action: {fileID: -2099379676528639254, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  skill2Action: {fileID: 2411907206095950430, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+--- !u!210 &4766689643646096320
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626505526009901997}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!114 &7826379961964236550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -464,19 +478,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Render.ZOrderSorter
   SortingOffset: 0
   IsStatic: 0
---- !u!210 &4766689643646096320
-SortingGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3626505526009901997}
-  m_Enabled: 1
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_SortAtRoot: 0
-  m_Sort3DAs2D: 0
 --- !u!1 &6281186371400394751
 GameObject:
   m_ObjectHideFlags: 0
@@ -544,6 +545,7 @@ MonoBehaviour:
   OwnedSkills:
   - {fileID: 11400000, guid: 79df9c47f3efdae4abfd2e9212b885f7, type: 2}
   - {fileID: 11400000, guid: a6a71777cf1bc314bad8f1d0bab88910, type: 2}
+  - {fileID: 11400000, guid: d3d323bae04672347bd63396f4372c86, type: 2}
   firePoint: {fileID: 0}
   meleeHitbox: {fileID: 0}
   ActiveStates:
@@ -623,6 +625,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
+  depthSpeedRatio: 0.6
   moveSpeed: 5
   verySmallReconciliationThreshold: 0.01
   teleportReconciliationThreshold: 2

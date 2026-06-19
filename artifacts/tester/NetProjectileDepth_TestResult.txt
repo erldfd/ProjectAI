@@ -1,0 +1,14 @@
+--- NetProjectile Depth Unity Editor Tests ---
+
+[Test 1] Damageable Object - Within Depth Tolerance (Should take damage)
+Expected: Damage Taken, Actual: Taken => PASS
+
+[Test 2] Damageable Object - Out of Depth Tolerance (Should ignore/pierce)
+Expected: No Damage & Ignore Log, Actual Damage: False, LogFound: True => PASS
+
+[Test 3] Environment Wall - Within Depth Tolerance (Should be destroyed)
+Expected: Destroy Log, LogFound: True => PASS
+
+[Test 4] Environment Wall - Out of Depth Tolerance (Should ignore/pierce)
+Expected: Ignore Log, LogFound: True => PASS
+--- End of Tests ---

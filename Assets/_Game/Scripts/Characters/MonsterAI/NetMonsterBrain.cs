@@ -21,6 +21,14 @@ namespace ProjectAI.Characters.MonsterAI
 
         public NetCharacter Character { get; private set; }
         public AIStateMachine StateMachine { get; private set; }
+        public Transform PriorityTarget { get; set; }
+        public Transform Target { get; private set; }
+        public float AttackRadius => attackRadius;
+        public bool IsSensorEnabled 
+        { 
+            get => isSensorEnabled; 
+            set => isSensorEnabled = value; 
+        }
 
         [Header("AI Sensors")]
         [Tooltip("초기 시작 상태 (비워두면 첫 번째 상태가 기본값이 됩니다)")]
@@ -51,18 +59,16 @@ namespace ProjectAI.Characters.MonsterAI
         [SerializeField]
         private float attackRadius = 1.5f;
 
-        public Transform Target { get; private set; }
+        [Tooltip("최우선 타겟(마킹) 최대 추적 거리 배수")]
+        [SerializeField]
+        private float priorityChaseMultiplier = 3f;
 
-        public float AttackRadius => attackRadius;
-        
-        public bool IsSensorEnabled 
-        { 
-            get => isSensorEnabled; 
-            set => isSensorEnabled = value; 
-        }
+
+        private const int MAX_COLLIDER_RESULTS = 10;
+        private const float LOST_TARGET_MULTIPLIER = 1.5f;
 
         private AMonsterState[] stateComponents;
-        private Collider2D[] hitColliders = new Collider2D[10];
+        private Collider2D[] hitColliders = new Collider2D[MAX_COLLIDER_RESULTS];
         private ContactFilter2D enemyFilter;
 
         private float sensorTimer = 0f;
@@ -79,6 +85,18 @@ namespace ProjectAI.Characters.MonsterAI
             enemyFilter = new ContactFilter2D();
             enemyFilter.useLayerMask = true;
             enemyFilter.useTriggers = false;
+
+            StateMachine = new AIStateMachine();
+            stateComponents = GetComponentsInChildren<AMonsterState>();
+
+            foreach (AMonsterState state in stateComponents)
+            {
+                if (state.IsRootState)
+                {
+                    state.Initialize(this, StateMachine);
+                    StateMachine.AddState(state);
+                }
+            }
 
             ResetSensor();
         }
@@ -106,6 +124,7 @@ namespace ProjectAI.Characters.MonsterAI
             base.OnNetworkSpawn();
 
             // 풀링 재소환 시 상태값들 안전하게 초기화
+            PriorityTarget = null;
             Target = null;
             sensorTimer = 0f;
             ResetSensor();
@@ -116,18 +135,6 @@ namespace ProjectAI.Characters.MonsterAI
                 // 클라이언트는 무거운 AI FSM 연산을 수행하지 않습니다.
                 enabled = false;
                 return;
-            }
-
-            StateMachine = new AIStateMachine();
-            stateComponents = GetComponentsInChildren<AMonsterState>();
-
-            foreach (AMonsterState state in stateComponents)
-            {
-                if (state.IsRootState)
-                {
-                    state.Initialize(this, StateMachine);
-                    StateMachine.AddState(state);
-                }
             }
 
             if (startingState != null)
@@ -146,6 +153,18 @@ namespace ProjectAI.Characters.MonsterAI
                     }
                 }
             }
+
+            Assert.IsNotNull(StateMachine.CurrentState, "[NetMonsterBrain] 상태머신 초기화 실패: 루트 상태를 찾을 수 없습니다.");
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (GameStatics.IsServerAuthorized && StateMachine != null && StateMachine.CurrentState != null)
+            {
+                StateMachine.CurrentState.Exit();
+            }
+
+            base.OnNetworkDespawn();
         }
 
         private void Update()
@@ -172,6 +191,25 @@ namespace ProjectAI.Characters.MonsterAI
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] UpdateSensors는 서버에서만 호출되어야 합니다.");
 
+            if (PriorityTarget == null || !PriorityTarget.gameObject.activeInHierarchy)
+            {
+                PriorityTarget = null;
+            }
+            else
+            {
+                float sqrDist = ((Vector2)transform.position - (Vector2)PriorityTarget.position).sqrMagnitude;
+                float priorityThreshold = currentDetectRadius * priorityChaseMultiplier;
+                if (sqrDist > priorityThreshold * priorityThreshold)
+                {
+                    PriorityTarget = null;
+                }
+                else
+                {
+                    Target = PriorityTarget;
+                    return;
+                }
+            }
+
             if (Target != null)
             {
                 if (!Target.gameObject.activeInHierarchy)
@@ -181,7 +219,7 @@ namespace ProjectAI.Characters.MonsterAI
                 else
                 {
                     float sqrDist = ((Vector2)transform.position - (Vector2)Target.position).sqrMagnitude;
-                    float threshold = currentDetectRadius * 1.5f;
+                    float threshold = currentDetectRadius * LOST_TARGET_MULTIPLIER;
                     if (sqrDist > threshold * threshold) // 탐지 거리 밖으로 벗어남
                     {
                         Target = null;
@@ -242,8 +280,9 @@ namespace ProjectAI.Characters.MonsterAI
         public void ExecuteAttack()
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] ExecuteAttack은 서버에서만 호출되어야 합니다.");
+            Assert.IsNotNull(Character, "[NetMonsterBrain] Character 컴포넌트가 null입니다.");
             
-            if (Character != null && Character.SkillComponent != null && Character.SkillComponent.OwnedSkills.Count > 0)
+            if (Character.SkillComponent != null && Character.SkillComponent.OwnedSkills.Count > 0)
             {
                 BaseSkillConfig skillToUse = Character.SkillComponent.OwnedSkills[0];
                 if (skillToUse != null)

@@ -30,9 +30,20 @@ namespace ProjectAI.Characters.MonsterAI
                 }
             }
 
+        }
+
+        public override void Enter()
+        {
             if (subStates.Count > 0 && subStates[0] != null)
             {
-                SubStateMachine.Initialize(subStates[0].GetType());
+                if (SubStateMachine.CurrentState == null)
+                {
+                    SubStateMachine.Initialize(subStates[0].GetType());
+                }
+                else
+                {
+                    base.Enter();
+                }
             }
         }
 
