@@ -12,6 +12,14 @@ namespace ProjectAI.Characters.MonsterAI
         {
             base.Enter();
             Brain.SetMoveDirection(Vector2.zero); // 정지
+
+            Debug.Log($"[{nameof(MonsterIdleState)}] Entered. Monster is idle and waiting for target.");
+        }
+
+        public override void Exit()
+        {
+            base.Exit();
+            Debug.Log($"[{nameof(MonsterIdleState)}] Exited. Monster is no longer idle.");
         }
 
         public override void Tick()

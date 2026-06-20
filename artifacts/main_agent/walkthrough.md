@@ -1,27 +1,29 @@
-# 소환 스킬 구현 작업 완료 (Walkthrough)
+# 소환수 대기 배회(Idle Roaming) 및 조향(Steering) 완벽 개선 요약
 
-소환 스킬 기획부터 실제 데이터 구조 변경 및 로직 구현까지 모든 과정을 완료했습니다.
+## 🛠 개선 배경
+소환수가 주인을 따라다니는 중 발생하는 다양한 버그들(목적지 오버슈트로 인한 떨림 현상, 밀어내기 힘 충돌로 인한 미세 떨림, 추적과 배회 경계에서의 고무줄 현상, 밀어내기로 인해 맵 밖으로 날아가는 현상)을 해결하기 위해, 단순 상태 변수 조작을 넘어서 무브먼트 코어 아키텍처 레벨에서의 개편을 진행했습니다.
 
-## 1. 스킬 데이터 구조 변경 (마스터 SO 방식)
-* 개별 스킬별로 무수히 많은 SO 파일이 생성되는 문제를 방지하기 위해 다형성 직렬화(`[SerializeReference]`)를 활용한 마스터 SO 구조를 도입했습니다.
-* `ABaseSkillConfig`, `SummonSkillConfig` 등 데이터 전용 클래스들을 생성했습니다.
-* `SkillDatabaseSO` 마스터 객체에서 전체 스킬 리스트를 관리하며, 인게임 런타임 성능 최적화를 위해 내부 딕셔너리 캐싱 로직을 추가했습니다.
-* `SkillManager` 및 기존 스킬(`BasicAttackLogic`, `ProjectileAttackLogic`)들이 새 마스터 구조를 참조하도록 리팩토링했습니다.
-* 스킬 매니저가 유니티 에디터 인스펙터 참조 대신 런타임 중 `Resources.Load`로 에셋(`SkillDatabaseSO.asset`)을 자동 로드하도록 개선했습니다.
+## ✨ 주요 작업 내역
 
-## 2. 소환 스킬 로직 구현
-* `ISkillLogic`을 구현하는 **`SummonSkillLogic`**을 추가했습니다.
-* 스킬 실행 시 서버 오너십을 기반으로 소환수 프리팹을 `NetworkObjectPool`에서 꺼내어 스폰(`SpawnWithOwnership`)하도록 구현했습니다.
-* 스폰 후 소환수 프리팹에 부착된 `NetMonsterBrain`을 탐색하여, 주인을 시전자로 등록(`Owner = caster.transform`)합니다.
-* 마스터 SO에서 설정한 '유지 거리'를 소환수 전용 대기 상태인 `SummonFollowState`에 즉시 주입해줍니다.
+### 1. `NetServerMovement`의 유동 속도 지원
+*   이전: `direction.normalized`로 무조건 최고 속도로 달림
+*   **개선**: `Vector2.ClampMagnitude(direction, 1f)`로 변경하여, 벡터 길이가 1 미만일 때는 **속도를 비례하여 부드럽게 낮추도록** 아키텍처 변경.
 
-## 3. 소환수 만료 타이머
-* 소환수 프리팹에 부착되어 수명을 체크하는 **`NetSummonDespawnTimer`** 컴포넌트를 추가했습니다.
-* 마스터 SO에서 설정된 유지시간이 만료되면, 서버에서 안전하게 풀 매니저로 오브젝트를 반환(`ReturnNetworkObject`)합니다.
-* NGO 제약에 따라 스폰 후 런타임 중 `NetworkBehaviour` 컴포넌트 동적 추가를 방지하기 위해, 소환수 프리팹에 컴포넌트 누락 시 에러 로그를 띄우도록 방어 로직을 작성했습니다.
+### 2. `NetMonsterBrain` 도착 조향(Steering Arrive) 탑재
+*   목적지에 가까워질수록 벡터 길이를 1에서 0으로 서서히 줄여주는 `GetArriveDirection` 헬퍼 함수를 추가.
+*   거리를 재고 멈춤을 수동으로 판단하던 복잡한 AI 상태(State) 로직을 모두 걷어내고, 뇌(Brain) 단에서 자연스러운 감속을 처리.
 
-## 다음 작업 안내
-유니티 에디터로 이동하여 다음 항목들을 세팅해 주시면 즉시 테스트가 가능합니다.
-1. 소환수로 사용할 프리팹 최상단에 `NetSummonDespawnTimer` 컴포넌트 부착.
-2. 해당 프리팹의 `NetMonsterBrain` 내 상태 머신에 `SummonFollowState` 추가 여부 확인.
-3. `Resources/SOs/SkillDatabaseSO` 에셋에서 `SummonSkillConfig` 항목을 추가하고 세부 능력치(유지 시간 10초, 유지 거리 2 등) 및 프리팹 할당.
+### 3. 밀어내기(Separation) 버그 원천 차단
+*   **고주파 떨림 방지**: 매 프레임 연산하지 않고 `separationInterval`(기본 0.15초)을 두어 연산량을 대폭 줄이고 묵직하게 밀려나도록 캐싱 적용.
+*   **초광속 폭주 방지**: `maxSeparationForce` 상한치(기본 0.6)를 적용하여, 밀어내기 힘이 가해져도 이동 컴포넌트의 유동 속도 지원을 받아 최고 속도가 아닌 60% 속도까지만 밀려나도록 제어.
+*   **최종 벡터 상한**: 밀어내기와 이동을 더한 최종 방향마저도 `Vector2.ClampMagnitude(desiredDirection, 1f)`로 묶어 어떤 경우에도 튕겨 나가지 않도록 완전한 안전장치 구현.
+
+### 4. 고무줄 및 역주행 버그 해결
+*   배회 목적지가 추적 반경 밖으로 나가지 못하게 안전 반경 안쪽으로 깎아서(Clamp) 생성.
+*   주인을 추적하는 동안 과거에 잡아둔 엉뚱한 배회 목적지로 달려가지 못하도록 추적 중 배회 타이머를 `0`으로 초기화.
+
+### 5. 추적 중 밀어내기에 의한 감속 버그 해결
+*   주인을 쫓아갈 때(`isFollowing == true`) 다른 소환수가 밀어내더라도 속도가 깎이지 않도록, 이동 벡터를 무조건 `normalized`로 뻥튀기하여 **전력 질주(최고 속도)를 보장**하면서도 대형이 자연스럽게 퍼지도록 수정.
+
+## ✅ 검증 완료
+Reviewer Agent와 Tester Agent의 교차 검증을 통해, 수학적 모순점 제로(Zero Division 위험 제거), 로직 충돌 제로, 메모리 누수 제로 판정을 획득했습니다.

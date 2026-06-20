@@ -46,10 +46,10 @@ namespace ProjectAI.Characters.MonsterAI
         [SerializeField]
         protected LayerMask detectLayer;
 
-        [Tooltip("비워두면 태그 검사를 무시합니다.")]
+        [Tooltip("비워두면 모든 태그(All)를 감지합니다.")]
         [TagSelector]
         [SerializeField]
-        protected string detectTag = ObjectTags.NONE;
+        protected string detectTag = ObjectTags.ALL;
 
         [Tooltip("탐지 반경")]
         [SerializeField]
@@ -216,7 +216,8 @@ namespace ProjectAI.Characters.MonsterAI
                         continue;
                     }
 
-                    if (!string.IsNullOrEmpty(currentDetectTag) && !hitColliders[i].CompareTag(currentDetectTag))
+                    // 태그가 All이 아니면서 대상 태그와 일치하지 않을 경우에만 타겟에서 제외(무시)
+                    if (!string.IsNullOrEmpty(currentDetectTag) && currentDetectTag != ObjectTags.ALL && !hitColliders[i].CompareTag(currentDetectTag))
                     {
                         continue;
                     }
@@ -265,6 +266,33 @@ namespace ProjectAI.Characters.MonsterAI
             }
 
             Character.TryActivateSkill(skillToUse.SkillId);
+        }
+
+        /// <summary>
+        /// 목적지를 향해 이동 방향(벡터)을 반환하는 조향(Steering) 헬퍼 함수입니다.
+        /// 도착 거리 내에 진입하면 서서히 감속하는 자연스러운 멈춤(Arrive) 효과를 제공합니다.
+        /// 반환된 벡터의 길이가 1보다 작아지면 NetServerMovement에서 이를 받아 느리게 이동시킵니다.
+        /// </summary>
+        public Vector2 GetArriveDirection(Vector2 myPos, Vector2 targetPos, float stopDistance, float slowDownRadius)
+        {
+            Vector2 diff = targetPos - myPos;
+            float dist = diff.magnitude;
+
+            if (dist <= stopDistance)
+            {
+                return Vector2.zero;
+            }
+
+            Vector2 desiredVelocity = diff.normalized;
+
+            // 감속 반경 안에 들어왔다면, 거리에 비례하여 벡터 길이를 1에서 0으로 부드럽게 줄임
+            if (dist < slowDownRadius)
+            {
+                float speedRatio = (dist - stopDistance) / (slowDownRadius - stopDistance);
+                desiredVelocity *= Mathf.Clamp01(speedRatio);
+            }
+
+            return desiredVelocity;
         }
     }
 }
