@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.SOs.SummonSkillConfig
   skillId: 267258500
   SkillType: 3
-  BaseCooldown: 5
+  BaseCooldown: 1
   Prefab: {fileID: 3646970766116130218, guid: cd9d42ac88346a84896357d19b96aae0, type: 3}
   AnimState: 4
   animHash: -838301677

@@ -15,7 +15,20 @@ namespace ProjectAI.Core.Attributes.Editor
             if (property.propertyType == SerializedPropertyType.String)
             {
                 EditorGUI.BeginProperty(position, label, property);
-                property.stringValue = EditorGUI.TagField(position, label, property.stringValue);
+                
+                string[] unityTags = UnityEditorInternal.InternalEditorUtility.tags;
+                System.Collections.Generic.List<string> tagList = new System.Collections.Generic.List<string> { ObjectTags.ALL };
+                tagList.AddRange(unityTags);
+
+                int index = tagList.IndexOf(property.stringValue);
+                if (index == -1)
+                {
+                    index = 0;
+                }
+
+                index = EditorGUI.Popup(position, label.text, index, tagList.ToArray());
+                property.stringValue = tagList[index];
+                
                 EditorGUI.EndProperty();
             }
             else

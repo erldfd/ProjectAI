@@ -70,7 +70,9 @@ namespace ProjectAI.Movements
                 base.NetIsFacingRight.Value = false;
             }
 
-            currentDirection = direction.normalized;
+            // 방향 벡터를 무조건 정규화(길이 1)하지 않고, ClampMagnitude를 사용하여 길이가 1 미만일 경우 느린 이동을 허용합니다.
+            // 이를 통해 AI 조향(Steering) 단계에서 감속이나 미세한 밀어내기(분산)를 구현할 수 있습니다.
+            currentDirection = Vector2.ClampMagnitude(direction, 1f);
             UpdateVelocity();
         }
 

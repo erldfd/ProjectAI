@@ -1,42 +1,34 @@
-# 스킬 시스템 Data-Driven 아키텍처 개편
+# 무브먼트 아키텍처 개선 및 AI 로직 단순화 계획
 
-## 목표
-`ESkillType` 1:1 매핑 구조를 탈피하고, `BaseSkillConfig` SO 에셋에 고유 ID를 부여하여 플레이어가 원하는 스킬 데이터를 직접 소유하고 실행(RPC)하는 진정한 데이터 기반 아키텍처로 개편합니다.
+## 🎯 문제 원인 분석 (유저 통찰력 일치)
+정확한 통찰력입니다. 현재 AI 로직이 지나치게 복잡해지고 밀어내기 시 멀리 날아가는 근본적인 원인은 **`NetServerMovement`의 아키텍처 한계**에 있습니다.
 
-## User Review Required
+현재 `SetDirection` 함수는 방향 벡터를 무조건 `.normalized` (길이 1)로 강제 변환한 뒤 **최고 속도(`baseSpeed`)**를 곱해서 이동시킵니다.
+따라서 AI가 아주 살짝만 밀어내고 싶어도, 일단 밀어내기 방향이 설정되면 무조건 **최고 속도로 전력 질주**하게 됩니다. 이 상태에서 인터벌을 1초로 늘려버리면 1초 내내 최고 속도로 뛰어가니 경계를 한참 벗어나 저 멀리 날아가 버리는 것입니다.
+
+또한 "목적지로 가라"는 명령이 없기 때문에, AI 상태 스크립트가 매 틱마다 거리를 재고, 0.1 이하인지 확인하고, 멈추고(`Vector2.zero`) 하는 잡다한 연산을 모두 떠안고 있었습니다.
+
+## 🛠 제안하는 구조 개선 방안
+
+이 문제를 근본적으로 해결하고 AI 로직을 극도로 단순화하기 위해 코어 아키텍처를 개선하고자 합니다.
+
+### 1. `NetServerMovement.cs` 유동적 속도 허용
+*   **[MODIFY]** `NetServerMovement.cs`
+    *   `SetDirection` 내부의 `.normalized` 처리를 `Vector2.ClampMagnitude(direction, 1f)`로 변경합니다.
+    *   이렇게 하면 벡터 길이가 1 이상일 때는 기존처럼 최고 속도를 내지만, 길이가 0.5라면 **절반의 속도**로 걷는 것이 가능해집니다. (살짝 밀어내기 가능)
+
+### 2. `NetMonsterBrain.cs`에 도착 자동화 헬퍼 추가
+*   **[MODIFY]** `NetMonsterBrain.cs`
+    *   `MoveTowards(Vector2 targetLocation, float stopDistance, float slowDownRadius)` 함수를 추가합니다.
+    *   목적지에 가까워질수록 벡터 길이를 1에서 0으로 부드럽게 줄여주어(Steering Arrive) **자연스러운 감속 및 자동 정지**를 뇌(Brain) 단에서 처리합니다.
+
+### 3. `SummonFollowState.cs` 복잡한 로직 대거 삭제
+*   **[MODIFY]** `SummonFollowState.cs`
+    *   거리 계산, `hasArrivedRoamTarget` 등의 지저분한 상태 변수들을 모두 삭제합니다.
+    *   단순히 `Brain.MoveTowards(roamTargetPosition, ...)` 한 줄로 목적지 이동을 지시합니다.
+    *   밀어내기 힘(`separationForce`) 역시 길이를 아주 작게 주어, 최고 속도가 아닌 느린 속도로 살짝만 밀려나도록 수정합니다.
+
+## ❓ 뷰어(User) 검토 요망
 > [!IMPORTANT]
-> - 스킬 식별자 추가: `BaseSkillConfig`에 고유 ID(정수형)가 추가됩니다. 앞으로 새로운 스킬 SO를 생성할 때마다 서로 다른 ID 값을 인스펙터에서 기입해야 합니다.
-> - 애니메이션 맵핑: 기존에는 `ESkillType` 단위로 애니메이션을 매핑했지만, 이제 스킬별(`BaseSkillConfig`)로 다를 수 있습니다. 이를 지원하기 위해 `NetSkillComponent`의 애니메이션 맵핑 리스트를 `SkillId` 기준으로 변경할 예정입니다. (동의하시나요?)
-
-## Proposed Changes
-
-### [MODIFY] [BaseSkillConfig.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/SOs/BaseSkillConfig.cs)
-- 네트워크 통신 시 스킬을 식별하기 위한 `public int SkillId;` 변수를 추가합니다.
-
-### [MODIFY] [SkillDatabaseSO.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/SOs/SkillDatabaseSO.cs)
-- `Dictionary<ESkillType, BaseSkillConfig>` 캐싱 방식을 `Dictionary<int, BaseSkillConfig>` (SkillId 기반)으로 변경합니다.
-
-### [MODIFY] [ISkillLogic.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/Cores/Skills/ISkillLogic.cs)
-- 기존에는 `Initialize` 시점에 Config를 한 번만 로드하여 클래스 멤버로 들고 있었으나 (상태 유지형), 여러 Config가 하나의 로직 인스턴스를 공유해야 하므로 인자에 `BaseSkillConfig config`를 추가하여 상태를 들고 있지 않게(Stateless) 변경합니다.
-  - `bool CanExecute(NetCharacter caster, BaseSkillConfig config);`
-  - `void Execute(NetCharacter caster, BaseSkillConfig config);` 등
-
-### [MODIFY] 스킬 로직 구현체들
-- [BasicAttackLogic.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/Cores/Skills/Abilities/BasicAttackLogic.cs)
-- [ProjectileAttackLogic.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/Cores/Skills/Abilities/ProjectileAttackLogic.cs)
-- [SummonSkillLogic.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/Cores/Skills/Abilities/SummonSkillLogic.cs)
-- 내부 변수로 캐싱하던 `cooldown`, `prefab`, `duration` 등을 제거하고, 호출 시 전달받는 `config`에서 즉시 데이터를 읽어오도록 리팩토링합니다.
-
-### [MODIFY] [SkillManager.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/Cores/Skills/SkillManager.cs)
-- `ExecuteSkill`, `ActionSkill`, `EndSkill`의 매개변수를 `ESkillType`에서 `int skillId`로 변경합니다.
-- 내부적으로 전달받은 `skillId`로 `SkillDatabaseSO`에서 Config를 찾은 뒤, `config.SkillType`에 해당하는 로직을 꺼내와 실행합니다.
-
-### [MODIFY] [NetSkillComponent.cs](file:///c:/UnityProjects/ProjectAI/Assets/_Game/Scripts/Cores/Skills/NetSkillComponent.cs)
-- 인스펙터 노출 변수를 `List<BaseSkillConfig> OwnedSkills` 로 변경하여 기획자가 SO를 직접 드래그 앤 드롭으로 할당할 수 있게 합니다.
-- 쿨타임 캐싱 딕셔너리의 키를 `ESkillType`에서 `int`(SkillId)로 변경합니다.
-- `TryActivateSkill`과 RPC 함수들 역시 `skillId`를 기반으로 통신하도록 수정합니다.
-
-## Verification Plan
-1. 빌드 성공 확인
-2. 씬에 배치된 플레이어 프리팹의 `NetSkillComponent`에 새로 만든 스킬 SO 할당 및 ID 지정.
-3. 게임 실행 후 정상적으로 평타/소환 스킬이 발동하는지 확인.
+> 이 변경은 몬스터 이동의 근간이 되는 `NetServerMovement`와 `NetMonsterBrain`을 건드리는 핵심 아키텍처 수정입니다.
+> 유저분께서 지적하신 "목적지 이동 함수 부재"를 완벽히 해소할 수 있는 구조적 리팩토링인데, 이 방향으로 진행해도 될지 검토 후 승인 부탁드립니다.
