@@ -132,6 +132,47 @@ namespace ProjectAI.Core
 
             ObjectPool = null;
         }
+
+        #region Belt-Scroll Depth Distortion Helpers
+        
+        /// <summary>
+        /// 현재 게임의 벨트스크롤 Y축 깊이 왜곡률을 가져옵니다.
+        /// </summary>
+        public static float DepthScale => GameManager != null ? GameManager.BeltScrollDepthScale : 2.5f;
+
+        /// <summary>
+        /// 벨트스크롤 시각 왜곡에 맞추어 실제 상하 이동 물리 속도를 느리게 보정하는 비율입니다.
+        /// </summary>
+        public static float MovementDepthRatio => 1.0f / DepthScale;
+
+        /// <summary>
+        /// Y축 거리에 원근 왜곡률(DepthScale)을 곱한 논리적 벡터를 반환합니다.
+        /// 벨트스크롤 환경에서 상하 거리를 시각적 느낌에 맞게 보정할 때 사용합니다.
+        /// </summary>
+        public static Vector2 GetPerspectiveVector(Vector2 diff)
+        {
+            return new Vector2(diff.x, diff.y * DepthScale);
+        }
+
+        /// <summary>
+        /// 원근 왜곡이 적용된 거리의 제곱(sqrMagnitude)을 반환합니다. 
+        /// 연산 속도가 빠르므로 거리 비교 시 주로 사용합니다.
+        /// </summary>
+        public static float GetPerspectiveSqrMagnitude(Vector2 diff)
+        {
+            return GetPerspectiveVector(diff).sqrMagnitude;
+        }
+
+        /// <summary>
+        /// 원근 왜곡이 적용된 절대 거리(magnitude)를 반환합니다.
+        /// 정밀한 거리 수치가 필요할 때 사용합니다.
+        /// </summary>
+        public static float GetPerspectiveMagnitude(Vector2 diff)
+        {
+            return GetPerspectiveVector(diff).magnitude;
+        }
+
+        #endregion
     }
 
 }

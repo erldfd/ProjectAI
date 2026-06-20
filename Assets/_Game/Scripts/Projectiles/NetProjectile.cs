@@ -129,13 +129,15 @@ namespace ProjectAI.Projectiles
 
             // 2.5D 벨트스크롤 깊이(Z축 역할) 판정 (캐싱된 깊이 사용)
             float projectileDepthRadius = statComponent != null ? statComponent.DepthRadius : 0.5f;
-            float depthDifference = Mathf.Abs(cachedDepthY - targetY);
+            float physicalDepthDiff = Mathf.Abs(cachedDepthY - targetY);
+            // 전역 왜곡 배율을 적용하여 시각적 논리 거리로 변환
+            float logicalDepthDifference = physicalDepthDiff * GameStatics.DepthScale;
             float allowedTolerance = projectileDepthRadius + targetDepthRadius;
 
-            if (depthDifference > allowedTolerance)
+            if (logicalDepthDifference > allowedTolerance)
             {
                 // 깊이가 다르면 데미지 대상이든 벽이든 무시하고 관통함
-                Debug.Log($"[NetProjectile] 깊이(Y축) 차이가 너무 커서 관통(무시)됨! 차이: {depthDifference}, 허용치: {allowedTolerance}");
+                Debug.Log($"[NetProjectile] 깊이(Y축) 차이가 너무 커서 관통(무시)됨! 차이: {logicalDepthDifference}, 허용치: {allowedTolerance}");
                 return;
             }
 

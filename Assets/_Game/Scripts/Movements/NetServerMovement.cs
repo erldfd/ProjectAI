@@ -85,8 +85,8 @@ namespace ProjectAI.Movements
                 return;
             }
 
-            // 2.5D 벨트스크롤: Y축(깊이) 이동 시 원근법에 맞춰 속도를 보정합니다.
-            Vector2 scaledDirection = new Vector2(currentDirection.x, currentDirection.y * base.depthSpeedRatio);
+            // 2.5D 벨트스크롤: Y축(깊이) 이동 시 전역 원근법에 맞춰 속도를 보정합니다.
+            Vector2 scaledDirection = new Vector2(currentDirection.x, currentDirection.y * GameStatics.MovementDepthRatio);
             
             base.Rb.linearVelocity = scaledDirection * (baseSpeed * currentSpeedModifier);
             

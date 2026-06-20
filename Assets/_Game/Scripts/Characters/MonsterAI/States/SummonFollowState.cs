@@ -128,7 +128,8 @@ namespace ProjectAI.Characters.MonsterAI
             }
 
             Vector2 myPos = Brain.transform.position;
-            float sqrDist = (myPos - (Vector2)summonBrain.Owner.position).sqrMagnitude;
+            Vector2 ownerDiff = myPos - (Vector2)summonBrain.Owner.position;
+            float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(ownerDiff);
             isFollowing = sqrDist > followThreshold * followThreshold;
 
             Vector2 desiredDirection = Vector2.zero;
@@ -184,7 +185,7 @@ namespace ProjectAI.Characters.MonsterAI
                         }
 
                         Vector2 diff = myPos - (Vector2)hitColliders[i].transform.position;
-                        float dist = diff.magnitude;
+                        float dist = GameStatics.GetPerspectiveMagnitude(diff);
 
                         if (dist > 0.01f && dist < separationRadius)
                         {

@@ -188,7 +188,8 @@ namespace ProjectAI.Characters.MonsterAI
                 }
                 else
                 {
-                    float sqrDist = ((Vector2)transform.position - (Vector2)Target.position).sqrMagnitude;
+                    Vector2 diff = (Vector2)transform.position - (Vector2)Target.position;
+                    float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(diff);
                     float threshold = currentDetectRadius * LOST_TARGET_MULTIPLIER;
                     if (sqrDist > threshold * threshold)
                     {
@@ -222,7 +223,8 @@ namespace ProjectAI.Characters.MonsterAI
                         continue;
                     }
 
-                    float sqrDist = (myPos - (Vector2)hitColliders[i].transform.position).sqrMagnitude;
+                    Vector2 diff = myPos - (Vector2)hitColliders[i].transform.position;
+                    float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(diff);
                     if (sqrDist < minSqrDist)
                     {
                         minSqrDist = sqrDist;
@@ -276,7 +278,8 @@ namespace ProjectAI.Characters.MonsterAI
         public Vector2 GetArriveDirection(Vector2 myPos, Vector2 targetPos, float stopDistance, float slowDownRadius)
         {
             Vector2 diff = targetPos - myPos;
-            float dist = diff.magnitude;
+            // 거리 계산에만 왜곡(DepthScale)을 적용하여 Arrive 여부를 판단
+            float dist = GameStatics.GetPerspectiveMagnitude(diff);
 
             if (dist <= stopDistance)
             {

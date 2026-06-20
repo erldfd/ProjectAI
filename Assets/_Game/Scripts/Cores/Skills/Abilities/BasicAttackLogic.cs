@@ -130,13 +130,15 @@ namespace ProjectAI.Core.Skills.Abilities
                 
                 // 타겟의 기준 위치는 가급적 부모의 Root 위치를 사용
                 float targetY = targetNetObj != null ? targetNetObj.transform.position.y : col.transform.position.y;
-                float depthDifference = Mathf.Abs(caster.transform.position.y - targetY);
+                float physicalDepthDiff = Mathf.Abs(caster.transform.position.y - targetY);
+                // 전역 왜곡 배율을 적용하여 시각적 논리 거리로 변환
+                float logicalDepthDifference = physicalDepthDiff * GameStatics.DepthScale;
                 float allowedTolerance = casterDepthRadius + targetDepthRadius;
 
-                Debug.Log($"[BasicAttackLogic] Action: 깊이 검사 - CasterY: {caster.transform.position.y}, TargetY: {targetY}, DepthDifference: {depthDifference}, AllowedTolerance: {casterDepthRadius} + {targetDepthRadius} = {allowedTolerance}"); 
-                if (depthDifference > allowedTolerance)
+                Debug.Log($"[BasicAttackLogic] Action: 깊이 검사 - CasterY: {caster.transform.position.y}, TargetY: {targetY}, LogicalDepthDiff: {logicalDepthDifference}, AllowedTolerance: {casterDepthRadius} + {targetDepthRadius} = {allowedTolerance}"); 
+                if (logicalDepthDifference > allowedTolerance)
                 {
-                    Debug.Log($"[BasicAttackLogic] Action: 깊이(Z축) 차이가 너무 커서 빗나감! 차이: {depthDifference}, 허용치: {allowedTolerance}");
+                    Debug.Log($"[BasicAttackLogic] Action: 깊이(Z축) 차이가 너무 커서 빗나감! 차이: {logicalDepthDifference}, 허용치: {allowedTolerance}");
                     continue; // 헛방
                 }
 

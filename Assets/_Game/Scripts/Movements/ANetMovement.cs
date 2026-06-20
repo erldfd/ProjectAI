@@ -43,10 +43,7 @@ namespace ProjectAI.Movements
         /// </summary>
         public Rigidbody2D Rb { get; protected set; }
 
-        [Header("2.5D Movement Settings")]
-        [Tooltip("벨트스크롤 원근법에 따른 Y축(깊이) 이동 속도 보정 비율입니다. (권장: 0.5 ~ 0.7)")]
-        [SerializeField]
-        protected float depthSpeedRatio = 0.6f;
+        // 2.5D 깊이 이동 속도 보정은 GameStatics.MovementDepthRatio 전역 수치를 사용합니다.
 
         protected virtual void Awake()
         {

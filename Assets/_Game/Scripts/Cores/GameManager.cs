@@ -9,6 +9,13 @@ namespace ProjectAI.Core
     /// </summary>
     public class GameManager : MonoBehaviour
     {
+        [Header("Global Settings")]
+        [Tooltip("벨트스크롤 Y축 원근 왜곡 수치 (높을수록 Y축 거리가 멀게 계산됨)")]
+        [SerializeField]
+        private float beltScrollDepthScale = 2.5f;
+
+        public float BeltScrollDepthScale => beltScrollDepthScale;
+
         public MultiplayerServiceManager MultiplayerService { get; private set; }
 
         private void Awake()

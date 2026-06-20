@@ -68,12 +68,23 @@ namespace ProjectAI.Characters.MonsterAI
             float maxReach = effectiveTetherRadius + attackRadius;
             float sqrMaxReach = maxReach * maxReach;
 
+            if (PriorityTarget != null && !PriorityTarget.gameObject.activeInHierarchy)
+            {
+                PriorityTarget = null;
+            }
+
+            if (Target != null && !Target.gameObject.activeInHierarchy)
+            {
+                Target = null;
+            }
+
             // 타겟 기반 테더링 검사: 타겟이 한계선을 벗어났는지 확인
             if (Owner != null)
             {
                 if (Target != null)
                 {
-                    float sqrDistTargetToOwner = ((Vector2)Owner.position - (Vector2)Target.position).sqrMagnitude;
+                    Vector2 diff = (Vector2)Owner.position - (Vector2)Target.position;
+                    float sqrDistTargetToOwner = GameStatics.GetPerspectiveSqrMagnitude(diff);
                     if (sqrDistTargetToOwner > sqrMaxReach)
                     {
                         Debug.Log("[NetSummonBrain] 타겟이 테더 범위를 벗어나 포기합니다.");
@@ -83,7 +94,8 @@ namespace ProjectAI.Characters.MonsterAI
 
                 if (PriorityTarget != null)
                 {
-                    float sqrDistPriorityToOwner = ((Vector2)Owner.position - (Vector2)PriorityTarget.position).sqrMagnitude;
+                    Vector2 diff = (Vector2)Owner.position - (Vector2)PriorityTarget.position;
+                    float sqrDistPriorityToOwner = GameStatics.GetPerspectiveSqrMagnitude(diff);
                     if (sqrDistPriorityToOwner > sqrMaxReach)
                     {
                         PriorityTarget = null;
@@ -93,41 +105,29 @@ namespace ProjectAI.Characters.MonsterAI
 
             if (PriorityTarget != null)
             {
-                if (!PriorityTarget.gameObject.activeInHierarchy)
+                Vector2 diff = (Vector2)transform.position - (Vector2)PriorityTarget.position;
+                float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(diff);
+                float priorityThreshold = effectiveDetectRadius * priorityChaseMultiplier;
+                
+                if (sqrDist > priorityThreshold * priorityThreshold)
                 {
                     PriorityTarget = null;
                 }
                 else
                 {
-                    float sqrDist = ((Vector2)transform.position - (Vector2)PriorityTarget.position).sqrMagnitude;
-                    float priorityThreshold = effectiveDetectRadius * priorityChaseMultiplier;
-                    
-                    if (sqrDist > priorityThreshold * priorityThreshold)
-                    {
-                        PriorityTarget = null;
-                    }
-                    else
-                    {
-                        Target = PriorityTarget;
-                        return;
-                    }
+                    Target = PriorityTarget;
+                    return;
                 }
             }
 
             if (Target != null)
             {
-                if (!Target.gameObject.activeInHierarchy)
+                Vector2 diff = (Vector2)transform.position - (Vector2)Target.position;
+                float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(diff);
+                float threshold = effectiveDetectRadius * LOST_TARGET_MULTIPLIER;
+                if (sqrDist > threshold * threshold) // 탐지 거리 밖으로 벗어남
                 {
                     Target = null;
-                }
-                else
-                {
-                    float sqrDist = ((Vector2)transform.position - (Vector2)Target.position).sqrMagnitude;
-                    float threshold = effectiveDetectRadius * LOST_TARGET_MULTIPLIER;
-                    if (sqrDist > threshold * threshold) // 탐지 거리 밖으로 벗어남
-                    {
-                        Target = null;
-                    }
                 }
             }
 
@@ -151,14 +151,15 @@ namespace ProjectAI.Characters.MonsterAI
                         continue; // 자기 자신 제외 (표준)
                     }
 
-                    if (!string.IsNullOrEmpty(currentDetectTag) && !hitColliders[i].CompareTag(currentDetectTag))
+                    if (!string.IsNullOrEmpty(currentDetectTag) && currentDetectTag != ObjectTags.ALL && !hitColliders[i].CompareTag(currentDetectTag))
                     {
                         continue; // 태그 교집합 필터링
                     }
 
                     if (Owner != null)
                     {
-                        float sqrDistTargetToOwner = ((Vector2)Owner.position - (Vector2)hitColliders[i].transform.position).sqrMagnitude;
+                        Vector2 diff = (Vector2)Owner.position - (Vector2)hitColliders[i].transform.position;
+                        float sqrDistTargetToOwner = GameStatics.GetPerspectiveSqrMagnitude(diff);
                         
                         if (sqrDistTargetToOwner > sqrMaxReach)
                         {
@@ -166,7 +167,8 @@ namespace ProjectAI.Characters.MonsterAI
                         }
                     }
 
-                    float sqrDist = (myPos - (Vector2)hitColliders[i].transform.position).sqrMagnitude;
+                    Vector2 myDiff = myPos - (Vector2)hitColliders[i].transform.position;
+                    float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(myDiff);
                     if (sqrDist < minSqrDist)
                     {
                         minSqrDist = sqrDist;
