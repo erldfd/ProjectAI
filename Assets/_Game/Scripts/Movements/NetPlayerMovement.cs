@@ -325,8 +325,8 @@ namespace ProjectAI.Movements
             }
 
             // 2.5D 벨트스크롤: Y축(깊이) 이동 시 전역 원근법에 맞춰 속도를 보정합니다.
-            Vector2 scaledInput = new Vector2(inputVector.x, inputVector.y * GameStatics.MovementDepthRatio);
-            base.Rb.linearVelocity = scaledInput * (moveSpeed * currentMoveSpeedModifier);
+            float currentSpeed = moveSpeed * currentMoveSpeedModifier;
+            base.Rb.linearVelocity = new Vector2(inputVector.x * currentSpeed, inputVector.y * currentSpeed * GameStatics.MovementDepthRatio);
         }
 
         private void ApplyManualVelocity()

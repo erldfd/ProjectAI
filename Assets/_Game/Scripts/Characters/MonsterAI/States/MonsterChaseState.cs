@@ -24,7 +24,8 @@ namespace ProjectAI.Characters.MonsterAI
                 return;
             }
 
-            Vector2 dir = ((Vector2)Brain.Target.position - (Vector2)Brain.transform.position).normalized;
+            Vector2 chaseDiff = (Vector2)Brain.Target.position - (Vector2)Brain.transform.position;
+            Vector2 dir = GameStatics.GetPerspectiveVector(chaseDiff).normalized;
             Brain.SetMoveDirection(dir);
         }
 

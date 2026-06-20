@@ -136,9 +136,16 @@ namespace ProjectAI.Core
         #region Belt-Scroll Depth Distortion Helpers
         
         /// <summary>
-        /// 현재 게임의 벨트스크롤 Y축 깊이 왜곡률을 가져옵니다.
+        /// 현재 게임의 벨트스크롤 Y축 깊이 왜곡률을 가져옵니다. 0 나누기 예외를 막기 위해 최소 0.001을 보장합니다.
         /// </summary>
-        public static float DepthScale => GameManager != null ? GameManager.BeltScrollDepthScale : 2.5f;
+        public static float DepthScale
+        {
+            get
+            {
+                float scale = GameManager != null ? GameManager.BeltScrollDepthScale : 2.5f;
+                return Mathf.Max(0.001f, scale);
+            }
+        }
 
         /// <summary>
         /// 벨트스크롤 시각 왜곡에 맞추어 실제 상하 이동 물리 속도를 느리게 보정하는 비율입니다.

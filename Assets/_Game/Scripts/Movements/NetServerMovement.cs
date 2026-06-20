@@ -86,9 +86,8 @@ namespace ProjectAI.Movements
             }
 
             // 2.5D 벨트스크롤: Y축(깊이) 이동 시 전역 원근법에 맞춰 속도를 보정합니다.
-            Vector2 scaledDirection = new Vector2(currentDirection.x, currentDirection.y * GameStatics.MovementDepthRatio);
-            
-            base.Rb.linearVelocity = scaledDirection * (baseSpeed * currentSpeedModifier);
+            float currentSpeed = baseSpeed * currentSpeedModifier;
+            base.Rb.linearVelocity = new Vector2(currentDirection.x * currentSpeed, currentDirection.y * currentSpeed * GameStatics.MovementDepthRatio);
             
             // 애니메이션 속도는 Y축 렌더링 스케일에 영향을 받지 않도록(가로/세로 이동 시 다리 움직임 속도 통일) 보정 전 벡터를 넘깁니다.
             base.NetAnimVelocity.Value = currentDirection * (baseSpeed * currentSpeedModifier);

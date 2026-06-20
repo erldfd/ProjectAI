@@ -42,8 +42,6 @@ namespace ProjectAI.Core.Stats
             OwnerEntity = owner;
         }
 
-        /// <summary> IDamageable 구현: 엔티티의 StatComponent 참조 </summary>
-        public float DepthRadius => (OwnerEntity != null && OwnerEntity.StatComponent != null) ? OwnerEntity.StatComponent.DepthRadius : 0.5f;
 
         public override void OnNetworkSpawn()
         {

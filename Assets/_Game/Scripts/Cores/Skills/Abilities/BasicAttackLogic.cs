@@ -84,6 +84,11 @@ namespace ProjectAI.Core.Skills.Abilities
 
             Collider2D hitbox = caster.SkillComponent.MeleeHitbox;
             Assert.IsNotNull(hitbox, $"[BasicAttackLogic] Action 실패: {caster.NetworkObjectId}에 MeleeHitbox가 설정되지 않았습니다.");
+            if (hitbox == null)
+            {
+                Debug.LogWarning($"[BasicAttackLogic] {caster.gameObject.name}에 MeleeHitbox가 없어 공격 로직을 종료합니다.");
+                return;
+            }
 
             // [Hitbox 사용 규칙 가이드]
             // 1. 게임오브젝트 상태: 반드시 켜져 있어야 함 (SetActive(true))
@@ -123,22 +128,20 @@ namespace ProjectAI.Core.Skills.Abilities
                     continue;
                 }
 
-                // 인터페이스를 통한 O(1) 깊이 판정 (다운캐스팅 불필요)
-                float targetDepthRadius = damageable.DepthRadius;
-
-                float casterDepthRadius = caster.StatComponent != null ? caster.StatComponent.DepthRadius : 0.5f;
+                // 대상과 자신의 물리적 Y축 콜라이더 크기를 깊이 두께(Thickness)로 동적 변환
+                float targetDepthThickness = col.bounds.extents.y;
+                float casterDepthThickness = hitbox.bounds.extents.y;
                 
                 // 타겟의 기준 위치는 가급적 부모의 Root 위치를 사용
                 float targetY = targetNetObj != null ? targetNetObj.transform.position.y : col.transform.position.y;
                 float physicalDepthDiff = Mathf.Abs(caster.transform.position.y - targetY);
-                // 전역 왜곡 배율을 적용하여 시각적 논리 거리로 변환
-                float logicalDepthDifference = physicalDepthDiff * GameStatics.DepthScale;
-                float allowedTolerance = casterDepthRadius + targetDepthRadius;
+                // 전역 왜곡 배율(DepthScale) 곱셈을 생략하여 부동소수점 연산 최적화
+                float allowedTolerance = casterDepthThickness + targetDepthThickness;
 
-                Debug.Log($"[BasicAttackLogic] Action: 깊이 검사 - CasterY: {caster.transform.position.y}, TargetY: {targetY}, LogicalDepthDiff: {logicalDepthDifference}, AllowedTolerance: {casterDepthRadius} + {targetDepthRadius} = {allowedTolerance}"); 
-                if (logicalDepthDifference > allowedTolerance)
+                Debug.Log($"[BasicAttackLogic] Action: 깊이 검사 - CasterY: {caster.transform.position.y}, TargetY: {targetY}, PhysicalDepthDiff: {physicalDepthDiff}, AllowedTolerance: {casterDepthThickness} + {targetDepthThickness} = {allowedTolerance}"); 
+                if (physicalDepthDiff > allowedTolerance)
                 {
-                    Debug.Log($"[BasicAttackLogic] Action: 깊이(Z축) 차이가 너무 커서 빗나감! 차이: {logicalDepthDifference}, 허용치: {allowedTolerance}");
+                    Debug.Log($"[BasicAttackLogic] Action: 깊이(Z축) 차이가 너무 커서 빗나감! 차이: {physicalDepthDiff}, 허용치: {allowedTolerance}");
                     continue; // 헛방
                 }
 

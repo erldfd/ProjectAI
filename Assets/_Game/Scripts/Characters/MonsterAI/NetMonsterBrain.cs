@@ -285,8 +285,8 @@ namespace ProjectAI.Characters.MonsterAI
             {
                 return Vector2.zero;
             }
-
-            Vector2 desiredVelocity = diff.normalized;
+            Vector2 logicalDiff = GameStatics.GetPerspectiveVector(diff);
+            Vector2 desiredVelocity = logicalDiff.normalized;
 
             // 감속 반경 안에 들어왔다면, 거리에 비례하여 벡터 길이를 1에서 0으로 부드럽게 줄임
             if (dist < slowDownRadius)
