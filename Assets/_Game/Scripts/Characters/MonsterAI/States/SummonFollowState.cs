@@ -128,15 +128,17 @@ namespace ProjectAI.Characters.MonsterAI
             }
 
             Vector2 myPos = Brain.transform.position;
-            float sqrDist = (myPos - (Vector2)summonBrain.Owner.position).sqrMagnitude;
+            Vector2 ownerDiff = myPos - (Vector2)summonBrain.Owner.position;
+            float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(ownerDiff);
             isFollowing = sqrDist > followThreshold * followThreshold;
 
             Vector2 desiredDirection = Vector2.zero;
 
             if (isFollowing)
             {
-                // 주인을 쫓아갈 때는 최고 속도(정규화)로 쫓아감
-                desiredDirection = ((Vector2)summonBrain.Owner.position - myPos).normalized;
+                // 주인을 쫓아갈 때는 논리 스케일(2.5D)로 변환된 벡터를 정규화하여 사용
+                Vector2 chaseDiff = (Vector2)summonBrain.Owner.position - myPos;
+                desiredDirection = GameStatics.GetPerspectiveVector(chaseDiff).normalized;
                 
                 // 주인을 쫓아가는 동안에는 타이머를 초기화하여, 추적이 끝나는 즉시 현재 주인 위치 기반의 새로운 목적지를 잡도록 강제함 (과거의 목적지로 돌아가는 고무줄 버그 방지)
                 currentRoamTimer = 0f;
@@ -184,11 +186,12 @@ namespace ProjectAI.Characters.MonsterAI
                         }
 
                         Vector2 diff = myPos - (Vector2)hitColliders[i].transform.position;
-                        float dist = diff.magnitude;
+                        float dist = GameStatics.GetPerspectiveMagnitude(diff);
 
                         if (dist > 0.01f && dist < separationRadius)
                         {
-                            cachedSeparationForce += (diff.normalized / dist);
+                            Vector2 logicalDiff = GameStatics.GetPerspectiveVector(diff);
+                            cachedSeparationForce += (logicalDiff.normalized / dist);
                         }
                     }
                 }

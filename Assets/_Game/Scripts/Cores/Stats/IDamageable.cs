@@ -12,10 +12,6 @@ namespace ProjectAI.Core.Stats
         /// <param name="damage">최종 적용할 데미지 수치</param>
         void TakeDamage(int damage);
 
-        /// <summary>
-        /// 타격 판정에 사용되는 객체의 Z축 깊이(두께) 반경입니다.
-        /// </summary>
-        float DepthRadius { get; }
 
         /// <summary>
         /// 객체가 소속된 루트 엔티티 (아군 오인 방지 및 스탯 조회용)

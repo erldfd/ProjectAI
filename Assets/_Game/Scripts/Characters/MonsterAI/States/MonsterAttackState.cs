@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using ProjectAI.Core.Skills;
+using ProjectAI.Core;
 
 namespace ProjectAI.Characters.MonsterAI
 {
@@ -27,7 +28,8 @@ namespace ProjectAI.Characters.MonsterAI
             base.Tick();
             Assert.IsNotNull(Brain.Target, "[MonsterAttackState] Target이 null입니다. 부모 상태가 null 처리를 누락했습니다.");
 
-            float sqrDist = ((Vector2)Brain.transform.position - (Vector2)Brain.Target.position).sqrMagnitude;
+            Vector2 diff = (Vector2)Brain.transform.position - (Vector2)Brain.Target.position;
+            float sqrDist = GameStatics.GetPerspectiveSqrMagnitude(diff);
             
             if (sqrDist > Brain.AttackRadius * Brain.AttackRadius)
             {

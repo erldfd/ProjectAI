@@ -84,6 +84,11 @@ namespace ProjectAI.Core.Skills.Abilities
 
             Collider2D hitbox = caster.SkillComponent.MeleeHitbox;
             Assert.IsNotNull(hitbox, $"[BasicAttackLogic] Action 실패: {caster.NetworkObjectId}에 MeleeHitbox가 설정되지 않았습니다.");
+            if (hitbox == null)
+            {
+                Debug.LogWarning($"[BasicAttackLogic] {caster.gameObject.name}에 MeleeHitbox가 없어 공격 로직을 종료합니다.");
+                return;
+            }
 
             // [Hitbox 사용 규칙 가이드]
             // 1. 게임오브젝트 상태: 반드시 켜져 있어야 함 (SetActive(true))
@@ -107,40 +112,41 @@ namespace ProjectAI.Core.Skills.Abilities
             {
                 Collider2D col = results[i];
 
-                IDamageable damageable = col.GetComponentInParent<IDamageable>();
-                if (damageable == null)
+                GameObject rootObj = col.transform.root.gameObject;
+
+                if (!GameStatics.TryGetDamageable(rootObj, out IDamageable damageable))
                 {
-                    Debug.Log($"[BasicAttackLogic] Action: 피격 대상이지만 IDamageable 컴포넌트가 없습니다. 오브젝트: {col.gameObject.name}");
+                    Debug.Log($"[BasicAttackLogic] Action: 피격 대상이지만 레지스트리에 IDamageable이 없습니다. 오브젝트: {rootObj.name}");
                     continue;
                 }
                 
                 // GetComponent 호출 없이 인터페이스를 통해 직접 NetworkObject 가져오기 (최적화)
                 NetworkObject targetNetObj = damageable.OwnerEntity != null ? damageable.OwnerEntity.NetworkObject : null;
-                Debug.Log($"[BasicAttackLogic] Action: 타격 대상 발견 - {col.gameObject.name} (NetworkObjectId: {targetNetObj?.NetworkObjectId.ToString() ?? "N/A"})");
+                Debug.Log($"[BasicAttackLogic] Action: 타격 대상 발견 - {rootObj.name} (NetworkObjectId: {targetNetObj?.NetworkObjectId.ToString() ?? "N/A"})");
                 // 자신은 타격에서 제외
                 if (targetNetObj != null && targetNetObj.NetworkObjectId == caster.NetworkObjectId)
                 {
                     continue;
                 }
 
-                // 인터페이스를 통한 O(1) 깊이 판정 (다운캐스팅 불필요)
-                float targetDepthRadius = damageable.DepthRadius;
-
-                float casterDepthRadius = caster.StatComponent != null ? caster.StatComponent.DepthRadius : 0.5f;
+                // 대상과 자신의 물리적 Y축 콜라이더 크기를 깊이 두께(Thickness)로 동적 변환
+                float targetDepthThickness = col.bounds.extents.y;
+                float casterDepthThickness = hitbox.bounds.extents.y;
                 
                 // 타겟의 기준 위치는 가급적 부모의 Root 위치를 사용
-                float targetY = targetNetObj != null ? targetNetObj.transform.position.y : col.transform.position.y;
-                float depthDifference = Mathf.Abs(caster.transform.position.y - targetY);
-                float allowedTolerance = casterDepthRadius + targetDepthRadius;
+                float targetY = targetNetObj != null ? targetNetObj.transform.position.y : rootObj.transform.position.y;
+                float physicalDepthDiff = Mathf.Abs(caster.transform.position.y - targetY);
+                // 전역 왜곡 배율(DepthScale) 곱셈을 생략하여 부동소수점 연산 최적화
+                float allowedTolerance = casterDepthThickness + targetDepthThickness;
 
-                Debug.Log($"[BasicAttackLogic] Action: 깊이 검사 - CasterY: {caster.transform.position.y}, TargetY: {targetY}, DepthDifference: {depthDifference}, AllowedTolerance: {casterDepthRadius} + {targetDepthRadius} = {allowedTolerance}"); 
-                if (depthDifference > allowedTolerance)
+                Debug.Log($"[BasicAttackLogic] Action: 깊이 검사 - CasterY: {caster.transform.position.y}, TargetY: {targetY}, PhysicalDepthDiff: {physicalDepthDiff}, AllowedTolerance: {casterDepthThickness} + {targetDepthThickness} = {allowedTolerance}"); 
+                if (physicalDepthDiff > allowedTolerance)
                 {
-                    Debug.Log($"[BasicAttackLogic] Action: 깊이(Z축) 차이가 너무 커서 빗나감! 차이: {depthDifference}, 허용치: {allowedTolerance}");
+                    Debug.Log($"[BasicAttackLogic] Action: 깊이(Z축) 차이가 너무 커서 빗나감! 차이: {physicalDepthDiff}, 허용치: {allowedTolerance}");
                     continue; // 헛방
                 }
 
-                Debug.Log($"[BasicAttackLogic] Action: 타격 대상이 IDamageable을 구현했습니다. 오브젝트: {col.gameObject.name}");
+                Debug.Log($"[BasicAttackLogic] Action: 타격 대상 확인됨. 오브젝트: {rootObj.name}");
 
                 // 이미 타격한 대상 제외
                 if (hitTargets.Contains(damageable))
@@ -148,13 +154,12 @@ namespace ProjectAI.Core.Skills.Abilities
                     continue;
                 }
 
-                Debug.Log($"[BasicAttackLogic] Action: 타격 대상이 새로 추가되었습니다. 오브젝트: {col.gameObject.name}");
+                Debug.Log($"[BasicAttackLogic] Action: 타격 대상이 새로 추가되었습니다. 오브젝트: {rootObj.name}");
 
                 hitTargets.Add(damageable);
                 
-                GameObject targetObj = damageable.OwnerEntity != null ? damageable.OwnerEntity.gameObject : ((Component)damageable).gameObject;
-                Debug.Log($"[BasicAttackLogic] 근접 평타 적중! 타겟: {targetObj.name}, 데미지: {attackPower}");
-                GameStatics.ApplyDamage(targetObj, attackPower);
+                Debug.Log($"[BasicAttackLogic] 근접 평타 적중! 타겟: {rootObj.name}, 데미지: {attackPower}");
+                GameStatics.ApplyDamage(damageable, attackPower);
             }
         }
 

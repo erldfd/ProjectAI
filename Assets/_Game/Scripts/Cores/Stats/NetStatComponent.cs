@@ -42,9 +42,6 @@ namespace ProjectAI.Core.Stats
             NetworkVariableWritePermission.Server
         );
 
-        [Header("Collision & Hitbox")]
-        [Tooltip("캐릭터의 Z축(깊이) 두께 반지름입니다. 타격 유효성 판정에 사용됩니다.")]
-        public float DepthRadius = 0.5f;
 
         /// <summary>
         /// 이 스탯 컴포넌트를 소유하고 있는 루트 엔티티 참조

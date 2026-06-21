@@ -17,10 +17,10 @@ namespace ProjectAI.Tests
             
             // 1. 컴포넌트 구성
             GameObject go = new GameObject("TestCharacter");
-            var entityEvents = go.AddComponent<EntityEvents>();
-            var healthComp = go.AddComponent<NetHealthComponent>();
-            var statComp = go.AddComponent<NetStatComponent>();
-            var character = go.AddComponent<NetCharacter>();
+            EntityEvents entityEvents = go.AddComponent<EntityEvents>();
+            NetHealthComponent healthComp = go.AddComponent<NetHealthComponent>();
+            NetStatComponent statComp = go.AddComponent<NetStatComponent>();
+            NetCharacter character = go.AddComponent<NetCharacter>();
             
             // 2. Awake 시뮬레이션 (Unity 생명주기)
             // 보통 Awake는 Instantiate 시점에 자동으로 호출됨

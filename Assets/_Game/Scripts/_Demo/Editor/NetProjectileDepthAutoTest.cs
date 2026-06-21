@@ -22,9 +22,25 @@ namespace ProjectAI.Demo.Editor
     public class MockDamageable : MonoBehaviour, IDamageable
     {
         public NetEntity OwnerEntity { get; set; } = null;
-        public float DepthRadius { get; set; } = 0.5f;
         public int LastTakenDamage { get; private set; } = 0;
         public bool WasDamaged { get; private set; } = false;
+
+        private int cachedRootInstanceID = 0;
+
+        private void OnEnable()
+        {
+            cachedRootInstanceID = transform.root.gameObject.GetInstanceID();
+            GameStatics.RegisterDamageable(transform.root.gameObject, this);
+        }
+
+        private void OnDisable()
+        {
+            if (cachedRootInstanceID != 0)
+            {
+                GameStatics.UnregisterDamageable(cachedRootInstanceID);
+                cachedRootInstanceID = 0;
+            }
+        }
 
         public void TakeDamage(int amount)
         {
@@ -63,7 +79,7 @@ namespace ProjectAI.Demo.Editor
             string resultPath = "artifacts/tester/NetProjectileDepth_TestResult.txt";
             Directory.CreateDirectory("artifacts/tester");
 
-            using (var writer = new StreamWriter(resultPath, false))
+            using (StreamWriter writer = new StreamWriter(resultPath, false))
             {
                 writer.WriteLine("--- NetProjectile Depth Unity Editor Tests ---");
 
@@ -92,13 +108,12 @@ namespace ProjectAI.Demo.Editor
         static GameObject CreateProjectileContext(out NetProjectile projectile)
         {
             GameObject projGo = new GameObject("TestProjectile");
-            var events = projGo.AddComponent<EntityEvents>();
-            var stat = projGo.AddComponent<NetStatComponent>();
-            stat.DepthRadius = 0.5f;
+            EntityEvents events = projGo.AddComponent<EntityEvents>();
+            NetStatComponent stat = projGo.AddComponent<NetStatComponent>();
             stat.AttackPower.Value = 10;
             
-            var move = projGo.AddComponent<MockMovement>();
-            var rb = projGo.AddComponent<Rigidbody2D>();
+            MockMovement move = projGo.AddComponent<MockMovement>();
+            Rigidbody2D rb = projGo.AddComponent<Rigidbody2D>();
             
             projectile = projGo.AddComponent<NetProjectile>();
             
@@ -143,10 +158,9 @@ namespace ProjectAI.Demo.Editor
             GameObject targetGo = new GameObject("DamageTarget");
             targetGo.transform.position = new Vector3(5, 0.2f, 0); // Y차이 = 0.2 (허용 범위: 0.5 + 0.5 = 1.0)
             
-            var damageable = targetGo.AddComponent<MockDamageable>();
-            damageable.DepthRadius = 0.5f;
+            MockDamageable damageable = targetGo.AddComponent<MockDamageable>();
             
-            var col = targetGo.AddComponent<BoxCollider2D>();
+            BoxCollider2D col = targetGo.AddComponent<BoxCollider2D>();
             col.isTrigger = false;
 
             // Trigger Enter 
@@ -174,16 +188,15 @@ namespace ProjectAI.Demo.Editor
             // Y차이 = 1.5 (허용 범위: 0.5 + 0.5 = 1.0) 초과
             targetGo.transform.position = new Vector3(5, 1.5f, 0); 
             
-            var damageable = targetGo.AddComponent<MockDamageable>();
-            damageable.DepthRadius = 0.5f;
+            MockDamageable damageable = targetGo.AddComponent<MockDamageable>();
             
-            var col = targetGo.AddComponent<BoxCollider2D>();
+            BoxCollider2D col = targetGo.AddComponent<BoxCollider2D>();
             col.isTrigger = false;
 
             // Trigger Enter 
             CallOnTriggerEnter2D(projectile, col);
 
-            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Y축) 차이가 너무 커서 관통(무시)됨"));
+            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Z축) 차이가 너무 커서 빗나감!"));
             bool passed = !damageable.WasDamaged && ignoredLogFound;
             
             writer.WriteLine($"Expected: No Damage & Ignore Log, Actual Damage: {damageable.WasDamaged}, LogFound: {ignoredLogFound} => {(passed ? "PASS" : "FAIL")}");
@@ -206,7 +219,7 @@ namespace ProjectAI.Demo.Editor
             GameObject wallGo = new GameObject("Wall");
             wallGo.transform.position = new Vector3(5, 0.2f, 0); // Y차이 0.2
             
-            var col = wallGo.AddComponent<BoxCollider2D>();
+            BoxCollider2D col = wallGo.AddComponent<BoxCollider2D>();
             col.isTrigger = false;
 
             // Trigger Enter 
@@ -235,13 +248,13 @@ namespace ProjectAI.Demo.Editor
             GameObject wallGo = new GameObject("Wall_OutOfDepth");
             wallGo.transform.position = new Vector3(5, 1.5f, 0); // Y차이 1.5 (허용 범위: 0.5 + 0.5 = 1.0)
             
-            var col = wallGo.AddComponent<BoxCollider2D>();
+            BoxCollider2D col = wallGo.AddComponent<BoxCollider2D>();
             col.isTrigger = false;
 
             // Trigger Enter 
             CallOnTriggerEnter2D(projectile, col);
 
-            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Y축) 차이가 너무 커서 관통(무시)됨"));
+            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Z축) 차이가 너무 커서 빗나감!"));
             bool passed = ignoredLogFound;
             
             writer.WriteLine($"Expected: Ignore Log, LogFound: {ignoredLogFound} => {(passed ? "PASS" : "FAIL")}");

@@ -20,7 +20,7 @@ namespace ProjectAI.Demo.Editor
         {
             string resultPath = "artifacts/tester/ZOrderSorter_TestResult.txt";
             Directory.CreateDirectory("artifacts/tester");
-            using (var writer = new StreamWriter(resultPath, false))
+            using (StreamWriter writer = new StreamWriter(resultPath, false))
             {
                 writer.WriteLine("--- ZOrderSorter Test Results ---");
 
@@ -41,8 +41,8 @@ namespace ProjectAI.Demo.Editor
         {
             writer.WriteLine("\n[Test 1] Y Change -> SortingOrder Update (Offset included)");
             GameObject go = new GameObject("Test1_Root");
-            var sr = go.AddComponent<SpriteRenderer>();
-            var sorter = go.AddComponent<ZOrderSorter>();
+            SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
+            ZOrderSorter sorter = go.AddComponent<ZOrderSorter>();
             sorter.SortingOffset = 50;
             
             go.transform.position = new Vector3(0, -5.2f, 0);
@@ -66,8 +66,8 @@ namespace ProjectAI.Demo.Editor
             child.transform.SetParent(root.transform);
             child.transform.localPosition = Vector3.zero;
 
-            var sr = child.AddComponent<SpriteRenderer>();
-            var sorter = root.AddComponent<ZOrderSorter>(); 
+            SpriteRenderer sr = child.AddComponent<SpriteRenderer>();
+            ZOrderSorter sorter = root.AddComponent<ZOrderSorter>(); 
             
             sorter.UpdateSortingOrder();
             int initialOrder = sr.sortingOrder;
@@ -88,8 +88,8 @@ namespace ProjectAI.Demo.Editor
         {
             writer.WriteLine("\n[Test 3] IsStatic = true -> LateUpdate doesn't change order");
             GameObject go = new GameObject("Test3_Root");
-            var sr = go.AddComponent<SpriteRenderer>();
-            var sorter = go.AddComponent<ZOrderSorter>();
+            SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
+            ZOrderSorter sorter = go.AddComponent<ZOrderSorter>();
             
             // 1. Initial calculate
             go.transform.position = new Vector3(0, -1.0f, 0);

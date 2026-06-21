@@ -130,7 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2961203071
+  GlobalObjectIdHash: 1303697169
   InScenePlacedSourceGlobalObjectIdHash: 797668309
   DeferredDespawnTick: 0
   Ownership: 1
@@ -541,7 +541,6 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
-  DepthRadius: 0.5
 --- !u!1 &5308749790570713212
 GameObject:
   m_ObjectHideFlags: 0
@@ -597,7 +596,6 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 1
-  depthSpeedRatio: 0.6
   baseSpeed: 3
 --- !u!1 &5912985425572193920
 GameObject:
