@@ -106,20 +106,16 @@ namespace ProjectAI.Projectiles
                 return;
             }
 
-            // 충돌 대상이 데미지를 받을 수 있는 객체인지 확인
-            IDamageable damageable = collision.GetComponentInParent<IDamageable>();
-            if (damageable == null)
-            {
-                damageable = collision.GetComponentInChildren<IDamageable>();
-            }
+            // 충돌 대상이 데미지를 받을 수 있는 객체인지 O(1) 룩업 확인
+            GameObject rootObj = collision.transform.root.gameObject;
+            bool isTargetDamageable = GameStatics.TryGetDamageable(rootObj, out IDamageable damageable);
+
             // 2.5D 깊이 판정 기준 물리적 두께
             float targetDepthThickness = collision.bounds.extents.y;
             float targetY = collision.bounds.center.y;
-            bool isTargetDamageable = false;
 
-            if (damageable != null)
+            if (isTargetDamageable)
             {
-                isTargetDamageable = true;
                 NetworkObject targetNetObj = damageable.OwnerEntity != null ? damageable.OwnerEntity.NetworkObject : null;
                 
                 // 자신이 쏜 투사체에 자신이 맞는 것은 무시
@@ -130,7 +126,7 @@ namespace ProjectAI.Projectiles
                 }
                 
                 // 타겟의 기준 위치는 가급적 부모의 Root 위치를 사용
-                targetY = targetNetObj != null ? targetNetObj.transform.position.y : collision.transform.position.y;
+                targetY = targetNetObj != null ? targetNetObj.transform.position.y : rootObj.transform.position.y;
             }
 
             // 2.5D 벨트스크롤 깊이(Z축 역할) 판정
@@ -153,8 +149,8 @@ namespace ProjectAI.Projectiles
             if (isTargetDamageable)
             {
                 float damageAmount = statComponent != null ? statComponent.AttackPower.Value : 0f;
-                Debug.Log($"[NetProjectile] 데미지 적용 대상 발견: {collision.name}, 데미지량: {damageAmount}");
-                GameStatics.ApplyDamage(collision.gameObject, (int)damageAmount);
+                Debug.Log($"[NetProjectile] 데미지 적용 대상 발견: {rootObj.name}, 데미지량: {damageAmount}");
+                GameStatics.ApplyDamage(damageable, (int)damageAmount);
                 DestroyProjectile();
             }
             else
@@ -193,7 +189,7 @@ namespace ProjectAI.Projectiles
 
         public void OnSpawn()
         {
-            projectileCollider = GetComponentInChildren<Collider2D>();
+            // Awake에서 캐싱된 콜라이더 사용 (풀링 최적화)
         }
 
         public void OnDespawn()

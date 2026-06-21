@@ -6,7 +6,7 @@ using ProjectAI.Network;
 using ProjectAI.Core.Stats;
 using ProjectAI.Core.Skills;
 using ProjectAI.Core.Pooling;
-
+using System.Collections.Generic;
 
 namespace ProjectAI.Core
 {
@@ -15,6 +15,9 @@ namespace ProjectAI.Core
     /// </summary>
     public static class GameStatics
     {
+
+        // O(1) 룩업을 위한 전역 데미지 인터페이스 레지스트리
+        private static readonly Dictionary<int, IDamageable> damageableRegistry = new Dictionary<int, IDamageable>();
 
         public static GameManager GameManager { get; private set; }
         public static ANetGameModeBase CurrentMode { get; private set; }
@@ -37,30 +40,67 @@ namespace ProjectAI.Core
                 {
                     return true;
                 }
+                
                 return NetworkManager.IsServer;
             }
+        }
+
+        public static void RegisterDamageable(GameObject rootObj, IDamageable damageable)
+        {
+            if (rootObj != null && damageable != null)
+            {
+                damageableRegistry[rootObj.GetInstanceID()] = damageable;
+            }
+        }
+
+        public static void UnregisterDamageable(GameObject rootObj)
+        {
+            if (rootObj != null)
+            {
+                damageableRegistry.Remove(rootObj.GetInstanceID());
+            }
+        }
+
+        public static void UnregisterDamageable(int instanceId)
+        {
+            damageableRegistry.Remove(instanceId);
+        }
+
+        public static bool TryGetDamageable(GameObject rootObj, out IDamageable damageable)
+        {
+            if (rootObj == null)
+            {
+                damageable = null;
+                return false;
+            }
+            return damageableRegistry.TryGetValue(rootObj.GetInstanceID(), out damageable);
         }
 
         /// <summary>
         /// 전역 데미지 파이프라인입니다.
         /// 방어력 차감, 크리티컬 등 복잡한 데미지 계산 공식이 추가될 경우 여기서 중앙 통제합니다.
         /// </summary>
-        /// <param name="target">피격을 받을 대상 오브젝트</param>
+        /// <param name="target">피격을 받을 대상 오브젝트 (Root GameObject 권장)</param>
         /// <param name="baseDamage">기본 타격 데미지</param>
         public static void ApplyDamage(GameObject target, int baseDamage)
         {
             Assert.IsNotNull(target, "[GameStatics] ApplyDamage: target 오브젝트가 null입니다!");
 
+            // 기존 GetComponent를 O(1) 딕셔너리 룩업으로 최적화
+            if (TryGetDamageable(target, out IDamageable damageable))
+            {
+                ApplyDamage(damageable, baseDamage);
+            }
+        }
+
+        /// <summary>
+        /// IDamageable을 직접 전달받는 최적화된 데미지 적용 오버로드입니다.
+        /// </summary>
+        public static void ApplyDamage(IDamageable damageable, int baseDamage)
+        {
             Assert.IsTrue(IsServerAuthorized, "[GameStatics] ApplyDamage는 서버(또는 오프라인)에서만 호출되어야 합니다.");
             
-            if (!IsServerAuthorized)
-            {
-                return;
-            }
-
-            IDamageable damageable = target.GetComponentInChildren<IDamageable>();
-
-            if (damageable == null)
+            if (!IsServerAuthorized || damageable == null)
             {
                 return;
             }

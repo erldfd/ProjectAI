@@ -25,6 +25,23 @@ namespace ProjectAI.Demo.Editor
         public int LastTakenDamage { get; private set; } = 0;
         public bool WasDamaged { get; private set; } = false;
 
+        private int cachedRootInstanceID = 0;
+
+        private void OnEnable()
+        {
+            cachedRootInstanceID = transform.root.gameObject.GetInstanceID();
+            GameStatics.RegisterDamageable(transform.root.gameObject, this);
+        }
+
+        private void OnDisable()
+        {
+            if (cachedRootInstanceID != 0)
+            {
+                GameStatics.UnregisterDamageable(cachedRootInstanceID);
+                cachedRootInstanceID = 0;
+            }
+        }
+
         public void TakeDamage(int amount)
         {
             WasDamaged = true;
@@ -179,7 +196,7 @@ namespace ProjectAI.Demo.Editor
             // Trigger Enter 
             CallOnTriggerEnter2D(projectile, col);
 
-            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Y축) 차이가 너무 커서 관통(무시)됨"));
+            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Z축) 차이가 너무 커서 빗나감!"));
             bool passed = !damageable.WasDamaged && ignoredLogFound;
             
             writer.WriteLine($"Expected: No Damage & Ignore Log, Actual Damage: {damageable.WasDamaged}, LogFound: {ignoredLogFound} => {(passed ? "PASS" : "FAIL")}");
@@ -237,7 +254,7 @@ namespace ProjectAI.Demo.Editor
             // Trigger Enter 
             CallOnTriggerEnter2D(projectile, col);
 
-            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Y축) 차이가 너무 커서 관통(무시)됨"));
+            bool ignoredLogFound = capturedLogs.Exists(log => log.Contains("깊이(Z축) 차이가 너무 커서 빗나감!"));
             bool passed = ignoredLogFound;
             
             writer.WriteLine($"Expected: Ignore Log, LogFound: {ignoredLogFound} => {(passed ? "PASS" : "FAIL")}");

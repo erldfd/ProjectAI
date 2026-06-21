@@ -42,10 +42,15 @@ namespace ProjectAI.Core.Stats
             OwnerEntity = owner;
         }
 
+        private int cachedRootInstanceID = 0;
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            
+            cachedRootInstanceID = transform.root.gameObject.GetInstanceID();
+            GameStatics.RegisterDamageable(transform.root.gameObject, this);
+
             CurrentHealth.OnValueChanged += HandleHealthChanged;
 
             // [Review Fix] 클라이언트 체력 UI 초기화 명시적 호출
@@ -62,6 +67,12 @@ namespace ProjectAI.Core.Stats
         {
             base.OnNetworkDespawn();
             CurrentHealth.OnValueChanged -= HandleHealthChanged;
+
+            if (cachedRootInstanceID != 0)
+            {
+                GameStatics.UnregisterDamageable(cachedRootInstanceID);
+                cachedRootInstanceID = 0;
+            }
         }
 
         /// <summary>
