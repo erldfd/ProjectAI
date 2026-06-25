@@ -6,6 +6,7 @@ using ProjectAI.Network;
 using ProjectAI.Core.Stats;
 using ProjectAI.Core.Skills;
 using ProjectAI.Core.Pooling;
+using ProjectAI.Environments;
 using System.Collections.Generic;
 
 namespace ProjectAI.Core
@@ -15,15 +16,40 @@ namespace ProjectAI.Core
     /// </summary>
     public static class GameStatics
     {
+        // ----------------------------------------------------
+        // 1. Static Variables & Consts
+        // ----------------------------------------------------
+        private static ChunkDatabaseSO _mapChunkDB;
 
         // O(1) 룩업을 위한 전역 데미지 인터페이스 레지스트리
         private static readonly Dictionary<int, IDamageable> damageableRegistry = new Dictionary<int, IDamageable>();
+
+
+        // ----------------------------------------------------
+        // 2. Properties
+        // ----------------------------------------------------
+        /// <summary>
+        /// Resources/MapChunkDB.asset 을 지연 로딩하여 캐싱합니다.
+        /// </summary>
+        public static ChunkDatabaseSO MapChunkDB
+        {
+            get
+            {
+                if (_mapChunkDB == null)
+                {
+                    string resourceName = GameManager != null ? GameManager.MapChunkDatabaseResourceName : "MapChunkDB";
+                    _mapChunkDB = Resources.Load<ChunkDatabaseSO>(resourceName);
+                    Assert.IsNotNull(_mapChunkDB, $"[GameStatics] Resources 폴더 내에 '{resourceName}' SO 파일을 찾을 수 없습니다! 반드시 생성해 주세요.");
+                }
+
+                return _mapChunkDB;
+            }
+        }
 
         public static GameManager GameManager { get; private set; }
         public static ANetGameModeBase CurrentMode { get; private set; }
         public static SkillManager SkillManager { get; private set; }
         public static NetworkObjectPool ObjectPool { get; private set; }
-
 
         public static NetworkManager NetworkManager => NetworkManager.Singleton;
 
@@ -43,6 +69,39 @@ namespace ProjectAI.Core
                 
                 return NetworkManager.IsServer;
             }
+        }
+
+        /// <summary>
+        /// 현재 게임의 벨트스크롤 Y축 깊이 왜곡률을 가져옵니다. 0 나누기 예외를 막기 위해 최소 0.001을 보장합니다.
+        /// </summary>
+        public static float DepthScale
+        {
+            get
+            {
+                float scale = GameManager != null ? GameManager.BeltScrollDepthScale : 2.5f;
+                return Mathf.Max(0.001f, scale);
+            }
+        }
+
+        /// <summary>
+        /// 벨트스크롤 시각 왜곡에 맞추어 실제 상하 이동 물리 속도를 느리게 보정하는 비율입니다.
+        /// </summary>
+        public static float MovementDepthRatio => 1.0f / DepthScale;
+
+
+        // ----------------------------------------------------
+        // 3. Methods
+        // ----------------------------------------------------
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _mapChunkDB = null;
+            damageableRegistry.Clear();
+            GameManager = null;
+            CurrentMode = null;
+            SkillManager = null;
+            ObjectPool = null;
         }
 
         public static void RegisterDamageable(GameObject rootObj, IDamageable damageable)
@@ -73,6 +132,7 @@ namespace ProjectAI.Core
                 damageable = null;
                 return false;
             }
+
             return damageableRegistry.TryGetValue(rootObj.GetInstanceID(), out damageable);
         }
 
@@ -125,6 +185,14 @@ namespace ProjectAI.Core
             GameManager = manager;
         }
 
+        public static void UnregisterManager(GameManager manager)
+        {
+            if (GameManager == manager)
+            {
+                GameManager = null;
+            }
+        }
+
         public static void RegisterGameMode(ANetGameModeBase mode)
         {
             CurrentMode = mode;
@@ -175,23 +243,6 @@ namespace ProjectAI.Core
 
         #region Belt-Scroll Depth Distortion Helpers
         
-        /// <summary>
-        /// 현재 게임의 벨트스크롤 Y축 깊이 왜곡률을 가져옵니다. 0 나누기 예외를 막기 위해 최소 0.001을 보장합니다.
-        /// </summary>
-        public static float DepthScale
-        {
-            get
-            {
-                float scale = GameManager != null ? GameManager.BeltScrollDepthScale : 2.5f;
-                return Mathf.Max(0.001f, scale);
-            }
-        }
-
-        /// <summary>
-        /// 벨트스크롤 시각 왜곡에 맞추어 실제 상하 이동 물리 속도를 느리게 보정하는 비율입니다.
-        /// </summary>
-        public static float MovementDepthRatio => 1.0f / DepthScale;
-
         /// <summary>
         /// Y축 거리에 원근 왜곡률(DepthScale)을 곱한 논리적 벡터를 반환합니다.
         /// 벨트스크롤 환경에서 상하 거리를 시각적 느낌에 맞게 보정할 때 사용합니다.

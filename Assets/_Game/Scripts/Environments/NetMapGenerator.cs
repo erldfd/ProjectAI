@@ -12,7 +12,6 @@ namespace ProjectAI.Environments
     public class NetMapGenerator : NetworkBehaviour
     {
         [Header("Map Settings")]
-        public ChunkDatabaseSO ChunkDatabase;
         
         [Tooltip("최대 몇 개의 청크를 이어 붙일 것인지 설정합니다.")]
         public int MaxChunks = 15;
@@ -93,15 +92,15 @@ namespace ProjectAI.Environments
 
             ClearMap();
 
-            UnityEngine.Assertions.Assert.IsNotNull(ChunkDatabase, "[NetMapGenerator] ChunkDatabase가 할당되지 않았습니다!");
-            UnityEngine.Assertions.Assert.IsNotNull(ChunkDatabase.StartChunkPrefab, "[NetMapGenerator] StartChunkPrefab이 할당되지 않았습니다!");
+            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MapChunkDB, "[NetMapGenerator] MapChunkDB가 로드되지 않았습니다!");
+            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MapChunkDB.StartChunkPrefab, "[NetMapGenerator] StartChunkPrefab이 할당되지 않았습니다!");
 
             // 모든 클라이언트가 이 시드를 기준으로 동일한 난수를 뽑아냅니다 (결정론적 동기화).
             randomGen = new System.Random(seed);
             Debug.Log($"[MapGenerator] 시드({seed}) 기반 동적 맵 생성 시작! (MaxChunks: {MaxChunks})");
 
             // 1. 시작 청크 스폰
-            MapChunk startChunk = Instantiate(ChunkDatabase.StartChunkPrefab, transform.position, Quaternion.identity, transform);
+            MapChunk startChunk = Instantiate(GameStatics.MapChunkDB.StartChunkPrefab, transform.position, Quaternion.identity, transform);
             startChunk.name = "StartChunk";
             spawnedChunks.Add(startChunk);
 
@@ -121,9 +120,9 @@ namespace ProjectAI.Environments
 
                 // 이 문의 태그(Tag)와 호환되는 모든 (프리팹, 커넥터) 조합을 탐색
                 List<SPrefabMatch> candidates = new List<SPrefabMatch>();
-                for (int i = 0; i < ChunkDatabase.AvailableChunks.Count; i++)
+                for (int i = 0; i < GameStatics.MapChunkDB.AvailableChunks.Count; i++)
                 {
-                    MapChunk chunk = ChunkDatabase.AvailableChunks[i];
+                    MapChunk chunk = GameStatics.MapChunkDB.AvailableChunks[i];
                     for (int j = 0; j < chunk.Connectors.Count; j++)
                     {
                         if (chunk.Connectors[j].Tag == targetOpenConnector.Connector.Tag)
