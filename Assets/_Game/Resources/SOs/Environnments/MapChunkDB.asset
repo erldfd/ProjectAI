@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad5361f7edfc6a5419a42593042b27cb, type: 3}
+  m_Name: MapChunkDB
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Environments.ChunkDatabaseSO
+  StartChunkPrefab: {fileID: 594233448795807358, guid: 546a06e0a34de9d4d8735d8f389c773d, type: 3}
+  AvailableChunks:
+  - {fileID: 594233448795807358, guid: 546a06e0a34de9d4d8735d8f389c773d, type: 3}
+  - {fileID: 36317186391372323, guid: facf52b2505f86e42958888101b4957f, type: 3}
+  - {fileID: 8679547906316685508, guid: ea3d40df1baf0f14cabeb27954b52bb9, type: 3}
+  - {fileID: 1549814771344433676, guid: 49e425f8ca75e5f4c8493f9eaa49172c, type: 3}
+  - {fileID: 5156706263131711483, guid: 47e0e495a70ca9e498565db0f59b48fc, type: 3}
+  - {fileID: 4515443887627503835, guid: 16b71bb58b9b333499fee3acd6b1ec1f, type: 3}
+  - {fileID: 4961663233230566527, guid: 3248068d370041b498e5d5d3cef7d6ac, type: 3}
+  - {fileID: 500825529535417674, guid: 0b18acd7553b1a64cbc66e2272419bcf, type: 3}
+  - {fileID: 4990854224786996848, guid: 06adfc5e2456d4b4e98fbb34e49d8be8, type: 3}

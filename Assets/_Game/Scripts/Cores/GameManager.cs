@@ -14,7 +14,12 @@ namespace ProjectAI.Core
         [SerializeField]
         private float beltScrollDepthScale = 2.5f;
 
+        [Tooltip("Resources 폴더에 위치한 MapChunk Database SO 파일의 이름")]
+        [SerializeField]
+        private string mapChunkDatabaseResourceName = "MapChunkDB";
+
         public float BeltScrollDepthScale => beltScrollDepthScale;
+        public string MapChunkDatabaseResourceName => mapChunkDatabaseResourceName;
 
         public MultiplayerServiceManager MultiplayerService { get; private set; }
 
@@ -40,6 +45,11 @@ namespace ProjectAI.Core
             DontDestroyOnLoad(gameObject);
             
             Debug.Log("[GameManager] 전역 매니저가 성공적으로 초기화되었습니다.");
+        }
+
+        private void OnDestroy()
+        {
+            GameStatics.UnregisterManager(this);
         }
     }
 }
