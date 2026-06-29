@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3118077c9dd0d24c859e07af4e58bd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Core.GameManager
+  beltScrollDepthScale: 2.5
+  mapChunkDatabaseResourceName: SOs/Environnments/MapChunkDB
 --- !u!114 &1099356124621608042
 MonoBehaviour:
   m_ObjectHideFlags: 0

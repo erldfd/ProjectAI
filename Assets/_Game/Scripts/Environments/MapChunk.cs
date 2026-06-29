@@ -27,8 +27,11 @@ namespace ProjectAI.Environments
         [Tooltip("청크 중심을 기준으로 한 커넥터의 로컬 위치 (씬 에디터에서 드래그 조절 가능)")]
         public Vector2 LocalPosition = Vector2.zero;
         
-        [Tooltip("연결될 청크를 찾을 때 쓰이는 고유 태그 (예: '출구', '입구', '보스방')")]
-        public string Tag = "Default";
+        [Tooltip("이 커넥터 고유의 식별 태그 (예: '출구', '입구', '보스방')")]
+        public string MyTag = "Default";
+        
+        [Tooltip("이 커넥터에 연결될 수 있도록 허용하는 대상 태그들의 목록")]
+        public List<string> AcceptableTags = new List<string>() { "Default" };
     }
 
     /// <summary>

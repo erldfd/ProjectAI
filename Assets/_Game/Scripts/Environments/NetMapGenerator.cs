@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Unity.Netcode;
 using ProjectAI.Core;
+using UnityEngine.Assertions;
 
 namespace ProjectAI.Environments
 {
@@ -48,6 +49,12 @@ namespace ProjectAI.Environments
         {
             base.OnNetworkSpawn();
 
+            if (enabled == false)
+            {
+                Debug.LogWarning("[NetMapGenerator] 컴포넌트가 비활성화 상태이므로 맵 생성 로직을 실행하지 않습니다.");
+                return;
+            }
+
             if (GameStatics.IsServerAuthorized)
             {
                 // 서버: 랜덤 시드 생성 후 맵 생성 트리거
@@ -75,16 +82,19 @@ namespace ProjectAI.Environments
 
         private void OnMapSeedChanged(int oldValue, int newValue)
         {
-            if (newValue != 0)
+            if (newValue == 0)
             {
-                GenerateMap(newValue);
+                return;
             }
+
+            GenerateMap(newValue);
         }
 
         private void GenerateMap(int seed)
         {
             if (lastGeneratedSeed == seed)
             {
+                Debug.Log($"[NetMapGenerator] 이미 생성된 맵과 동일한 시드({seed})이므로 스킵합니다.");
                 return;
             }
 
@@ -92,8 +102,8 @@ namespace ProjectAI.Environments
 
             ClearMap();
 
-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MapChunkDB, "[NetMapGenerator] MapChunkDB가 로드되지 않았습니다!");
-            UnityEngine.Assertions.Assert.IsNotNull(GameStatics.MapChunkDB.StartChunkPrefab, "[NetMapGenerator] StartChunkPrefab이 할당되지 않았습니다!");
+            Assert.IsNotNull(GameStatics.MapChunkDB, "[NetMapGenerator] MapChunkDB가 로드되지 않았습니다!");
+            Assert.IsNotNull(GameStatics.MapChunkDB.StartChunkPrefab, "[NetMapGenerator] StartChunkPrefab이 할당되지 않았습니다!");
 
             // 모든 클라이언트가 이 시드를 기준으로 동일한 난수를 뽑아냅니다 (결정론적 동기화).
             randomGen = new System.Random(seed);
@@ -118,26 +128,42 @@ namespace ProjectAI.Environments
                 // 선택한 문은 이제 막히게 되므로 목록에서 제거
                 openConnectors.RemoveAt(connectorIndex);
 
-                // 이 문의 태그(Tag)와 호환되는 모든 (프리팹, 커넥터) 조합을 탐색
+                // 이 커넥터가 수용할 수 있고, 상대방 커넥터도 이를 수용할 수 있는(상호 동의) 모든 조합을 탐색
                 List<SPrefabMatch> candidates = new List<SPrefabMatch>();
                 for (int i = 0; i < GameStatics.MapChunkDB.AvailableChunks.Count; i++)
                 {
                     MapChunk chunk = GameStatics.MapChunkDB.AvailableChunks[i];
+                    if (chunk == null)
+                    {
+                        continue;
+                    }
+
                     for (int j = 0; j < chunk.Connectors.Count; j++)
                     {
-                        if (chunk.Connectors[j].Tag == targetOpenConnector.Connector.Tag)
+                        ChunkConnector candidateConnector = chunk.Connectors[j];
+                        if (candidateConnector == null)
                         {
-                            SPrefabMatch match = new SPrefabMatch();
-                            match.Prefab = chunk;
-                            match.Connector = chunk.Connectors[j];
-                            candidates.Add(match);
+                            continue;
                         }
+
+                        bool isSourceAcceptingCandidate = targetOpenConnector.Connector.AcceptableTags != null && targetOpenConnector.Connector.AcceptableTags.Contains(candidateConnector.MyTag);
+                        bool isCandidateAcceptingSource = candidateConnector.AcceptableTags != null && candidateConnector.AcceptableTags.Contains(targetOpenConnector.Connector.MyTag);
+
+                        if (!isSourceAcceptingCandidate || !isCandidateAcceptingSource)
+                        {
+                            continue;
+                        }
+
+                        SPrefabMatch match = new SPrefabMatch();
+                        match.Prefab = chunk;
+                        match.Connector = candidateConnector;
+                        candidates.Add(match);
                     }
                 }
 
                 if (candidates.Count == 0)
                 {
-                    Debug.LogWarning($"[NetMapGenerator] 태그 '{targetOpenConnector.Connector.Tag}'와 호환되는 청크를 찾지 못해 건너뜁니다.");
+                    Debug.LogWarning($"[NetMapGenerator] 태그 '{targetOpenConnector.Connector.MyTag}'와 상호 연결이 가능한 청크를 찾지 못해 막다른 길이 됩니다.");
                     continue;
                 }
 
@@ -167,7 +193,7 @@ namespace ProjectAI.Environments
                     if (!CheckOverlap(prefabToSpawn, newChunkPos))
                     {
                         // 겹치지 않으면 스폰 진행
-                        UnityEngine.Assertions.Assert.IsNull(prefabToSpawn.GetComponentInChildren<NetworkObject>(true), 
+                        Assert.IsNull(prefabToSpawn.GetComponentInChildren<NetworkObject>(true), 
                             $"[NetMapGenerator] 에러: '{prefabToSpawn.name}' 프리팹에 NetworkObject가 포함되어 있습니다. 결정론적 로컬 스폰 방식에서는 맵 청크에 NetworkObject를 포함할 수 없습니다.");
 
                         MapChunk newChunk = Instantiate(prefabToSpawn, newChunkPos, Quaternion.identity, transform);
@@ -183,7 +209,7 @@ namespace ProjectAI.Environments
 
                 if (!isSpawned)
                 {
-                    Debug.LogWarning($"[NetMapGenerator] 태그 '{targetOpenConnector.Connector.Tag}' 공간이 너무 비좁아 어떤 청크도 스폰할 수 없어 막다른 길이 됩니다.");
+                    Debug.LogWarning($"[NetMapGenerator] 태그 '{targetOpenConnector.Connector.MyTag}' 주변의 공간이 너무 비좁아 막다른 길이 됩니다.");
                 }
             }
 
@@ -195,8 +221,12 @@ namespace ProjectAI.Environments
             for (int i = 0; i < chunk.Connectors.Count; i++)
             {
                 ChunkConnector c = chunk.Connectors[i];
-                
-                if (ignoreConnector != null && c.LocalPosition == ignoreConnector.LocalPosition && c.Tag == ignoreConnector.Tag)
+                if (c == null)
+                {
+                    continue;
+                }
+
+                if (ignoreConnector != null && c.LocalPosition == ignoreConnector.LocalPosition && c.MyTag == ignoreConnector.MyTag)
                 {
                     continue;
                 }
@@ -265,10 +295,12 @@ namespace ProjectAI.Environments
         {
             for (int i = 0; i < spawnedChunks.Count; i++)
             {
-                if (spawnedChunks[i] != null)
+                if (spawnedChunks[i] == null)
                 {
-                    Destroy(spawnedChunks[i].gameObject);
+                    continue;
                 }
+
+                Destroy(spawnedChunks[i].gameObject);
             }
 
             spawnedChunks.Clear();

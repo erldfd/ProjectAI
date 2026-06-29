@@ -22,20 +22,28 @@ namespace ProjectAI.Environments.Editor
 
             Transform t = chunk.transform;
 
-            // 1. 바운더리(Bounds) 영역들을 씬 뷰에 투명한 초록색 박스로 모두 표시
-            Handles.color = new Color(0f, 1f, 0f, 0.1f);
-
-            for (int i = 0; i < chunk.BoundsList.Count; i++)
+            // 1. 바운더리(Bounds) 영역들을 씬 뷰에 약간 진한 반투명 초록색 박스로 모두 표시
+            Color originalColor = Handles.color;
+            try
             {
-                ChunkBound bound = chunk.BoundsList[i];
-                if (bound == null)
-                {
-                    continue;
-                }
+                Handles.color = new Color(0f, 1f, 0f, 0.35f);
 
-                Vector3 boundCenter = t.TransformPoint((Vector3)bound.LocalCenter);
-                Vector3[] rect = GetBoundsRect(boundCenter, bound.Size);
-                Handles.DrawSolidRectangleWithOutline(rect, new Color(0f, 1f, 0f, 0.1f), Color.green);
+                for (int i = 0; i < chunk.BoundsList.Count; i++)
+                {
+                    ChunkBound bound = chunk.BoundsList[i];
+                    if (bound == null)
+                    {
+                        continue;
+                    }
+
+                    Vector3 boundCenter = t.TransformPoint((Vector3)bound.LocalCenter);
+                    Vector3[] rect = GetBoundsRect(boundCenter, bound.Size);
+                    Handles.DrawSolidRectangleWithOutline(rect, new Color(0f, 1f, 0f, 0.35f), Color.green);
+                }
+            }
+            finally
+            {
+                Handles.color = originalColor; // 원래 색상 복원
             }
 
             // 2. 커넥터(연결구) 핸들 표시 및 상호작용
@@ -58,7 +66,7 @@ namespace ProjectAI.Environments.Editor
                     cachedLabelStyle.fontStyle = FontStyle.Bold;
                 }
 
-                Handles.Label(worldPos + Vector3.up * 0.5f, $"커넥터: {connector.Tag}", cachedLabelStyle);
+                Handles.Label(worldPos + Vector3.up * 0.5f, $"커넥터: {connector.MyTag}", cachedLabelStyle);
 
                 // 씬 뷰에서 마우스로 붙잡고 이동할 수 있는 이동 축(Position Handle) 제공
                 EditorGUI.BeginChangeCheck();
