@@ -10,6 +10,9 @@ using ProjectAI.Characters.Summons;
 
 namespace ProjectAI.Core.Skills.Abilities
 {
+    /// <summary>
+    /// 소환수 소환 스킬의 실행 로직을 처리하는 클래스입니다.
+    /// </summary>
     public class SummonSkillLogic : ISkillLogic
     {
         public ESkillType SkillType => ESkillType.Summon;
@@ -28,6 +31,10 @@ namespace ProjectAI.Core.Skills.Abilities
             }
 
             Assert.IsNotNull(GameStatics.NetworkManager, "[SummonSkillLogic] CanExecute: NetworkManager is null.");
+            if (GameStatics.NetworkManager == null)
+            {
+                return false;
+            }
             
             Debug.Log($"[SummonSkillLogic] ServerTime={GameStatics.NetworkManager.ServerTime.Time}, LastActivation={caster.SkillComponent.GetServerActivationTime(config.SkillId)}, Cooldown={config.BaseCooldown}");
             if (GameStatics.NetworkManager.ServerTime.Time < caster.SkillComponent.GetServerActivationTime(config.SkillId) + config.BaseCooldown)
@@ -42,7 +49,7 @@ namespace ProjectAI.Core.Skills.Abilities
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[SummonSkillLogic] Execute는 서버에서만 호출되어야 합니다.");
             
-            if (!GameStatics.IsServerAuthorized)
+            if (!GameStatics.IsServerAuthorized || GameStatics.NetworkManager == null)
             {
                 return;
             }
@@ -89,8 +96,8 @@ namespace ProjectAI.Core.Skills.Abilities
                 return;
             }
 
-            // 클라이언트 예측 및 이동을 위해 오너십 부여 (기획서 MVP)
-            summonNetObj.SpawnWithOwnership(caster.OwnerClientId);
+            // NetServerMovement가 서버 권한으로 이동(속도/애니메이션)을 제어하므로, 서버가 Owner여야 합니다.
+            summonNetObj.Spawn();
 
             // 두뇌 및 AI 상태 설정
             if (summonNetObj.TryGetComponent(out NetSummonBrain brain))

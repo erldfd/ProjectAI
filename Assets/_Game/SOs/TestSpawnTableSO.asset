@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6131cf8d14da0ab48b0c196c56019f96, type: 3}
+  m_Name: TestSpawnTableSO
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.GameModes.SpawnTableSO
+  MonsterSlots:
+  - SlotType: 0
+    Candidates:
+    - Prefab: {fileID: 6386993713023528098, guid: ef78fc902fca18641a8c5cae8871bb3f, type: 3}
+      Weight: 1

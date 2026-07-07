@@ -57,6 +57,11 @@ namespace ProjectAI.Characters.Summons
                 return;
             }
 
+            if (GameStatics.NetworkManager == null)
+            {
+                return;
+            }
+
             CurrentStance.Value = (CurrentStance.Value == ESummonStance.Aggressive) 
                 ? ESummonStance.Defensive 
                 : ESummonStance.Aggressive;
@@ -94,6 +99,11 @@ namespace ProjectAI.Characters.Summons
                 return;
             }
 
+            if (GameStatics.NetworkManager == null)
+            {
+                return;
+            }
+
             ActiveSummons.Add(new SSummonData
             {
                 SummonNetworkObjectId = summonObj.NetworkObjectId,
@@ -111,6 +121,7 @@ namespace ProjectAI.Characters.Summons
                 {
                     Debug.LogWarning($"[NetSummonController] 소환수({summonObj.name})에 NetSummonBrain 컴포넌트가 없어 마킹 지시가 불가능합니다.");
                 }
+                
                 return;
             }
 
@@ -123,7 +134,7 @@ namespace ProjectAI.Characters.Summons
 
         private void Update()
         {
-            if (!GameStatics.IsServerAuthorized)
+            if (!GameStatics.IsServerAuthorized || GameStatics.NetworkManager == null)
             {
                 return;
             }
@@ -166,6 +177,11 @@ namespace ProjectAI.Characters.Summons
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] DespawnSummon은 서버에서만 호출되어야 합니다.");
 
+            if (GameStatics.NetworkManager == null || GameStatics.NetworkManager.SpawnManager == null)
+            {
+                return;
+            }
+
             if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(objId, out NetworkObject netObj))
             {
                 Debug.LogWarning($"[NetSummonController] DespawnSummon 실패: ID {objId}에 해당하는 네트워크 객체를 찾을 수 없습니다.");
@@ -188,6 +204,11 @@ namespace ProjectAI.Characters.Summons
             if (!GameStatics.IsServerAuthorized)
             {
                 Debug.LogWarning("[NetSummonController] SetPriorityTarget: 클라이언트에서 실행 시도 (무시됨)");
+                return;
+            }
+
+            if (GameStatics.NetworkManager == null)
+            {
                 return;
             }
 

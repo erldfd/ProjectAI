@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using ProjectAI.Core;
+using ProjectAI.GameModes;
 
 namespace ProjectAI.Environments
 {
@@ -50,5 +52,46 @@ namespace ProjectAI.Environments
         [Header("Connections")]
         [Tooltip("다른 청크와 결합할 수 있는 연결구(문)의 목록")]
         public List<ChunkConnector> Connectors = new List<ChunkConnector>();
+
+        private bool isVisited = false;
+
+        private void Awake()
+        {
+            // 에디터에서 설정한 BoundsList를 바탕으로 실제 물리 트리거(BoxCollider2D)를 자동 생성합니다.
+            foreach (ChunkBound bound in BoundsList)
+            {
+                BoxCollider2D col = gameObject.AddComponent<BoxCollider2D>();
+                col.isTrigger = true;
+                col.offset = bound.LocalCenter;
+                col.size = bound.Size;
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            if (isVisited || !GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (!collision.CompareTag(ObjectTags.PLAYER))
+            {
+                return;
+            }
+
+            isVisited = true;
+            ActivateAllSpawners();
+        }
+
+        private void ActivateAllSpawners()
+        {
+            UnityEngine.Assertions.Assert.IsTrue(GameStatics.IsServerAuthorized, "[MapChunk] ActivateAllSpawners는 서버(호스트)에서만 호출되어야 합니다.");
+
+            MonsterSpawner[] spawners = GetComponentsInChildren<MonsterSpawner>();
+            foreach (MonsterSpawner spawner in spawners)
+            {
+                spawner.ActivateSpawner();
+            }
+        }
     }
 }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad5361f7edfc6a5419a42593042b27cb, type: 3}
   m_Name: MapChunkDB
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Environments.ChunkDatabaseSO
-  StartChunkPrefab: {fileID: 594233448795807358, guid: 546a06e0a34de9d4d8735d8f389c773d, type: 3}
+  StartChunkPrefab: {fileID: 8679547906316685508, guid: ea3d40df1baf0f14cabeb27954b52bb9, type: 3}
   AvailableChunks:
   - {fileID: 594233448795807358, guid: 546a06e0a34de9d4d8735d8f389c773d, type: 3}
   - {fileID: 36317186391372323, guid: facf52b2505f86e42958888101b4957f, type: 3}

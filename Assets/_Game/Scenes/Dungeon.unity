@@ -1050,11 +1050,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3074024321857229445, guid: 1c1d6c54674980a4ebdd5f4978e3575f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.4497
+      value: 30.84
       objectReference: {fileID: 0}
     - target: {fileID: 3074024321857229445, guid: 1c1d6c54674980a4ebdd5f4978e3575f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.08748
+      value: 10.97
       objectReference: {fileID: 0}
     - target: {fileID: 3074024321857229445, guid: 1c1d6c54674980a4ebdd5f4978e3575f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -21068,7 +21068,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &856688213
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21106,11 +21106,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff2688cc0c90a6241acf3fcd2fe1ae31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.GameModes.NetMonsterSpawner
-  ShowTopMostFoldoutHeaderGroup: 1
-  monsterPrefab: {fileID: 6386993713023528098, guid: ef78fc902fca18641a8c5cae8871bb3f, type: 3}
+  spawnType: 0
   spawnInterval: 10
   spawnRadius: 5
-  initialPoolSize: 0
   maxSpawnCount: 1
 --- !u!4 &856688215
 Transform:
@@ -42002,7 +42000,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Environments.NetMapGenerator
   ShowTopMostFoldoutHeaderGroup: 1
-  MaxChunks: 15
+  MaxChunks: 10
 --- !u!4 &1641646178
 Transform:
   m_ObjectHideFlags: 0
@@ -59091,6 +59089,10 @@ PrefabInstance:
       propertyPath: ShouldShowHiddenPoolObjects
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7993161565623532568, guid: 74047734d7321294a890792c7e444813, type: 3}
+      propertyPath: currentSpawnTable
+      value: 
+      objectReference: {fileID: 11400000, guid: 11d3533a0c10ce745b283a0bf00abbcf, type: 2}
     - target: {fileID: 8394131999265860841, guid: 74047734d7321294a890792c7e444813, type: 3}
       propertyPath: m_Name
       value: DungeonGameMode Variant

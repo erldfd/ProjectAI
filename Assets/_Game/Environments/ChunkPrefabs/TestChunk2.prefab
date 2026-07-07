@@ -266,15 +266,11 @@ MonoBehaviour:
   - LocalPosition: {x: 20, y: 12.5}
     MyTag: TestChunk2_0
     AcceptableTags:
-    - JointChunk0_1
-    - JointChunk1_1
     - JointChunk4_1
     - TestChunk3_1
   - LocalPosition: {x: 42, y: 12.5}
     MyTag: TestChunk2_1
     AcceptableTags:
-    - JointChunk2_0
-    - JointChunk3_0
     - JointChunk4_0
     - TestChunk3_0
 --- !u!1 &2073305571818268508

@@ -7,6 +7,7 @@ using ProjectAI.Core.Stats;
 using ProjectAI.Core.Skills;
 using ProjectAI.Core.Pooling;
 using ProjectAI.Environments;
+using ProjectAI.SOs;
 using System.Collections.Generic;
 
 namespace ProjectAI.Core
@@ -20,6 +21,7 @@ namespace ProjectAI.Core
         // 1. Static Variables & Consts
         // ----------------------------------------------------
         private static ChunkDatabaseSO _mapChunkDB;
+        private static SpawnTableDatabaseSO _spawnTableDB;
 
         // O(1) 룩업을 위한 전역 데미지 인터페이스 레지스트리
         private static readonly Dictionary<int, IDamageable> damageableRegistry = new Dictionary<int, IDamageable>();
@@ -43,6 +45,23 @@ namespace ProjectAI.Core
                 }
 
                 return _mapChunkDB;
+            }
+        }
+
+        /// <summary>
+        /// Resources/SOs/SpawnTableDatabase.asset 을 지연 로딩하여 캐싱합니다.
+        /// </summary>
+        public static SpawnTableDatabaseSO SpawnTableDB
+        {
+            get
+            {
+                if (_spawnTableDB == null)
+                {
+                    _spawnTableDB = Resources.Load<SpawnTableDatabaseSO>("SOs/SpawnTableDatabaseSO");
+                    Assert.IsNotNull(_spawnTableDB, "[GameStatics] Resources/SOs 폴더 내에 'SpawnTableDatabaseSO' 파일을 찾을 수 없습니다!");
+                }
+
+                return _spawnTableDB;
             }
         }
 
@@ -97,6 +116,7 @@ namespace ProjectAI.Core
         private static void ResetStatics()
         {
             _mapChunkDB = null;
+            _spawnTableDB = null;
             damageableRegistry.Clear();
             GameManager = null;
             CurrentMode = null;

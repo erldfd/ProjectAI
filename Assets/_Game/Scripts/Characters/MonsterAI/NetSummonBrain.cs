@@ -23,6 +23,7 @@ namespace ProjectAI.Characters.MonsterAI
         /// 소환수일 경우 주인이 스킬로 지정해준 타겟
         /// </summary>
         public Transform PriorityTarget { get; set; }
+
         [Tooltip("소환수인 경우 주인(Owner) 할당")]
         public Transform Owner { get; set; }
 
