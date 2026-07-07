@@ -176,7 +176,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.37, y: 0.28}
+  m_Size: {x: 1.8, y: 0.28}
   m_EdgeRadius: 0
 --- !u!114 &816268044231496283
 MonoBehaviour:
@@ -650,12 +650,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.MonsterAI.SummonFollowChildState
   isRootState: 0
   followThreshold: 3
-  stopDistance: 1.5
   customDetectLayer:
     serializedVersion: 2
     m_Bits: 128
   customDetectTag: Enemy
   customDetectRadius: 8
+  roamRadius: 2
+  roamInterval: 2
+  roamArrivalDistance: 0.5
+  separationRadius: 1
+  separationWeight: 1
+  maxSeparationForce: 0.6
+  separationInterval: 0.15
+  summonLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  summonTag: All
 --- !u!1 &8260428574450833809
 GameObject:
   m_ObjectHideFlags: 0
@@ -684,8 +694,8 @@ Transform:
   m_GameObject: {fileID: 8260428574450833809}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.06, y: 0.06, z: 0.06}
+  m_LocalPosition: {x: 0, y: 0.415, z: 0}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 17574819237998250}

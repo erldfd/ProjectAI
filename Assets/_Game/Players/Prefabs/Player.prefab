@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 364007198314449804}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalPosition: {x: 0, y: 0.61, z: 0}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 4857257171616819894}
@@ -353,8 +353,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.21}
-  m_Size: {x: 0.26, y: 0.16}
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.82, y: 0.16}
   m_Direction: 0
 --- !u!114 &2460281810773283459
 MonoBehaviour:
@@ -368,7 +368,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3084379672
+  GlobalObjectIdHash: 386762368
   InScenePlacedSourceGlobalObjectIdHash: 386762368
   DeferredDespawnTick: 0
   Ownership: 1

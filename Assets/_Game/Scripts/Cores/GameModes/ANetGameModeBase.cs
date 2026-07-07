@@ -1,5 +1,6 @@
 using UnityEngine.Assertions;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Core;
@@ -28,9 +29,9 @@ namespace ProjectAI.GameModes
         {
             base.OnNetworkSpawn();
 
-            if (IsServer)
+            if (GameStatics.IsServerAuthorized)
             {
-                TeleportPlayersToPlayerStart();
+                StartCoroutine(WaitAndTeleportPlayersCoroutine());
             }
 
             OnGameModeNetworkSpawn();
@@ -48,11 +49,54 @@ namespace ProjectAI.GameModes
 
         protected virtual void OnGameModeNetworkSpawn() { }
 
+        private IEnumerator WaitAndTeleportPlayersCoroutine()
+        {
+            // 플레이어 객체가 스폰될 때까지 대기 (최대 3초)
+            float timeout = 3f;
+            while (timeout > 0f)
+            {
+                if (GameStatics.NetworkManager == null)
+                {
+                    yield break;
+                }
+
+                bool isAllSpawned = true;
+                if (GameStatics.NetworkManager.ConnectedClientsList.Count == 0)
+                {
+                    isAllSpawned = false;
+                }
+                else
+                {
+                    foreach (NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
+                    {
+                        if (client.PlayerObject == null)
+                        {
+                            isAllSpawned = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isAllSpawned)
+                {
+                    break;
+                }
+
+                timeout -= Time.deltaTime;
+                yield return null;
+            }
+
+            // 약간의 딜레이를 주어 클라이언트 측 로딩 및 렌더링 안정화 유도
+            yield return new WaitForSeconds(0.1f);
+            
+            TeleportPlayersToPlayerStart();
+        }
+
         public void TeleportPlayersToPlayerStart()
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[ANetGameModeBase] TeleportPlayersToPlayerStart는 서버에서만 호출되어야 합니다.");
             
-            if (!GameStatics.IsServerAuthorized)
+            if (!GameStatics.IsServerAuthorized || GameStatics.NetworkManager == null)
             {
                 return;
             }
@@ -97,7 +141,7 @@ namespace ProjectAI.GameModes
             
             if (isSpawnPositionFound)
             {
-                foreach (Unity.Netcode.NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
+                foreach (NetworkClient client in GameStatics.NetworkManager.ConnectedClientsList)
                 {
                     if (client.PlayerObject == null)
                     {
@@ -120,7 +164,7 @@ namespace ProjectAI.GameModes
             try
             {
                 // 1프레임 대기 (기존 코루틴의 yield return null 역할)
-                await System.Threading.Tasks.Task.Yield();
+                await Task.Yield();
 
                 if (GameStatics.NetworkManager == null)
                 {
