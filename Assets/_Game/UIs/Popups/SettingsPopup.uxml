@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ui="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+>
+    <!-- 뒷배경을 어둡게 처리하는 반투명 오버레이 (전체 화면 덮기) -->
+    <ui:VisualElement name="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.75); align-items: center; justify-content: center;">
+        
+        <!-- 팝업 본체 패널 -->
+        <ui:VisualElement name="popup-panel" style="background-color: rgb(35, 35, 35); width: 450px; height: 350px; border-radius: 20px; padding: 20px; align-items: center; justify-content: space-between; border-color: rgb(80, 80, 80); border-width: 2px;">
+            
+            <!-- 타이틀 라벨 -->
+            <ui:Label text="Settings" style="color: white; font-size: 32px; -unity-font-style: bold; margin-top: 10px;" />
+            
+            <!-- 임시 안내 문구 -->
+            <ui:Label text="설정 항목이 아직 없습니다.&#10;(차후 사운드, 그래픽 옵션 등 추가 예정)" style="color: rgb(180, 180, 180); font-size: 18px; -unity-text-align: middle-center; white-space: normal;" />
+            
+            <!-- 닫기 버튼 (btn-close) -->
+            <ui:Button name="btn-close" text="Close" style="width: 150px; height: 50px; font-size: 20px; background-color: rgb(180, 50, 50); color: white; border-radius: 10px; -unity-font-style: bold; margin-bottom: 10px;" />
+            
+        </ui:VisualElement>
+        
+    </ui:VisualElement>
+</ui:UXML>

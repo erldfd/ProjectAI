@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML
+    xmlns:ui="UnityEngine.UIElements"
+    xmlns:uie="UnityEditor.UIElements"
+    xsi="http://www.w3.org/2001/XMLSchema-instance"
+    engine="UnityEngine.UIElements"
+    editor="UnityEditor.UIElements"
+    noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd"
+    editor-extension-mode="False">
+
+    <Style src="MainMenu.uss" />
+
+    <ui:VisualElement class="main-container">
+        <ui:VisualElement class="menu-panel">
+            <ui:Label text="PROJECT AI" class="title-label" />
+            
+            <ui:Button name="btn-start" text="Start Game" class="menu-button" />
+            <ui:Button name="btn-settings" text="Settings" class="menu-button" />
+            <ui:Button name="btn-exit" text="Exit" class="menu-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+
+</ui:UXML>

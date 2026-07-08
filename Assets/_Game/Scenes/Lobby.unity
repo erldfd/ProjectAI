@@ -226,6 +226,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1202354744
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1202354746}
+  - component: {fileID: 1202354745}
+  m_Layer: 0
+  m_Name: DemoUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1202354745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202354744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c03694764d727804aaa289ae2cd6a214, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Network.MultiplayerDemoUI
+--- !u!4 &1202354746
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202354744}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.13514, y: -0.30752, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2090775113
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,6 +452,14 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 927144485
       objectReference: {fileID: 0}
+    - target: {fileID: 1647302926820540192, guid: 1f11476f77b7ab84a9b496f2361ae8fc, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1647302926820540192, guid: 1f11476f77b7ab84a9b496f2361ae8fc, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 292249137
+      objectReference: {fileID: 0}
     - target: {fileID: 6317187576538704324, guid: 1f11476f77b7ab84a9b496f2361ae8fc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -473,6 +525,14 @@ PrefabInstance:
     - target: {fileID: 5712742967788921843, guid: ab1ee38bd7ec7254b905e52c7475b73d, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1590715436
+      objectReference: {fileID: 0}
+    - target: {fileID: 5712742967788921843, guid: ab1ee38bd7ec7254b905e52c7475b73d, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5712742967788921843, guid: ab1ee38bd7ec7254b905e52c7475b73d, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 2706469927
       objectReference: {fileID: 0}
     - target: {fileID: 7010547640271740824, guid: ab1ee38bd7ec7254b905e52c7475b73d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -585,3 +645,4 @@ SceneRoots:
   - {fileID: 6782214511935714800}
   - {fileID: 23884885}
   - {fileID: 4291763245362457899}
+  - {fileID: 1202354746}
