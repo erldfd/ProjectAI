@@ -8,6 +8,8 @@ using ProjectAI.Core.Skills;
 using ProjectAI.Core.Pooling;
 using ProjectAI.Environments;
 using ProjectAI.SOs;
+using ProjectAI.UIs.Cores;
+using ProjectAI.Core.Inputs;
 using System.Collections.Generic;
 
 namespace ProjectAI.Core
@@ -66,6 +68,31 @@ namespace ProjectAI.Core
         }
 
         public static GameManager GameManager { get; private set; }
+        
+        /// <summary>
+        /// 전역 UIManager에 접근합니다. UI 팝업(스택)을 띄우거나 닫을 때 사용합니다.
+        /// </summary>
+        public static UIManager UIManager
+        {
+            get
+            {
+                Assert.IsNotNull(GameManager, "[GameStatics] GameManager가 아직 생성되지 않아 UIManager에 접근할 수 없습니다.");
+                return GameManager.UIManager;
+            }
+        }
+
+        /// <summary>
+        /// 전역 입력(ESC 팝업 닫기 등) 이벤트에 접근합니다.
+        /// </summary>
+        public static GlobalInputReader GlobalInput
+        {
+            get
+            {
+                Assert.IsNotNull(GameManager, "[GameStatics] GameManager가 아직 생성되지 않아 GlobalInput에 접근할 수 없습니다.");
+                return GameManager.GlobalInputReader;
+            }
+        }
+
         public static ANetGameModeBase CurrentMode { get; private set; }
         public static SkillManager SkillManager { get; private set; }
         public static NetworkObjectPool ObjectPool { get; private set; }

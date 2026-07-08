@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73617cd6e6d27e44580fc3746355cc75, type: 3}
+  m_Name: UIPopupDBSO
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.SOs.UIPopupDatabaseSO
+  mappings:
+  - PopupType: 0
+    UxmlTemplate: {fileID: 9197481963319205126, guid: c09f0acb070e29c438f7729132b41a6a, type: 3}

@@ -1,6 +1,8 @@
 using UnityEngine.Assertions;
 using UnityEngine;
 using ProjectAI.Network;
+using ProjectAI.UIs.Cores;
+using ProjectAI.Core.Inputs;
 
 namespace ProjectAI.Core
 {
@@ -22,6 +24,8 @@ namespace ProjectAI.Core
         public string MapChunkDatabaseResourceName => mapChunkDatabaseResourceName;
 
         public MultiplayerServiceManager MultiplayerService { get; private set; }
+        public UIManager UIManager { get; private set; }
+        public GlobalInputReader GlobalInputReader { get; private set; }
 
         private void Awake()
         {
@@ -40,6 +44,12 @@ namespace ProjectAI.Core
             
             MultiplayerService = GetComponent<MultiplayerServiceManager>();
             Assert.IsNotNull(MultiplayerService, "[GameManager] MultiplayerServiceManager 컴포넌트가 부착되어 있지 않습니다. 필수 컴포넌트입니다.");
+            
+            UIManager = GetComponent<UIManager>();
+            Assert.IsNotNull(UIManager, "[GameManager] UIManager 컴포넌트가 부착되어 있지 않습니다. 필수 컴포넌트입니다.");
+            
+            GlobalInputReader = GetComponent<GlobalInputReader>();
+            Assert.IsNotNull(GlobalInputReader, "[GameManager] GlobalInputReader 컴포넌트가 부착되어 있지 않습니다. 필수 컴포넌트입니다.");
             
             // 씬을 전환해도 이 객체(및 부착된 네트워크 매니저)가 삭제되지 않도록 보호합니다.
             DontDestroyOnLoad(gameObject);

@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using ProjectAI.GameModes;
 
 namespace ProjectAI.SOs
@@ -10,7 +12,10 @@ namespace ProjectAI.SOs
     [CreateAssetMenu(fileName = "SpawnTableDatabase", menuName = "ProjectAI/SOs/SpawnTableDatabase")]
     public class SpawnTableDatabaseSO : ScriptableObject
     {
-        [System.Serializable]
+        /// <summary>
+        /// 던전 테마와 스폰 테이블을 매핑해주는 데이터 구조체입니다.
+        /// </summary>
+        [Serializable]
         public class ThemeTableMapping
         {
             public EDungeonTheme Theme;

@@ -2,7 +2,13 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using UnityEngine.Assertions;
+using ProjectAI.Core;
 using ProjectAI.Core.Enums;
+using ProjectAI.UIs.Popups;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace ProjectAI.UIs
 {
@@ -11,6 +17,10 @@ namespace ProjectAI.UIs
     /// </summary>
     public class MainMenuController : MonoBehaviour
     {
+        private const string START_BTN_NAME = "btn-start";
+        private const string SETTINGS_BTN_NAME = "btn-settings";
+        private const string EXIT_BTN_NAME = "btn-exit";
+
         [Header("Scene Navigation")]
         [Tooltip("Start Game 버튼 클릭 시 이동할 씬을 선택합니다.")]
         [SerializeField]
@@ -29,13 +39,14 @@ namespace ProjectAI.UIs
             VisualElement root = uiDocument.rootVisualElement;
             Assert.IsNotNull(root, "[MainMenuController] rootVisualElement is null! VisualTreeAsset might not be assigned.");
 
-            btnStart = root.Q<Button>("btn-start");
-            btnSettings = root.Q<Button>("btn-settings");
-            btnExit = root.Q<Button>("btn-exit");
+            btnStart = root.Q<Button>(START_BTN_NAME);
+            Assert.IsNotNull(btnStart, $"[MainMenuController] '{START_BTN_NAME}' button not found in UXML.");
 
-            Assert.IsNotNull(btnStart, "[MainMenuController] 'btn-start' button not found in UXML.");
-            Assert.IsNotNull(btnSettings, "[MainMenuController] 'btn-settings' button not found in UXML.");
-            Assert.IsNotNull(btnExit, "[MainMenuController] 'btn-exit' button not found in UXML.");
+            btnSettings = root.Q<Button>(SETTINGS_BTN_NAME);
+            Assert.IsNotNull(btnSettings, $"[MainMenuController] '{SETTINGS_BTN_NAME}' button not found in UXML.");
+
+            btnExit = root.Q<Button>(EXIT_BTN_NAME);
+            Assert.IsNotNull(btnExit, $"[MainMenuController] '{EXIT_BTN_NAME}' button not found in UXML.");
 
             btnStart.clicked += OnStartClicked;
             btnSettings.clicked += OnSettingsClicked;
@@ -44,14 +55,32 @@ namespace ProjectAI.UIs
 
         private void OnDisable()
         {
-            Assert.IsNotNull(btnStart, "[MainMenuController] 'btn-start' is null in OnDisable.");
-            btnStart.clicked -= OnStartClicked;
+            if (btnStart != null)
+            {
+                btnStart.clicked -= OnStartClicked;
+            }
+            else
+            {
+                Assert.IsNotNull(btnStart, $"[MainMenuController] '{START_BTN_NAME}' is null in OnDisable.");
+            }
 
-            Assert.IsNotNull(btnSettings, "[MainMenuController] 'btn-settings' is null in OnDisable.");
-            btnSettings.clicked -= OnSettingsClicked;
+            if (btnSettings != null)
+            {
+                btnSettings.clicked -= OnSettingsClicked;
+            }
+            else
+            {
+                Assert.IsNotNull(btnSettings, $"[MainMenuController] '{SETTINGS_BTN_NAME}' is null in OnDisable.");
+            }
 
-            Assert.IsNotNull(btnExit, "[MainMenuController] 'btn-exit' is null in OnDisable.");
-            btnExit.clicked -= OnExitClicked;
+            if (btnExit != null)
+            {
+                btnExit.clicked -= OnExitClicked;
+            }
+            else
+            {
+                Assert.IsNotNull(btnExit, $"[MainMenuController] '{EXIT_BTN_NAME}' is null in OnDisable.");
+            }
         }
 
         private void OnStartClicked()
@@ -62,8 +91,8 @@ namespace ProjectAI.UIs
 
         private void OnSettingsClicked()
         {
-            Debug.Log("[MainMenuController] Settings clicked. (Not implemented yet)");
-            // TODO: 환경설정 UI 패널 열기 로직 구현 예정
+            Debug.Log("[MainMenuController] Settings clicked. 환경설정 팝업을 엽니다.");
+            GameStatics.UIManager.ShowPopup<SettingsPopup>(EUIPopupType.Settings);
         }
 
         private void OnExitClicked()
@@ -72,7 +101,7 @@ namespace ProjectAI.UIs
             Application.Quit();
 
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+            EditorApplication.isPlaying = false;
 #endif
         }
     }
