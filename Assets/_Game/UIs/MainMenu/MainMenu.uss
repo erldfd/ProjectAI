@@ -1,6 +1,6 @@
 .main-container {
     flex-grow: 1;
-    background-color: rgba(15, 15, 20, 0.85);
+    background-color: rgba(10, 12, 18, 0.95);
     flex-direction: row;
     align-items: center;
     padding-left: 10%;
@@ -31,18 +31,20 @@
     color: rgb(220, 220, 220);
     font-size: 26px;
     -unity-font-style: bold;
-    transition-property: scale, border-color, background-color;
-    transition-duration: 0.2s, 0.2s, 0.2s;
-    transition-timing-function: ease-out-circ, ease-out-circ, ease-out-circ;
+    transition-property: scale, translate, border-color, background-color, color;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out-circ;
     -unity-text-align: middle-left;
     padding-left: 40px;
 }
 
 .menu-button:hover {
     scale: 1.05;
+    translate: 20px 0;
     border-color: rgb(0, 200, 255);
-    background-color: rgba(50, 50, 70, 0.9);
+    background-color: rgba(40, 60, 90, 0.95);
     color: rgb(255, 255, 255);
+    text-shadow: 0 0 10px rgba(0, 200, 255, 0.8);
 }
 
 .menu-button:active {

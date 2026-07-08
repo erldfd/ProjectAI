@@ -5,6 +5,7 @@ using UnityEngine.Assertions;
 using ProjectAI.Core;
 using ProjectAI.Core.Enums;
 using ProjectAI.UIs.Popups;
+using ProjectAI.UIs.Visuals;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -31,9 +32,17 @@ namespace ProjectAI.UIs
         private Button btnSettings;
         private Button btnExit;
 
-        private void OnEnable()
+        private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
+            Assert.IsNotNull(uiDocument, "[MainMenuController] UIDocument component not found!");
+
+            // 무(無)애셋 배경 파티클 연출기를 동적으로 부착합니다.
+            gameObject.AddComponent<MainMenuBackgroundFX>();
+        }
+
+        private void OnEnable()
+        {
             Assert.IsNotNull(uiDocument, "[MainMenuController] UIDocument component is missing!");
 
             VisualElement root = uiDocument.rootVisualElement;
