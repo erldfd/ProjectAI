@@ -289,13 +289,13 @@ namespace ProjectAI.Core.Skills
                 }
                 else
                 {
-                    RollbackLocalCooldownClientRpc(skillId);
+                    RollbackLocalCooldownOwnerRpc(skillId);
                 }
             }
         }
 
         [Rpc(SendTo.Owner)]
-        private void RollbackLocalCooldownClientRpc(int skillId)
+        private void RollbackLocalCooldownOwnerRpc(int skillId)
         {
             Debug.Log($"[NetSkillComponent] 스킬 ID {skillId} 서버 발동 실패. 로컬 예측 쿨타임 롤백.");
             SetLocalActivationTime(skillId, -999.0);

@@ -29,8 +29,8 @@ namespace ProjectAI.Core.Stats
         /// <summary> 1회성 피격 이벤트 (파티클, 사운드 등 연출 트리거). 파라미터는 (데미지, 남은 체력) </summary>
         public event Action<int, int> OnHit;
 
-        /// <summary> 사망 이벤트 </summary>
-        public event Action OnDeath;
+        /// <summary> 사망 이벤트. 매개변수는 사망한 자신(NetHealthComponent)입니다. </summary>
+        public event Action<NetHealthComponent> OnDeath;
 
         /// <summary>
         /// 이 컴포넌트를 소유하고 있는 루트 엔티티 참조
@@ -59,7 +59,7 @@ namespace ProjectAI.Core.Stats
             // [Review Fix] NGO Late Joiner(지연 접속자) 사망 상태 동기화
             if (CurrentHealth.Value <= 0)
             {
-                OnDeath?.Invoke();
+                OnDeath?.Invoke(this);
             }
         }
 
@@ -143,7 +143,7 @@ namespace ProjectAI.Core.Stats
         [Rpc(SendTo.ClientsAndHost, Delivery = RpcDelivery.Reliable)]
         private void DieClientRpc()
         {
-            OnDeath?.Invoke();
+            OnDeath?.Invoke(this);
             // 참고: 객체 파괴(Despawn) 및 랙돌 연출 등은 NetHealthComponent에서 직접 하지 않고,
             // OnDeath 이벤트를 구독하는 외부 컨트롤러(NetPlayerController, NetMonsterController)에 위임합니다.
         }

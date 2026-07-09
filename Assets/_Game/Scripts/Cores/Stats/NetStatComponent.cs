@@ -109,7 +109,7 @@ namespace ProjectAI.Core.Stats
             entityEvents.InvokeHitTriggered(damage, remainingHealth);
         }
 
-        private void HandleDeath()
+        private void HandleDeath(NetHealthComponent deadHealth)
         {
             entityEvents.InvokeDeathTriggered();
         }
