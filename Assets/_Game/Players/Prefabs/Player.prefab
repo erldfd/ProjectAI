@@ -464,6 +464,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Characters.NetPlayerCharacter
   ShowTopMostFoldoutHeaderGroup: 1
   despawnDelay: 1.5
+  RewardDB: {fileID: 11400000, guid: 7e1aab4c3534bbd42a6b96c7881a74bd, type: 2}
 --- !u!114 &1818300491571915337
 MonoBehaviour:
   m_ObjectHideFlags: 0

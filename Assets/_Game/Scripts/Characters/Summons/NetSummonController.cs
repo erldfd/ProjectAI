@@ -57,10 +57,7 @@ namespace ProjectAI.Characters.Summons
                 return;
             }
 
-            if (GameStatics.NetworkManager == null)
-            {
-                return;
-            }
+            Assert.IsNotNull(GameStatics.NetworkManager, "[NetSummonController] ToggleStance: NetworkManager가 null입니다.");
 
             CurrentStance.Value = (CurrentStance.Value == ESummonStance.Aggressive) 
                 ? ESummonStance.Defensive 
@@ -99,10 +96,7 @@ namespace ProjectAI.Characters.Summons
                 return;
             }
 
-            if (GameStatics.NetworkManager == null)
-            {
-                return;
-            }
+            Assert.IsNotNull(GameStatics.NetworkManager, "[NetSummonController] AddSummon: NetworkManager가 null입니다.");
 
             ActiveSummons.Add(new SSummonData
             {
@@ -134,10 +128,11 @@ namespace ProjectAI.Characters.Summons
 
         private void Update()
         {
-            if (!GameStatics.IsServerAuthorized || GameStatics.NetworkManager == null)
+            if (!GameStatics.IsServerAuthorized)
             {
                 return;
             }
+            Assert.IsNotNull(GameStatics.NetworkManager, "[NetSummonController] Update: NetworkManager가 null입니다.");
 
             float currentTime = (float)GameStatics.NetworkManager.ServerTime.Time;
             
@@ -177,10 +172,8 @@ namespace ProjectAI.Characters.Summons
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] DespawnSummon은 서버에서만 호출되어야 합니다.");
 
-            if (GameStatics.NetworkManager == null || GameStatics.NetworkManager.SpawnManager == null)
-            {
-                return;
-            }
+            Assert.IsNotNull(GameStatics.NetworkManager, "[NetSummonController] DespawnSummon: NetworkManager가 null입니다.");
+            Assert.IsNotNull(GameStatics.NetworkManager.SpawnManager, "[NetSummonController] DespawnSummon: SpawnManager가 null입니다.");
 
             if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(objId, out NetworkObject netObj))
             {
@@ -207,10 +200,7 @@ namespace ProjectAI.Characters.Summons
                 return;
             }
 
-            if (GameStatics.NetworkManager == null)
-            {
-                return;
-            }
+            Assert.IsNotNull(GameStatics.NetworkManager, "[NetSummonController] SetPriorityTarget: NetworkManager가 null입니다.");
 
             CurrentPriorityTarget = target;
 
@@ -228,6 +218,35 @@ namespace ProjectAI.Characters.Summons
 
                 brain.PriorityTarget = target;
             }
+        }
+
+        public void ReplaceSummon(NetworkObject summonPrefab, float duration)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] ReplaceSummon은 서버에서만 호출되어야 합니다.");
+            Assert.IsNotNull(summonPrefab, "[NetSummonController] ReplaceSummon: summonPrefab 인자가 null입니다.");
+            Assert.IsNotNull(GameStatics.ObjectPool, "[NetSummonController] GameStatics.ObjectPool이 등록되어 있지 않습니다!");
+
+            // 1. 기존 소환수들 일괄 폭파
+            for (int i = ActiveSummons.Count - 1; i >= 0; i--)
+            {
+                DespawnSummon(ActiveSummons[i].SummonNetworkObjectId);
+            }
+            
+            ActiveSummons.Clear();
+
+            // 2. 새 소환수 생성 및 스폰 (플레이어 우측 1.5f 임시 위치)
+            Vector3 spawnPos = transform.position + (Vector3.right * 1.5f);
+            
+            NetworkObject newSummonObj = GameStatics.ObjectPool.GetNetworkObject(summonPrefab, spawnPos, Quaternion.identity);
+            Assert.IsNotNull(newSummonObj, "[NetSummonController] ObjectPool에서 소환수를 가져오지 못했습니다.");
+            
+            if (!newSummonObj.IsSpawned)
+            {
+                newSummonObj.Spawn(true);
+            }
+            
+            // 3. 소환수 컨트롤러에 등록
+            AddSummon(newSummonObj, duration);
         }
     }
 }

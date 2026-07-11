@@ -37,10 +37,8 @@ namespace ProjectAI.UIs.Cores
 
         private void Start()
         {
-            if (GameStatics.GlobalInput != null)
-            {
-                GameStatics.GlobalInput.OnCancelInput += CloseTopPopup;
-            }
+            Assert.IsNotNull(GameStatics.GlobalInput, "[UIManager] GlobalInput이 null입니다. 이벤트 바인딩 불가.");
+            GameStatics.GlobalInput.OnCancelInput += CloseTopPopup;
         }
 
         private void OnDestroy()
@@ -75,12 +73,18 @@ namespace ProjectAI.UIs.Cores
                 {
                     Debug.LogWarning($"[UIManager] {popupType} 팝업은 이미 표시되어 있습니다. 최상단으로 올리기만 수행합니다.");
                     RemoveFromStack(existingPopup);
-                    popupStack.Push(existingPopup);
+                    if (!existingPopup.IsOverlay)
+                    {
+                        popupStack.Push(existingPopup);
+                    }
                     return (T)existingPopup;
                 }
 
                 existingPopup.Show();
-                popupStack.Push(existingPopup);
+                if (!existingPopup.IsOverlay)
+                {
+                    popupStack.Push(existingPopup);
+                }
                 return (T)existingPopup;
             }
 
@@ -106,7 +110,10 @@ namespace ProjectAI.UIs.Cores
 
             popup.Show();
 
-            popupStack.Push(popup);
+            if (!popup.IsOverlay)
+            {
+                popupStack.Push(popup);
+            }
 
             return popup;
         }

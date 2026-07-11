@@ -24,6 +24,7 @@ namespace ProjectAI.Core
         // ----------------------------------------------------
         private static ChunkDatabaseSO _mapChunkDB;
         private static SpawnTableDatabaseSO _spawnTableDB;
+        private static DungeonRewardDatabaseSO _rewardDB;
 
         // O(1) 룩업을 위한 전역 데미지 인터페이스 레지스트리
         private static readonly Dictionary<int, IDamageable> damageableRegistry = new Dictionary<int, IDamageable>();
@@ -64,6 +65,40 @@ namespace ProjectAI.Core
                 }
 
                 return _spawnTableDB;
+            }
+        }
+
+        /// <summary>
+        /// Resources/SOs/DungeonRewardDatabaseSO.asset 을 지연 로딩하여 캐싱합니다.
+        /// </summary>
+        public static DungeonRewardDatabaseSO RewardDB
+        {
+            get
+            {
+                if (_rewardDB == null)
+                {
+                    _rewardDB = Resources.Load<DungeonRewardDatabaseSO>("SOs/DungeonRewardDatabaseSO");
+                    Assert.IsNotNull(_rewardDB, "[GameStatics] Resources/SOs 폴더 내에 'DungeonRewardDatabaseSO' 파일을 찾을 수 없습니다!");
+                }
+
+                return _rewardDB;
+            }
+        }
+
+        /// <summary>
+        /// 현재 게임 모드가 던전일 경우 테마에 맞는 보상 테이블을 즉시 반환합니다.
+        /// </summary>
+        public static DungeonRewardTableSO CurrentRewardTable
+        {
+            get
+            {
+                if (CurrentMode is NetDungeonGameMode dungeonMode)
+                {
+                    return RewardDB.GetTable(dungeonMode.CurrentTheme);
+                }
+                
+                Debug.LogWarning("[GameStatics] 현재 게임 모드가 NetDungeonGameMode가 아니므로 CurrentRewardTable을 가져올 수 없습니다.");
+                return null;
             }
         }
 
@@ -144,6 +179,7 @@ namespace ProjectAI.Core
         {
             _mapChunkDB = null;
             _spawnTableDB = null;
+            _rewardDB = null;
             damageableRegistry.Clear();
             GameManager = null;
             CurrentMode = null;
