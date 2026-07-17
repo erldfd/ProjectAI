@@ -1,9 +1,11 @@
-using UnityEngine;
-using System.Collections.Generic;
 using System;
-using ProjectAI.Core;
-using ProjectAI.GameModes;
+using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEngine;
+using ProjectAI.Core;
+using ProjectAI.Core.Enums;
+using ProjectAI.Core.Stats;
+using ProjectAI.GameModes;
 
 namespace ProjectAI.Environments
 {
@@ -65,8 +67,11 @@ namespace ProjectAI.Environments
         public List<GameObject> RoomBarriers = new List<GameObject>();
 
         [Header("Reward Settings")]
-        [Tooltip("방 클리어 시 방 중앙에 스폰될 임시 재화(기억의 파편) 프리팹")]
+        [Tooltip("방 클리어 시 스폰될 임시 재화(기억의 파편) 프리팹")]
         public NetworkObject MemoryFragmentPrefab;
+
+        [Tooltip("기억의 파편이 스폰될 중심 좌표 기준 오프셋 (기즈모로 확인 가능)")]
+        public Vector2 MemoryFragmentSpawnOffset = Vector2.zero;
 
         public EChunkState State { get; private set; } = EChunkState.Unvisited;
 
@@ -75,6 +80,7 @@ namespace ProjectAI.Environments
 
         private int activeSpawners = 0;
         private int aliveMonsters = 0;
+        private List<NetHealthComponent> trackedMonsters = new List<NetHealthComponent>();
 
         private void Awake()
         {
@@ -94,6 +100,35 @@ namespace ProjectAI.Environments
                     barrier.SetActive(false);
                 }
             }
+        }
+
+        private void OnDestroy()
+        {
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            // [메모리 누수 방지 로직]
+            // MapChunk가 먼저 파괴(Unload 등)될 때, 
+            // 해당 청크에서 스폰된 Spawner와 몬스터 객체들의 이벤트가 계속 메모리에 남아 
+            // 참조에 의한 메모리 누수 및 오작동(NullReferenceException)을 일으키는 것을 방지합니다.
+            MonsterSpawner[] spawners = GetComponentsInChildren<MonsterSpawner>();
+            foreach (MonsterSpawner spawner in spawners)
+            {
+                spawner.OnMonsterSpawned -= HandleMonsterSpawned;
+                spawner.OnSpawningFinished -= HandleSpawningFinished;
+            }
+            
+            foreach (NetHealthComponent healthComp in trackedMonsters)
+            {
+                if (healthComp != null)
+                {
+                    healthComp.OnDeath -= HandleMonsterDeath;
+                }
+            }
+            
+            trackedMonsters.Clear();
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -144,10 +179,11 @@ namespace ProjectAI.Environments
         private void HandleMonsterSpawned(NetworkObject monsterNetObj)
         {
             // 몬스터 체력 컴포넌트를 찾아 사망(OnDeath) 이벤트 구독
-            ProjectAI.Core.Stats.NetHealthComponent healthComp = monsterNetObj.GetComponentInChildren<ProjectAI.Core.Stats.NetHealthComponent>();
+            NetHealthComponent healthComp = monsterNetObj.GetComponentInChildren<NetHealthComponent>();
             if (healthComp != null)
             {
                 aliveMonsters++;
+                trackedMonsters.Add(healthComp);
                 healthComp.OnDeath += HandleMonsterDeath;
             }
         }
@@ -158,11 +194,16 @@ namespace ProjectAI.Environments
             CheckRoomClear();
         }
 
-        private void HandleMonsterDeath(ProjectAI.Core.Stats.NetHealthComponent deadHealth)
+        private void HandleMonsterDeath(NetHealthComponent deadHealth)
         {
+            if (deadHealth != null)
+            {
+                deadHealth.OnDeath -= HandleMonsterDeath;
+                trackedMonsters.Remove(deadHealth);
+            }
+
             aliveMonsters--;
             CheckRoomClear();
-            deadHealth.OnDeath -= HandleMonsterDeath;
         }
 
         private void CheckRoomClear()
@@ -182,7 +223,8 @@ namespace ProjectAI.Environments
                 // 기억의 파편 스폰 로직 추가 (서버 권한 한정)
                 if (MemoryFragmentPrefab != null)
                 {
-                    NetworkObject fragment = Instantiate(MemoryFragmentPrefab, transform.position, Quaternion.identity);
+                    Vector3 spawnPos = transform.TransformPoint((Vector3)MemoryFragmentSpawnOffset);
+                    NetworkObject fragment = Instantiate(MemoryFragmentPrefab, spawnPos, Quaternion.identity);
                     fragment.Spawn();
                 }
                 else

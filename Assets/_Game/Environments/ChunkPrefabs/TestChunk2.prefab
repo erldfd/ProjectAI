@@ -273,6 +273,9 @@ MonoBehaviour:
     AcceptableTags:
     - JointChunk4_0
     - TestChunk3_0
+  RoomBarriers: []
+  MemoryFragmentPrefab: {fileID: 0}
+  MemoryFragmentSpawnOffset: {x: 32.81, y: 10.71}
 --- !u!1 &2073305571818268508
 GameObject:
   m_ObjectHideFlags: 0

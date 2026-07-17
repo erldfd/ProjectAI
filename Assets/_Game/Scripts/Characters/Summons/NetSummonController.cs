@@ -70,7 +70,7 @@ namespace ProjectAI.Characters.Summons
 
             for (int i = 0; i < ActiveSummons.Count; i++)
             {
-                if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
+                if (!GameStatics.TryGetSpawnedObject(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
                 {
                     continue;
                 }
@@ -147,7 +147,7 @@ namespace ProjectAI.Characters.Summons
                 }
 
                 // 시간이 안 끝났더라도 외부에서 이미 파괴되거나 Despawn 되었는지 검증
-                if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.ContainsKey(ActiveSummons[i].SummonNetworkObjectId))
+                if (!GameStatics.TryGetSpawnedObject(ActiveSummons[i].SummonNetworkObjectId, out _))
                 {
                     ActiveSummons.RemoveAt(i);
                 }
@@ -175,7 +175,7 @@ namespace ProjectAI.Characters.Summons
             Assert.IsNotNull(GameStatics.NetworkManager, "[NetSummonController] DespawnSummon: NetworkManager가 null입니다.");
             Assert.IsNotNull(GameStatics.NetworkManager.SpawnManager, "[NetSummonController] DespawnSummon: SpawnManager가 null입니다.");
 
-            if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(objId, out NetworkObject netObj))
+            if (!GameStatics.TryGetSpawnedObject(objId, out NetworkObject netObj))
             {
                 Debug.LogWarning($"[NetSummonController] DespawnSummon 실패: ID {objId}에 해당하는 네트워크 객체를 찾을 수 없습니다.");
                 return;
@@ -206,7 +206,7 @@ namespace ProjectAI.Characters.Summons
 
             for (int i = 0; i < ActiveSummons.Count; i++)
             {
-                if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
+                if (!GameStatics.TryGetSpawnedObject(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
                 {
                     continue;
                 }

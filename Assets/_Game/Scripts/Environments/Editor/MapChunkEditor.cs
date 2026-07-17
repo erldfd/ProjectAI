@@ -10,7 +10,8 @@ namespace ProjectAI.Environments.Editor
     [CustomEditor(typeof(MapChunk))]
     public class MapChunkEditor : UnityEditor.Editor
     {
-        private GUIStyle cachedLabelStyle;
+        private GUIStyle spawnLabelStyle;
+        private GUIStyle connectorLabelStyle;
 
         private void OnSceneGUI()
         {
@@ -36,8 +37,7 @@ namespace ProjectAI.Environments.Editor
                         continue;
                     }
 
-                    Vector3 boundCenter = t.TransformPoint((Vector3)bound.LocalCenter);
-                    Vector3[] rect = GetBoundsRect(boundCenter, bound.Size);
+                    Vector3[] rect = GetBoundsRect(t, (Vector3)bound.LocalCenter, bound.Size);
                     Handles.DrawSolidRectangleWithOutline(rect, new Color(0f, 1f, 0f, 0.35f), Color.green);
                 }
             }
@@ -46,7 +46,31 @@ namespace ProjectAI.Environments.Editor
                 Handles.color = originalColor; // 원래 색상 복원
             }
 
-            // 2. 커넥터(연결구) 핸들 표시 및 상호작용
+            // 2. 기억의 파편 스폰 오프셋 시각화 (시안색 텍스트 및 핸들)
+            Vector3 spawnPos = t.TransformPoint((Vector3)chunk.MemoryFragmentSpawnOffset);
+            Handles.color = Color.cyan;
+            Handles.DrawWireDisc(spawnPos, Vector3.forward, 0.5f);
+            
+            if (spawnLabelStyle == null)
+            {
+                spawnLabelStyle = new GUIStyle();
+                spawnLabelStyle.normal.textColor = Color.cyan;
+                spawnLabelStyle.alignment = TextAnchor.MiddleCenter;
+                spawnLabelStyle.fontSize = 12;
+                spawnLabelStyle.fontStyle = FontStyle.Bold;
+            }
+
+            Handles.Label(spawnPos + new Vector3(0, 0.7f, 0), "Memory Fragment Spawn", spawnLabelStyle);
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newSpawnWorldPos = Handles.PositionHandle(spawnPos, Quaternion.identity);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(chunk, "Move Memory Fragment Spawn");
+                chunk.MemoryFragmentSpawnOffset = (Vector2)t.InverseTransformPoint(newSpawnWorldPos);
+            }
+
+            // 3. 커넥터(연결구) 핸들 표시 및 상호작용
             for (int i = 0; i < chunk.Connectors.Count; i++)
             {
                 ChunkConnector connector = chunk.Connectors[i];
@@ -59,14 +83,14 @@ namespace ProjectAI.Environments.Editor
                 Vector3 worldPos = t.TransformPoint(connector.LocalPosition);
 
                 // 연결구 태그 표시 (노란색 텍스트)
-                if (cachedLabelStyle == null)
+                if (connectorLabelStyle == null)
                 {
-                    cachedLabelStyle = new GUIStyle(EditorStyles.label);
-                    cachedLabelStyle.normal.textColor = Color.yellow;
-                    cachedLabelStyle.fontStyle = FontStyle.Bold;
+                    connectorLabelStyle = new GUIStyle(EditorStyles.label);
+                    connectorLabelStyle.normal.textColor = Color.yellow;
+                    connectorLabelStyle.fontStyle = FontStyle.Bold;
                 }
 
-                Handles.Label(worldPos + Vector3.up * 0.5f, $"커넥터: {connector.MyTag}", cachedLabelStyle);
+                Handles.Label(worldPos + Vector3.up * 0.5f, $"커넥터: {connector.MyTag}", connectorLabelStyle);
 
                 // 씬 뷰에서 마우스로 붙잡고 이동할 수 있는 이동 축(Position Handle) 제공
                 EditorGUI.BeginChangeCheck();
@@ -102,15 +126,15 @@ namespace ProjectAI.Environments.Editor
         /// <summary>
         /// 바운더리 사각형의 4개 꼭짓점 좌표를 반환하는 헬퍼 함수
         /// </summary>
-        private Vector3[] GetBoundsRect(Vector3 center, Vector2 size)
+        private Vector3[] GetBoundsRect(Transform t, Vector3 localCenter, Vector2 size)
         {
             float halfX = size.x * 0.5f;
             float halfY = size.y * 0.5f;
             Vector3[] corners = new Vector3[4];
-            corners[0] = center + new Vector3(-halfX, -halfY, 0f);
-            corners[1] = center + new Vector3(-halfX,  halfY, 0f);
-            corners[2] = center + new Vector3( halfX,  halfY, 0f);
-            corners[3] = center + new Vector3( halfX, -halfY, 0f);
+            corners[0] = t.TransformPoint(localCenter + new Vector3(-halfX, -halfY, 0f));
+            corners[1] = t.TransformPoint(localCenter + new Vector3(-halfX,  halfY, 0f));
+            corners[2] = t.TransformPoint(localCenter + new Vector3( halfX,  halfY, 0f));
+            corners[3] = t.TransformPoint(localCenter + new Vector3( halfX, -halfY, 0f));
             return corners;
         }
     }

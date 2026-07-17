@@ -101,7 +101,7 @@ namespace ProjectAI.Core
                 return;
             }
             
-            if (!GameStatics.NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObj))
+            if (!GameStatics.TryGetSpawnedObject(targetObjectId, out NetworkObject targetObj))
             {
                 return;
             }

@@ -197,6 +197,7 @@ MonoBehaviour:
   - {fileID: 1409207450591663774}
   - {fileID: 2064317153049635167}
   MemoryFragmentPrefab: {fileID: 1114638683888882240, guid: c5e9bbf24e52ea745bf005c517e41062, type: 3}
+  MemoryFragmentSpawnOffset: {x: 32.2, y: 7.8}
 --- !u!1 &2318225660331004451
 GameObject:
   m_ObjectHideFlags: 0

@@ -169,6 +169,24 @@ namespace ProjectAI.Core
         /// </summary>
         public static float MovementDepthRatio => 1.0f / DepthScale;
 
+        #region NGO Helpers
+        
+        /// <summary>
+        /// 현재 스폰된 NetworkObject를 objectId로 찾습니다.
+        /// </summary>
+        public static bool TryGetSpawnedObject(ulong objectId, out NetworkObject networkObject)
+        {
+            networkObject = null;
+            if (NetworkManager == null || NetworkManager.SpawnManager == null)
+            {
+                return false;
+            }
+
+            return NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(objectId, out networkObject);
+        }
+
+        #endregion
+
 
         // ----------------------------------------------------
         // 3. Methods
