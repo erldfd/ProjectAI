@@ -235,8 +235,9 @@ namespace ProjectAI.Core.Pooling
 
             if (!pools.TryGetValue(prefab, out PoolData poolData))
             {
-                Debug.LogError($"[NetworkObjectPool] Setup된 풀이 존재하지 않습니다: {prefab.name}");
-                return null;
+                Debug.Log($"[NetworkObjectPool] Setup된 풀이 존재하지 않아 자동으로 초기화합니다 (ExpandWhenEmpty=true, InitialSize=1): {prefab.name}");
+                SetupPool(prefab, 1, true);
+                pools.TryGetValue(prefab, out poolData);
             }
 
             NetworkObject instance = null;

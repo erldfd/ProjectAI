@@ -22,6 +22,11 @@ namespace ProjectAI.UIs.Cores
         public EUIPopupType PopupType { get; private set; }
 
         /// <summary>
+        /// 화면에 항상 떠 있는 오버레이(HUD)인지 여부. true일 경우 UIManager 스택에 쌓이지 않아 ESC로 닫을 수 없습니다.
+        /// </summary>
+        public virtual bool IsOverlay => false;
+
+        /// <summary>
         /// 팝업이 초기화되었는지 여부를 추적합니다.
         /// </summary>
         public bool IsInitialized { get; private set; }

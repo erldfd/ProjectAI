@@ -1,11 +1,20 @@
-using UnityEngine;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using Unity.Netcode;
+using UnityEngine;
 using ProjectAI.Core;
+using ProjectAI.Core.Enums;
+using ProjectAI.Core.Stats;
 using ProjectAI.GameModes;
 
 namespace ProjectAI.Environments
 {
+    public enum EChunkState
+    {
+        Unvisited,
+        Active,
+        Cleared
+    }
     /// <summary>
     /// 청크를 구성하는 각각의 사각형 충돌 영역(바운더리) 데이터를 담는 클래스입니다.
     /// 여러 개를 조합하여 ㄱ자, T자 등 비정형 모양을 만들 수 있습니다.
@@ -53,7 +62,25 @@ namespace ProjectAI.Environments
         [Tooltip("다른 청크와 결합할 수 있는 연결구(문)의 목록")]
         public List<ChunkConnector> Connectors = new List<ChunkConnector>();
 
-        private bool isVisited = false;
+        [Header("Room Lock Settings")]
+        [Tooltip("방에 진입했을 때 입구를 막고, 클리어 시 파괴되는 봉쇄용 오브젝트들 (에디터 인스펙터 수동 할당)")]
+        public List<GameObject> RoomBarriers = new List<GameObject>();
+
+        [Header("Reward Settings")]
+        [Tooltip("방 클리어 시 스폰될 임시 재화(기억의 파편) 프리팹")]
+        public NetworkObject MemoryFragmentPrefab;
+
+        [Tooltip("기억의 파편이 스폰될 중심 좌표 기준 오프셋 (기즈모로 확인 가능)")]
+        public Vector2 MemoryFragmentSpawnOffset = Vector2.zero;
+
+        public EChunkState State { get; private set; } = EChunkState.Unvisited;
+
+        /// <summary> 서버에서 방 클리어 시 발생 (NetMapGenerator가 구독) </summary>
+        public event Action<MapChunk> OnRoomClearedServer;
+
+        private int activeSpawners = 0;
+        private int aliveMonsters = 0;
+        private List<NetHealthComponent> trackedMonsters = new List<NetHealthComponent>();
 
         private void Awake()
         {
@@ -65,11 +92,48 @@ namespace ProjectAI.Environments
                 col.offset = bound.LocalCenter;
                 col.size = bound.Size;
             }
+
+            foreach (GameObject barrier in RoomBarriers)
+            {
+                if (barrier != null)
+                {
+                    barrier.SetActive(false);
+                }
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            // [메모리 누수 방지 로직]
+            // MapChunk가 먼저 파괴(Unload 등)될 때, 
+            // 해당 청크에서 스폰된 Spawner와 몬스터 객체들의 이벤트가 계속 메모리에 남아 
+            // 참조에 의한 메모리 누수 및 오작동(NullReferenceException)을 일으키는 것을 방지합니다.
+            MonsterSpawner[] spawners = GetComponentsInChildren<MonsterSpawner>();
+            foreach (MonsterSpawner spawner in spawners)
+            {
+                spawner.OnMonsterSpawned -= HandleMonsterSpawned;
+                spawner.OnSpawningFinished -= HandleSpawningFinished;
+            }
+            
+            foreach (NetHealthComponent healthComp in trackedMonsters)
+            {
+                if (healthComp != null)
+                {
+                    healthComp.OnDeath -= HandleMonsterDeath;
+                }
+            }
+            
+            trackedMonsters.Clear();
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (isVisited || !GameStatics.IsServerAuthorized)
+            if (State != EChunkState.Unvisited)
             {
                 return;
             }
@@ -79,8 +143,22 @@ namespace ProjectAI.Environments
                 return;
             }
 
-            isVisited = true;
-            ActivateAllSpawners();
+            State = EChunkState.Active;
+            
+            // 결계 활성화 (클라이언트와 서버 모두 로컬에서 켜짐)
+            foreach (GameObject barrier in RoomBarriers)
+            {
+                if (barrier != null)
+                {
+                    barrier.SetActive(true);
+                }
+            }
+
+            if (GameStatics.IsServerAuthorized)
+            {
+                ActivateAllSpawners();
+                CheckRoomClear(); // 혹시 몬스터가 0마리 스폰되는 방일 경우 대비
+            }
         }
 
         private void ActivateAllSpawners()
@@ -88,10 +166,96 @@ namespace ProjectAI.Environments
             UnityEngine.Assertions.Assert.IsTrue(GameStatics.IsServerAuthorized, "[MapChunk] ActivateAllSpawners는 서버(호스트)에서만 호출되어야 합니다.");
 
             MonsterSpawner[] spawners = GetComponentsInChildren<MonsterSpawner>();
+            activeSpawners = spawners.Length;
+
             foreach (MonsterSpawner spawner in spawners)
             {
+                spawner.OnMonsterSpawned += HandleMonsterSpawned;
+                spawner.OnSpawningFinished += HandleSpawningFinished;
                 spawner.ActivateSpawner();
             }
+        }
+
+        private void HandleMonsterSpawned(NetworkObject monsterNetObj)
+        {
+            // 몬스터 체력 컴포넌트를 찾아 사망(OnDeath) 이벤트 구독
+            NetHealthComponent healthComp = monsterNetObj.GetComponentInChildren<NetHealthComponent>();
+            if (healthComp != null)
+            {
+                aliveMonsters++;
+                trackedMonsters.Add(healthComp);
+                healthComp.OnDeath += HandleMonsterDeath;
+            }
+        }
+
+        private void HandleSpawningFinished()
+        {
+            activeSpawners--;
+            CheckRoomClear();
+        }
+
+        private void HandleMonsterDeath(NetHealthComponent deadHealth)
+        {
+            if (deadHealth != null)
+            {
+                deadHealth.OnDeath -= HandleMonsterDeath;
+                trackedMonsters.Remove(deadHealth);
+            }
+
+            aliveMonsters--;
+            CheckRoomClear();
+        }
+
+        private void CheckRoomClear()
+        {
+            if (State != EChunkState.Active || !GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (activeSpawners <= 0 && aliveMonsters <= 0)
+            {
+                // 생성기(NetMapGenerator)에게 내가 클리어되었음을 알림
+                OnRoomClearedServer?.Invoke(this);
+                
+                ClearRoomLocally();
+                
+                // 기억의 파편 스폰 로직 추가 (서버 권한 한정)
+                if (MemoryFragmentPrefab != null)
+                {
+                    Vector3 spawnPos = transform.TransformPoint((Vector3)MemoryFragmentSpawnOffset);
+                    NetworkObject fragment = Instantiate(MemoryFragmentPrefab, spawnPos, Quaternion.identity);
+                    fragment.Spawn();
+                }
+                else
+                {
+                    Debug.LogWarning($"[MapChunk] 방 클리어! 하지만 MemoryFragmentPrefab이 할당되지 않았습니다. (Chunk: {gameObject.name})");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 방을 클리어 상태로 만들고 결계를 풉니다. (클라이언트 동기화를 위해 public 오픈)
+        /// </summary>
+        public void ClearRoomLocally()
+        {
+            if (State == EChunkState.Cleared)
+            {
+                return;
+            }
+
+            State = EChunkState.Cleared;
+            
+            // 결계 해제 (방 개방)
+            foreach (GameObject barrier in RoomBarriers)
+            {
+                if (barrier != null)
+                {
+                    barrier.SetActive(false);
+                }
+            }
+            
+            Debug.Log($"[MapChunk] 방 클리어! (Chunk: {gameObject.name})");
         }
     }
 }

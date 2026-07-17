@@ -34,7 +34,11 @@ namespace ProjectAI.GameModes
         private int currentSpawnCount = 0;
         private float spawnTimer;
         private bool isActivated = false;
+        private bool hasFiredFinishedEvent = false;
         private ISpawnCondition[] conditions = Array.Empty<ISpawnCondition>();
+
+        public event Action<NetworkObject> OnMonsterSpawned;
+        public event Action OnSpawningFinished;
 
         private void Awake()
         {
@@ -65,6 +69,12 @@ namespace ProjectAI.GameModes
 
             if (maxSpawnCount == 0 || (maxSpawnCount > 0 && currentSpawnCount >= maxSpawnCount))
             {
+                if (!hasFiredFinishedEvent)
+                {
+                    hasFiredFinishedEvent = true;
+                    OnSpawningFinished?.Invoke();
+                }
+                
                 return;
             }
 
@@ -141,6 +151,7 @@ namespace ProjectAI.GameModes
             {
                 monsterNetObj.Spawn();
                 currentSpawnCount++;
+                OnMonsterSpawned?.Invoke(monsterNetObj);
             }
         }
     }

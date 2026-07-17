@@ -21,10 +21,18 @@ namespace ProjectAI.Environments
         private NetworkVariable<int> mapSeed = new NetworkVariable<int>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        // 클리어된 방의 위치를 전파하여 클라이언트(Late Joiner 포함)의 문을 동기화합니다.
+        public NetworkList<Vector3> ClearedChunkPositions;
+
         private System.Random randomGen;
         private List<MapChunk> spawnedChunks = new List<MapChunk>();
         private List<SOpenConnector> openConnectors = new List<SOpenConnector>();
         private int lastGeneratedSeed = 0;
+
+        private void Awake()
+        {
+            ClearedChunkPositions = new NetworkList<Vector3>();
+        }
 
         /// <summary>
         /// 아직 다른 청크와 연결되지 않은(열려있는) 커넥터의 상태를 추적하는 구조체입니다.
@@ -72,12 +80,30 @@ namespace ProjectAI.Environments
 
             // 시드값이 나중에 바뀌거나, 지연 접속(Late Joiner)인 경우 이벤트 트리거로 맵 생성
             mapSeed.OnValueChanged += OnMapSeedChanged;
+            ClearedChunkPositions.OnListChanged += HandleClearedChunkChanged;
         }
 
         public override void OnNetworkDespawn()
         {
             base.OnNetworkDespawn();
             mapSeed.OnValueChanged -= OnMapSeedChanged;
+            ClearedChunkPositions.OnListChanged -= HandleClearedChunkChanged;
+        }
+
+        private void HandleClearedChunkChanged(NetworkListEvent<Vector3> changeEvent)
+        {
+            if (changeEvent.Type == NetworkListEvent<Vector3>.EventType.Add)
+            {
+                for (int i = 0; i < spawnedChunks.Count; i++)
+                {
+                    MapChunk chunk = spawnedChunks[i];
+                    if (chunk != null && Vector3.Distance(chunk.transform.position, changeEvent.Value) < 0.1f)
+                    {
+                        chunk.ClearRoomLocally();
+                        break;
+                    }
+                }
+            }
         }
 
         private void OnMapSeedChanged(int oldValue, int newValue)
@@ -101,6 +127,11 @@ namespace ProjectAI.Environments
             lastGeneratedSeed = seed;
 
             ClearMap();
+            
+            if (GameStatics.IsServerAuthorized)
+            {
+                ClearedChunkPositions.Clear();
+            }
 
             Assert.IsNotNull(GameStatics.MapChunkDB, "[NetMapGenerator] MapChunkDB가 로드되지 않았습니다!");
             Assert.IsNotNull(GameStatics.MapChunkDB.StartChunkPrefab, "[NetMapGenerator] StartChunkPrefab이 할당되지 않았습니다!");
@@ -112,6 +143,12 @@ namespace ProjectAI.Environments
             // 1. 시작 청크 스폰
             MapChunk startChunk = Instantiate(GameStatics.MapChunkDB.StartChunkPrefab, transform.position, Quaternion.identity, transform);
             startChunk.name = "StartChunk";
+
+            if (GameStatics.IsServerAuthorized)
+            {
+                startChunk.OnRoomClearedServer += HandleRoomCleared;
+            }
+
             spawnedChunks.Add(startChunk);
 
             AddOpenConnectors(startChunk, null);
@@ -198,6 +235,12 @@ namespace ProjectAI.Environments
 
                         MapChunk newChunk = Instantiate(prefabToSpawn, newChunkPos, Quaternion.identity, transform);
                         newChunk.name = $"{prefabToSpawn.name}_{currentChunkCount}";
+                        
+                        if (GameStatics.IsServerAuthorized)
+                        {
+                            newChunk.OnRoomClearedServer += HandleRoomCleared;
+                        }
+                        
                         spawnedChunks.Add(newChunk);
                         currentChunkCount++;
 
@@ -214,6 +257,28 @@ namespace ProjectAI.Environments
             }
 
             Debug.Log($"[MapGenerator] 맵 생성 완료! 스폰된 청크 총 개수: {spawnedChunks.Count}");
+            
+            // 늦게 접속한 클라이언트(Late Joiner) 혹은 맵 초기 생성 시 이미 클리어된 방 열어주기 (동기화)
+            foreach (Vector3 clearedPos in ClearedChunkPositions)
+            {
+                for (int i = 0; i < spawnedChunks.Count; i++)
+                {
+                    MapChunk chunk = spawnedChunks[i];
+                    if (chunk != null && Vector3.Distance(chunk.transform.position, clearedPos) < 0.1f)
+                    {
+                        chunk.ClearRoomLocally();
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void HandleRoomCleared(MapChunk chunk)
+        {
+            if (GameStatics.IsServerAuthorized)
+            {
+                ClearedChunkPositions.Add(chunk.transform.position);
+            }
         }
 
         private void AddOpenConnectors(MapChunk chunk, ChunkConnector ignoreConnector)

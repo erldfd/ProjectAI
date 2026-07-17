@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 654456680880460807}
   - component: {fileID: 7543447401188252682}
   - component: {fileID: 1398738098585289536}
+  - component: {fileID: 1840381040054436340}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -188,3 +189,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.Core.Inputs.GlobalInputReader
   cancelAction: {fileID: 392368643174621059, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+--- !u!114 &1840381040054436340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6359455299675143250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c04effbec1275144cb5ff7eb6d9a8792, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.UIs.Cores.UIEventListener
+  rewardDB: {fileID: 11400000, guid: 7e1aab4c3534bbd42a6b96c7881a74bd, type: 2}

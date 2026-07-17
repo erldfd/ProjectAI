@@ -7,7 +7,8 @@ namespace ProjectAI.Core.Enums
     {
         Settings,
         Inventory,
-        Result
+        Result,
+        CorePurification
         // 향후 필요한 팝업창(예: 우편함, 파티창 등)이 생기면 여기에 추가합니다.
     }
 }
