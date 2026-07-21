@@ -3,9 +3,12 @@ using ProjectAI.Core;
 using ProjectAI.Movements;
 using ProjectAI.SOs;
 using ProjectAI.UIs;
+using ProjectAI.UIs.Popups;
+using ProjectAI.Core.Enums;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
+using ProjectAI.Core.Skills;
 
 namespace ProjectAI.Characters
 {
@@ -30,6 +33,16 @@ namespace ProjectAI.Characters
             
             Assert.IsNotNull(interactor, "[NetPlayerCharacter] NetInteractor를 찾을 수 없습니다.");
             Assert.IsNotNull(SummonController, "[NetPlayerCharacter] NetSummonController를 찾을 수 없습니다. 플레이어 프리팹에 추가해 주세요.");
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            
+            if (IsOwner)
+            {
+                EventManager.TriggerEvent(new SLocalPlayerSpawnedEvent { PlayerObject = NetworkObject });
+            }
         }
 
         /// <summary>
@@ -83,7 +96,7 @@ namespace ProjectAI.Characters
             ));
         }
 
-        [Rpc(SendTo.Server)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         public void SubmitRewardChoiceRpc(ERewardType type, int index)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetPlayerCharacter] SubmitRewardChoiceRpc는 서버에서만 실행되어야 합니다.");
@@ -132,9 +145,16 @@ namespace ProjectAI.Characters
             switch (type)
             {
                 case ERewardType.Summon:
-                    Assert.IsNotNull(data.SummonPrefab, "[NetPlayerCharacter] 보상 데이터에 SummonPrefab이 할당되지 않았습니다.");
-                    SummonController.ReplaceSummon(data.SummonPrefab, 60f); // 60초 임시 소환 시간
-                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 소환수 계약 적용: {data.RewardName}");
+                    Assert.IsNotNull(data.SummonSkillConfig, "[NetPlayerCharacter] 보상 데이터에 SummonSkillConfig가 할당되지 않았습니다.");
+                    
+                    if (data.SummonSkillConfig == null)
+                    {
+                        Debug.LogError("[NetPlayerCharacter] 보상 데이터에 SummonSkillConfig가 없어 해금을 중단합니다.");
+                        return;
+                    }
+
+                    UnlockSkillOwnerRpc(data.SummonSkillConfig.SkillId);
+                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 도감 해금 지시 완료: {data.RewardName}");
                     break;
 
                 case ERewardType.SummonUpgrade:
@@ -146,6 +166,61 @@ namespace ProjectAI.Characters
                     // TODO: 플레이어 코어 강화 로직 (추후 스탯 시스템과 연동)
                     Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 코어 강화 적용: {data.RewardName} (Value: {data.UpgradeValue})");
                     break;
+            }
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void UnlockSkillOwnerRpc(int skillId)
+        {
+            bool isNewlyUnlocked = CodexManager.UnlockSkill(skillId);
+            if (isNewlyUnlocked)
+            {
+                Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 로컬 도감에 스킬({skillId})이 영구 해금되었습니다!");
+                // TODO: 해금 축하 연출 팝업 등 UI 띄우기
+            }
+
+            Assert.IsNotNull(SkillComponent, "[NetPlayerCharacter] SkillComponent가 null입니다.");
+
+            bool isAlreadyEquipped = false;
+            for (int i = 0; i < SkillComponent.OwnedSkills.Count; i++)
+            {
+                if (SkillComponent.OwnedSkills[i] != null && SkillComponent.OwnedSkills[i].SkillId == skillId)
+                {
+                    isAlreadyEquipped = true;
+                    break;
+                }
+            }
+
+            if (isAlreadyEquipped)
+            {
+                Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 현재 장착 중인 스킬({skillId})입니다. 이번 런 한정 스펙 강화 버프로 전환됩니다.");
+                // TODO: 이번 런 한정 스펙 버프 처리 로직 (스탯 연동)
+                return;
+            }
+
+            int targetSlot = -1;
+            for (int i = (int)ESkillSlot.Summon1; i <= (int)ESkillSlot.Summon3; i++)
+            {
+                if (SkillComponent.OwnedSkills.Count <= i || SkillComponent.OwnedSkills[i] == null)
+                {
+                    targetSlot = i;
+                    break;
+                }
+            }
+
+            if (targetSlot != -1)
+            {
+                Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 빈 슬롯({targetSlot}) 발견. 자동 장착을 요청합니다.");
+                SkillComponent.TryEquipSkillServerRpc(skillId, targetSlot);
+            }
+            else
+            {
+                Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 모든 소환수 슬롯이 꽉 찼습니다. 스킬 교체 팝업을 엽니다.");
+                SkillReplacePopup replacePopup = GameStatics.UIManager.ShowPopup<SkillReplacePopup>(EUIPopupType.SkillReplace);
+                if (replacePopup != null)
+                {
+                    replacePopup.Setup(skillId, SkillComponent);
+                }
             }
         }
     }

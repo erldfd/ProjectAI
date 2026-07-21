@@ -17,19 +17,19 @@ MonoBehaviour:
     Id: 0_0
     Description: "\uB354 \uD070 \uB291\uB300 \uC18C\uD658 \uC5BB\uAE30"
     Icon: {fileID: -3838474950709342126, guid: a75389fc7d3135f47a838bec740695b2, type: 3}
-    SummonPrefab: {fileID: 3646970766116130218, guid: c9c168d7ae28a774d955783be0141096, type: 3}
+    SummonSkillConfig: {fileID: 11400000, guid: 854dfe2b03e624745ab0b0e6bc8d6b1f, type: 2}
     UpgradeValue: 0
   SummonUpgradePool:
   - RewardName: "\uC18C\uD658\uC218 \uC5C5\uAE00"
     Id: 1_0
     Description: "\uC18C\uD658\uC218 \uC5C5\uAE00\uC784"
     Icon: {fileID: -5956709798608337657, guid: 15617072220a21640a09790c8ea58e08, type: 3}
-    SummonPrefab: {fileID: 0}
+    SummonSkillConfig: {fileID: 0}
     UpgradeValue: 1
   PlayerUpgradePool:
   - RewardName: "\uD50C\uB808\uC774\uC5B4 \uC5C5\uAE00"
     Id: 1_1
     Description: "\uD50C\uB808\uC774\uC5B4 \uC5C5\uAE00\uC784"
     Icon: {fileID: 1723512087270485693, guid: 23b415fea137a16418936cba27334156, type: 3}
-    SummonPrefab: {fileID: 0}
+    SummonSkillConfig: {fileID: 0}
     UpgradeValue: 5

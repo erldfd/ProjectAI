@@ -53,6 +53,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PortalBroke.Core.GameManager
   beltScrollDepthScale: 2.5
   mapChunkDatabaseResourceName: SOs/Environnments/MapChunkDB
+  defaultUnlockSkillConfig: {fileID: 11400000, guid: a6a71777cf1bc314bad8f1d0bab88910, type: 2}
 --- !u!114 &1099356124621608042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -201,4 +202,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c04effbec1275144cb5ff7eb6d9a8792, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectAI.UIs.Cores.UIEventListener
-  rewardDB: {fileID: 11400000, guid: 7e1aab4c3534bbd42a6b96c7881a74bd, type: 2}

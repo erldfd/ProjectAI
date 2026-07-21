@@ -32,14 +32,14 @@ namespace ProjectAI.UIs
         protected override void OnInitialize()
         {
             // RootElement는 UIManager가 생성해서 Initialize를 통해 주입해 줍니다.
-            Assert.IsNotNull(RootElement, "[CorePurificationPopup] RootElement가 null입니다.");
+            Assert.IsNotNull(base.RootElement, "[CorePurificationPopup] RootElement가 null입니다.");
 
-            container = RootElement.Q<VisualElement>("reward-container");
+            container = base.RootElement.Q<VisualElement>("reward-container");
             Assert.IsNotNull(container, "[CorePurificationPopup] reward-container 요소를 찾을 수 없습니다.");
 
-            btnSummon = RootElement.Q<Button>("btn-summon");
-            btnSummonUpgrade = RootElement.Q<Button>("btn-summon-upgrade");
-            btnPlayerUpgrade = RootElement.Q<Button>("btn-player-upgrade");
+            btnSummon = base.RootElement.Q<Button>("btn-summon");
+            btnSummonUpgrade = base.RootElement.Q<Button>("btn-summon-upgrade");
+            btnPlayerUpgrade = base.RootElement.Q<Button>("btn-player-upgrade");
 
             Assert.IsNotNull(btnSummon, "[CorePurificationPopup] btn-summon 요소를 찾을 수 없습니다.");
             Assert.IsNotNull(btnSummonUpgrade, "[CorePurificationPopup] btn-summon-upgrade 요소를 찾을 수 없습니다.");

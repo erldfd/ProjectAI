@@ -20,6 +20,7 @@ namespace ProjectAI.UIs
     {
         private const string START_BTN_NAME = "btn-start";
         private const string SETTINGS_BTN_NAME = "btn-settings";
+        private const string CLEAR_SAVE_BTN_NAME = "btn-clear-save";
         private const string EXIT_BTN_NAME = "btn-exit";
 
         [Header("Scene Navigation")]
@@ -30,6 +31,7 @@ namespace ProjectAI.UIs
         private UIDocument uiDocument;
         private Button btnStart;
         private Button btnSettings;
+        private Button btnClearSave;
         private Button btnExit;
 
         private void Awake()
@@ -54,11 +56,15 @@ namespace ProjectAI.UIs
             btnSettings = root.Q<Button>(SETTINGS_BTN_NAME);
             Assert.IsNotNull(btnSettings, $"[MainMenuController] '{SETTINGS_BTN_NAME}' button not found in UXML.");
 
+            btnClearSave = root.Q<Button>(CLEAR_SAVE_BTN_NAME);
+            Assert.IsNotNull(btnClearSave, $"[MainMenuController] '{CLEAR_SAVE_BTN_NAME}' button not found in UXML.");
+
             btnExit = root.Q<Button>(EXIT_BTN_NAME);
             Assert.IsNotNull(btnExit, $"[MainMenuController] '{EXIT_BTN_NAME}' button not found in UXML.");
 
             btnStart.clicked += OnStartClicked;
             btnSettings.clicked += OnSettingsClicked;
+            btnClearSave.clicked += OnClearSaveClicked;
             btnExit.clicked += OnExitClicked;
         }
 
@@ -82,6 +88,15 @@ namespace ProjectAI.UIs
                 Assert.IsNotNull(btnSettings, $"[MainMenuController] '{SETTINGS_BTN_NAME}' is null in OnDisable.");
             }
 
+            if (btnClearSave != null)
+            {
+                btnClearSave.clicked -= OnClearSaveClicked;
+            }
+            else
+            {
+                Assert.IsNotNull(btnClearSave, $"[MainMenuController] '{CLEAR_SAVE_BTN_NAME}' is null in OnDisable.");
+            }
+
             if (btnExit != null)
             {
                 btnExit.clicked -= OnExitClicked;
@@ -102,6 +117,14 @@ namespace ProjectAI.UIs
         {
             Debug.Log("[MainMenuController] Settings clicked. 환경설정 팝업을 엽니다.");
             GameStatics.UIManager.ShowPopup<SettingsPopup>(EUIPopupType.Settings);
+        }
+
+        private void OnClearSaveClicked()
+        {
+            Debug.Log("[MainMenuController] 세이브 데이터 초기화 요청됨. PlayerPrefs를 삭제합니다.");
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+            Debug.Log("[MainMenuController] 세이브 데이터가 완전히 삭제되었습니다.");
         }
 
         private void OnExitClicked()
