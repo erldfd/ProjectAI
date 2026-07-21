@@ -1,9 +1,19 @@
 using ProjectAI.Characters;
+using Unity.Netcode;
 
 namespace ProjectAI.Core
 {
 
     // EventManager를 통해 전달될 전역 이벤트 구조체들을 정의합니다.
+
+    /// <summary>
+    /// 로컬 플레이어 오브젝트가 네트워크에 스폰되어 제어권이 넘어왔을 때 발생하는 이벤트입니다.
+    /// UI 초기화 등에 사용됩니다.
+    /// </summary>
+    public struct SLocalPlayerSpawnedEvent
+    {
+        public NetworkObject PlayerObject;
+    }
     
     /// <summary>
     /// 서버가 로컬 클라이언트에게 정화 보상 팝업창(3택 1)을 표시하라고 지시할 때 발생하는 이벤트.

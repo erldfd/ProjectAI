@@ -26,17 +26,24 @@ namespace ProjectAI.UIs.Cores
         private void OnEnable()
         {
             EventManager.AddListener<SShowRewardPopupEvent>(OnShowRewardPopupEvent);
+            EventManager.AddListener<SLocalPlayerSpawnedEvent>(OnLocalPlayerSpawnedEvent);
         }
 
         private void OnDisable()
         {
             EventManager.RemoveListener<SShowRewardPopupEvent>(OnShowRewardPopupEvent);
+            EventManager.RemoveListener<SLocalPlayerSpawnedEvent>(OnLocalPlayerSpawnedEvent);
         }
 
         private void OnShowRewardPopupEvent(SShowRewardPopupEvent evt)
         {
             CorePurificationPopup popup = uiManager.ShowPopup<CorePurificationPopup>(EUIPopupType.CorePurification);
             popup.SetupPopup(evt.SummonRewardIndex, evt.SummonUpgradeRewardIndex, evt.PlayerUpgradeRewardIndex, evt.LocalPlayer);
+        }
+
+        private void OnLocalPlayerSpawnedEvent(SLocalPlayerSpawnedEvent evt)
+        {
+            uiManager.ShowPopup<LoadoutSelectionPopup>(EUIPopupType.LoadoutSelection);
         }
     }
 }

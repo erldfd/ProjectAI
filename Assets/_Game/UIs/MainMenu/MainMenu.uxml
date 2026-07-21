@@ -16,6 +16,7 @@
             
             <ui:Button name="btn-start" text="Start Game" class="menu-button" />
             <ui:Button name="btn-settings" text="Settings" class="menu-button" />
+            <ui:Button name="btn-clear-save" text="Clear Save Data" class="menu-button" style="background-color: rgb(150, 50, 50);" />
             <ui:Button name="btn-exit" text="Exit" class="menu-button" />
         </ui:VisualElement>
     </ui:VisualElement>

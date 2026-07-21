@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.Scripting.APIUpdating;
 using ProjectAI.Characters;
 using ProjectAI.SOs;
+using ProjectAI.Core.Enums;
 
 namespace ProjectAI.Core.Skills
 {
@@ -134,6 +135,103 @@ namespace ProjectAI.Core.Skills
             entityEvents.OnSkillTriggered -= TryActivateSkill;
         }
 
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        public void EquipLoadoutServerRpc(int[] skillIds)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] EquipLoadoutServerRpc는 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (skillIds == null || skillIds.Length > 3)
+            {
+                Debug.LogWarning($"[NetSkillComponent] 비정상적인 스킬 장착 요청이 차단되었습니다. (길이: {skillIds?.Length})");
+                return;
+            }
+            
+            // TODO: 서버 측 도감 검증 로직 추가 가능 (현재 MVP는 클라이언트 신뢰)
+            EquipLoadoutClientRpc(skillIds);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void EquipLoadoutClientRpc(int[] skillIds)
+        {
+            if (GameStatics.SkillManager == null)
+            {
+                Debug.LogWarning("[NetSkillComponent] EquipLoadoutClientRpc: SkillManager가 존재하지 않습니다.");
+                return;
+            }
+
+            // 기획에 따라 Summon1, Summon2, Summon3 슬롯에 소환수 스킬을 주입
+            for (int i = 0; i < skillIds.Length; i++)
+            {
+                // i=0 -> Summon1 (1), i=1 -> Summon2 (2), i=2 -> Summon3 (3)
+                int slotIndex = (int)ESkillSlot.Summon1 + i; 
+                BaseSkillConfig config = GameStatics.SkillManager.GetConfig(skillIds[i]);
+                
+                if (config == null)
+                {
+                    Debug.LogWarning($"[NetSkillComponent] EquipLoadoutClientRpc: 스킬 ID {skillIds[i]}에 대한 BaseSkillConfig를 찾을 수 없습니다. 슬롯 {slotIndex} 장착 실패.");
+                    continue;
+                }
+
+                while (OwnedSkills.Count <= slotIndex)
+                {
+                    OwnedSkills.Add(null);
+                }
+                    
+                OwnedSkills[slotIndex] = config;
+                Debug.Log($"[NetSkillComponent] {gameObject.name} 슬롯({slotIndex})에 스킬({config.name}) 장착 완료.");
+            }
+            
+            Debug.Log($"[NetSkillComponent] {gameObject.name} 로드아웃 장착 완료 (총 {skillIds.Length}개).");
+        }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        public void TryEquipSkillServerRpc(int skillId, int targetSlotIndex)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] TryEquipSkillServerRpc는 서버에서만 실행되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (targetSlotIndex < 0 || targetSlotIndex > 3)
+            {
+                Debug.LogWarning($"[NetSkillComponent] 유효하지 않은 슬롯 인덱스 요청입니다. (Index: {targetSlotIndex})");
+                return;
+            }
+
+            // TODO: 서버 측 악의적 호출 검증 로직 추가 가능
+            EquipSkillClientRpc(skillId, targetSlotIndex);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void EquipSkillClientRpc(int skillId, int targetSlotIndex)
+        {
+            if (GameStatics.SkillManager == null)
+            {
+                return;
+            }
+
+            BaseSkillConfig config = GameStatics.SkillManager.GetConfig(skillId);
+            if (config == null)
+            {
+                return;
+            }
+
+            while (OwnedSkills.Count <= targetSlotIndex)
+            {
+                OwnedSkills.Add(null);
+            }
+            
+            OwnedSkills[targetSlotIndex] = config;
+            Debug.Log($"<color=green>[NetSkillComponent]</color> {gameObject.name} 슬롯({targetSlotIndex})에 스킬({config.name}) 장착 완료.");
+        }
+
         public double GetLocalActivationTime(int skillId)
         {
             if (localActivationTimes.TryGetValue(skillId, out double time))
@@ -254,7 +352,7 @@ namespace ProjectAI.Core.Skills
             RequestActivateSkillServerRpc(skillId);
         }
 
-        [Rpc(SendTo.Server)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void RequestActivateSkillServerRpc(int skillId)
         {
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] RequestActivateSkillServerRpc는 서버에서만 실행되어야 합니다.");

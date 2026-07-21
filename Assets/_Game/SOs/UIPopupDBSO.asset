@@ -17,3 +17,7 @@ MonoBehaviour:
     UxmlTemplate: {fileID: 9197481963319205126, guid: c09f0acb070e29c438f7729132b41a6a, type: 3}
   - PopupType: 3
     UxmlTemplate: {fileID: 9197481963319205126, guid: 0727555a78d324c428f2f433e1c6edaa, type: 3}
+  - PopupType: 4
+    UxmlTemplate: {fileID: 9197481963319205126, guid: 0648234e227aa07459fe0f21409d3249, type: 3}
+  - PopupType: 5
+    UxmlTemplate: {fileID: 9197481963319205126, guid: f5319dc7f0dfa834cbbba65491c6c4c6, type: 3}

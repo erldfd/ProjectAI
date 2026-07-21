@@ -4,6 +4,7 @@ using UnityEngine.Assertions;
 using ProjectAI.Core;
 using ProjectAI.Core.Attributes;
 using ProjectAI.Movements;
+using ProjectAI.Core.Enums;
 using ProjectAI.Core.Skills;
 using ProjectAI.Characters;
 using ProjectAI.SOs;
@@ -254,13 +255,14 @@ namespace ProjectAI.Characters.MonsterAI
             Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetMonsterBrain] ExecuteAttack은 서버에서만 호출되어야 합니다.");
             Assert.IsNotNull(Character, "[NetMonsterBrain] Character 컴포넌트가 null입니다.");
             
-            if (Character.SkillComponent == null || Character.SkillComponent.OwnedSkills.Count == 0)
+            int slotIdx = (int)ESkillSlot.BasicAttack;
+            if (Character.SkillComponent == null || Character.SkillComponent.OwnedSkills.Count <= slotIdx)
             {
-                Debug.LogWarning("[NetMonsterBrain] ExecuteAttack: SkillComponent가 없거나 등록된 스킬이 없습니다.");
                 return;
             }
 
-            BaseSkillConfig skillToUse = Character.SkillComponent.OwnedSkills[0];
+            // 몬스터는 기본적으로 첫 번째 스킬(기본 공격)을 사용합니다.
+            BaseSkillConfig skillToUse = Character.SkillComponent.OwnedSkills[slotIdx];
             if (skillToUse == null)
             {
                 Debug.LogWarning("[NetMonsterBrain] ExecuteAttack: 첫 번째 스킬이 null입니다.");

@@ -2,6 +2,8 @@ using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Characters;
+using ProjectAI.Core.Inputs;
+using ProjectAI.Core.Enums;
 using ProjectAI.Core.Skills;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
@@ -43,7 +45,10 @@ namespace ProjectAI.Players
                 return;
             }
 
-            inputReader.EnableInput();
+            if (inputBlockCount == 0)
+            {
+                inputReader.EnableInput();
+            }
             inputReader.OnMoveInputChanged += HandleMoveInputChanged;
             inputReader.OnInteractInputChanged += HandleInteractInputChanged;
             inputReader.OnAttackInputChanged += HandleAttackInputChanged;
@@ -109,9 +114,10 @@ namespace ProjectAI.Players
                 return;
             }
 
-            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 0)
+            int slotIdx = (int)ESkillSlot.BasicAttack;
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > slotIdx)
             {
-                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[0];
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[slotIdx];
                 if (skillToUse != null)
                 {
                     myCharacter.TryActivateSkill(skillToUse.SkillId);
@@ -126,9 +132,10 @@ namespace ProjectAI.Players
                 return;
             }
 
-            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 1)
+            int slotIdx = (int)ESkillSlot.Summon1;
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > slotIdx)
             {
-                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[1];
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[slotIdx];
                 if (skillToUse != null)
                 {
                     myCharacter.TryActivateSkill(skillToUse.SkillId);
@@ -143,9 +150,10 @@ namespace ProjectAI.Players
                 return;
             }
 
-            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 2)
+            int slotIdx = (int)ESkillSlot.Summon2;
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > slotIdx)
             {
-                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[2];
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[slotIdx];
                 if (skillToUse != null)
                 {
                     myCharacter.TryActivateSkill(skillToUse.SkillId);
@@ -160,9 +168,10 @@ namespace ProjectAI.Players
                 return;
             }
 
-            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > 3)
+            int slotIdx = (int)ESkillSlot.Summon3;
+            if (myCharacter.SkillComponent != null && myCharacter.SkillComponent.OwnedSkills.Count > slotIdx)
             {
-                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[3];
+                BaseSkillConfig skillToUse = myCharacter.SkillComponent.OwnedSkills[slotIdx];
                 if (skillToUse != null)
                 {
                     myCharacter.TryActivateSkill(skillToUse.SkillId);
@@ -183,8 +192,34 @@ namespace ProjectAI.Players
                 return;
             }
 
+            // 사망 시 강제 차단을 위해 카운터를 매우 높게 올리거나 직접 Disable 호출
+            inputBlockCount += 999; 
             inputReader.DisableInput();
         }
         #endregion
+
+        private int inputBlockCount = 0;
+
+        /// <summary>
+        /// 외부(예: 팝업 UI)에서 플레이어의 인풋 활성화를 제어합니다. (카운터 방식)
+        /// </summary>
+        public void SetInputActive(bool isActive)
+        {
+            if (inputReader == null) return;
+            
+            if (isActive)
+            {
+                inputBlockCount = UnityEngine.Mathf.Max(0, inputBlockCount - 1);
+                if (inputBlockCount == 0)
+                {
+                    inputReader.EnableInput();
+                }
+            }
+            else
+            {
+                inputBlockCount++;
+                inputReader.DisableInput();
+            }
+        }
     }
 }

@@ -30,7 +30,7 @@ namespace ProjectAI.SOs
         public Sprite Icon;
 
         [Header("소환수 전용")]
-        public NetworkObject SummonPrefab;
+        public BaseSkillConfig SummonSkillConfig;
 
         [Header("강화 옵션 전용 (임시)")]
         public float UpgradeValue;

@@ -1,6 +1,7 @@
 using UnityEngine.Assertions;
 using UnityEngine;
 using ProjectAI.Network;
+using ProjectAI.SOs;
 using ProjectAI.UIs.Cores;
 using ProjectAI.Core.Inputs;
 
@@ -20,8 +21,13 @@ namespace ProjectAI.Core
         [SerializeField]
         private string mapChunkDatabaseResourceName = "MapChunkDB";
 
+        [Tooltip("최초 게임 실행 시 기본으로 지급될 소환수 스킬 설정 SO")]
+        [SerializeField]
+        private SummonSkillConfig defaultUnlockSkillConfig;
+
         public float BeltScrollDepthScale => beltScrollDepthScale;
         public string MapChunkDatabaseResourceName => mapChunkDatabaseResourceName;
+        public SummonSkillConfig DefaultUnlockSkillConfig => defaultUnlockSkillConfig;
 
         public MultiplayerServiceManager MultiplayerService { get; private set; }
         public UIManager UIManager { get; private set; }
@@ -35,7 +41,7 @@ namespace ProjectAI.Core
                 Debug.LogWarning("[GameManager] 중복된 GameManager 발견. 이전 객체를 유지하고 새로 로드된 객체를 파괴합니다.");
                 // Destroy는 프레임 끝에 실행되므로, 그 찰나의 순간에도 로직이 돌지 않도록 즉시 꺼버립니다.
                 gameObject.SetActive(false);
-                UnityEngine.Object.Destroy(gameObject);
+                Destroy(gameObject);
                 return;
             }
 
