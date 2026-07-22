@@ -1,21 +1,33 @@
-using UnityEngine.Assertions;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Assertions;
 using ProjectAI.Core.Entities;
+using ProjectAI.Core.Enums;
 
 namespace ProjectAI.Core.Stats
 {
     /// <summary>
-    /// 캐릭터의 영구적/가변적 주요 스탯(최대 체력, 공격력, 이동 속도 등)을 통제합니다.
+    /// 캐릭터의 영구적/가변적 주요 스탯(최대 체력, 공격력, 이동 속도 등)을 통제하고 런타임 Modifier를 계산합니다.
     /// </summary>
     public class NetStatComponent : NetworkBehaviour
     {
+        [Header("Base Stats")]
+        [SerializeField]
+        private int baseMaxHealth = 100;
+
+        [SerializeField]
+        private int baseAttackPower = 10;
+
+        [SerializeField]
+        private float baseMoveSpeedModifier = 1f;
+
         private NetHealthComponent healthComponent;
         private EntityEvents entityEvents;
+        private readonly List<StatModifier> statModifiers = new List<StatModifier>();
 
         /// <summary>
-        /// 최대 체력
-        /// (주의: 추후 장비/버프 등으로 최대 체력이 변할 때 다른 스탯들과 함께 일괄 통제하기 위해, NetHealthComponent가 아닌 이곳에 분리되어 있습니다)
+        /// 최종 동기화된 최대 체력
         /// </summary>
         public NetworkVariable<int> MaxHealth = new NetworkVariable<int>(
             100,
@@ -24,7 +36,7 @@ namespace ProjectAI.Core.Stats
         );
 
         /// <summary>
-        /// 기본 공격력
+        /// 최종 동기화된 기본 공격력
         /// </summary>
         public NetworkVariable<int> AttackPower = new NetworkVariable<int>(
             10,
@@ -33,15 +45,13 @@ namespace ProjectAI.Core.Stats
         );
 
         /// <summary>
-        /// 이동 속도 배율 (기본 1.0)
-        /// 버프/디버프에 따라 변동되며, 이동 컴포넌트(Movement)가 이 배율을 곱하여 최종 속도를 결정합니다.
+        /// 최종 동기화된 이동 속도 배율
         /// </summary>
         public NetworkVariable<float> MoveSpeedModifier = new NetworkVariable<float>(
             1f,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
-
 
         /// <summary>
         /// 이 스탯 컴포넌트를 소유하고 있는 루트 엔티티 참조
@@ -52,7 +62,6 @@ namespace ProjectAI.Core.Stats
         {
             OwnerEntity = owner;
             
-            // HealthComponent가 존재한다면, 스탯이 Health를 통제하는 계층형(탑다운) 구조이므로 Owner를 하달함
             if (healthComponent != null)
             {
                 healthComponent.SetOwner(owner);
@@ -64,9 +73,8 @@ namespace ProjectAI.Core.Stats
             healthComponent = GetComponentInChildren<NetHealthComponent>();
 
             entityEvents = GetComponentInParent<EntityEvents>();
-            Assert.IsNotNull(entityEvents, "NetStatComponent는 EntityEvents가 필요합니다.");
+            Assert.IsNotNull(entityEvents, "[NetStatComponent] entityEvents가 null입니다.");
 
-            // NGO 초기화 불확실성 방지를 위해 로컬 이벤트는 Awake에서 미리 구독
             if (healthComponent != null)
             {
                 healthComponent.OnHit += HandleHit;
@@ -90,9 +98,14 @@ namespace ProjectAI.Core.Stats
 
             MoveSpeedModifier.OnValueChanged += HandleMoveSpeedModifierChanged;
             
-            if (healthComponent != null && GameStatics.IsServerAuthorized)
+            if (GameStatics.IsServerAuthorized)
             {
-                healthComponent.InitializeHealth(MaxHealth.Value);
+                RecalculateStats();
+
+                if (healthComponent != null)
+                {
+                    healthComponent.InitializeHealth(MaxHealth.Value);
+                }
             }
 
             entityEvents.InvokeMoveSpeedModifierChanged(MoveSpeedModifier.Value);
@@ -102,6 +115,129 @@ namespace ProjectAI.Core.Stats
         {
             base.OnNetworkDespawn();
             MoveSpeedModifier.OnValueChanged -= HandleMoveSpeedModifierChanged;
+        }
+
+        /// <summary>
+        /// 런타임 스탯 변경자(버프/디버프)를 추가합니다. (서버 전용)
+        /// </summary>
+        public void AddModifier(StatModifier modifier)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetStatComponent] AddModifier는 서버에서만 호출되어야 합니다.");
+            
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (modifier == null)
+            {
+                return;
+            }
+
+            statModifiers.Add(modifier);
+            RecalculateStats();
+        }
+
+        /// <summary>
+        /// 런타임 스탯 변경자를 제거합니다. (서버 전용)
+        /// </summary>
+        public void RemoveModifier(StatModifier modifier)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetStatComponent] RemoveModifier는 서버에서만 호출되어야 합니다.");
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (modifier == null)
+            {
+                return;
+            }
+
+            if (statModifiers.Remove(modifier))
+            {
+                RecalculateStats();
+            }
+        }
+
+        /// <summary>
+        /// 특정 출처(Source)의 스탯 변경자를 일괄 제거합니다. (서버 전용)
+        /// </summary>
+        /// <param name="source">[주의] 박싱(Garbage) 방지를 위해 int, enum 등 값 타입(Value Type)이 아닌 반드시 클래스(Reference Type) 객체를 전달하세요.</param>
+        public void RemoveAllModifiersFromSource(object source)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetStatComponent] RemoveAllModifiersFromSource는 서버에서만 호출되어야 합니다.");
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            if (source == null)
+            {
+                return;
+            }
+
+            bool isRemovedAny = false;
+            for (int i = statModifiers.Count - 1; i >= 0; i--)
+            {
+                if (statModifiers[i].Source == source)
+                {
+                    statModifiers.RemoveAt(i);
+                    isRemovedAny = true;
+                }
+            }
+
+            if (isRemovedAny)
+            {
+                RecalculateStats();
+            }
+        }
+
+        /// <summary>
+        /// Base 스탯과 Modifiers를 종합하여 최종 NetworkVariable 수치를 재계산합니다.
+        /// </summary>
+        private void RecalculateStats()
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetStatComponent] RecalculateStats는 서버에서만 호출되어야 합니다.");
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            float finalHealth = baseMaxHealth;
+            float finalAttack = baseAttackPower;
+            float finalMoveSpeed = baseMoveSpeedModifier;
+
+            for (int i = 0; i < statModifiers.Count; i++)
+            {
+                StatModifier mod = statModifiers[i];
+                if (mod == null)
+                {
+                    continue;
+                }
+
+                switch (mod.StatType)
+                {
+                    case EStatType.MaxHealth:
+                        finalHealth += mod.Value;
+                        break;
+                    case EStatType.AttackPower:
+                        finalAttack += mod.Value;
+                        break;
+                    case EStatType.MoveSpeed:
+                        finalMoveSpeed += mod.Value;
+                        break;
+                }
+            }
+
+            MaxHealth.Value = Mathf.Max(1, Mathf.RoundToInt(finalHealth));
+            AttackPower.Value = Mathf.Max(0, Mathf.RoundToInt(finalAttack));
+            MoveSpeedModifier.Value = Mathf.Max(0.1f, finalMoveSpeed);
+
+            Debug.Log($"<color=cyan>[NetStatComponent]</color> {gameObject.name} 스탯 재계산 완료 -> MaxHealth: {MaxHealth.Value}, AttackPower: {AttackPower.Value}, MoveSpeedModifier: {MoveSpeedModifier.Value}");
         }
 
         private void HandleHit(int damage, int remainingHealth)
@@ -118,7 +254,5 @@ namespace ProjectAI.Core.Stats
         {
             entityEvents.InvokeMoveSpeedModifierChanged(newValue);
         }
-
-        // TODO: 향후 레벨업, 아이템 장착, 버프에 따른 스탯 변동 로직(수정자) 추가 예정
     }
 }
