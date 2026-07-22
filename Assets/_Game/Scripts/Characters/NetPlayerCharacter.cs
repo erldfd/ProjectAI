@@ -9,6 +9,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
 using ProjectAI.Core.Skills;
+using ProjectAI.Core.Stats;
 
 namespace ProjectAI.Characters
 {
@@ -146,25 +147,26 @@ namespace ProjectAI.Characters
             {
                 case ERewardType.Summon:
                     Assert.IsNotNull(data.SummonSkillConfig, "[NetPlayerCharacter] 보상 데이터에 SummonSkillConfig가 할당되지 않았습니다.");
-                    
-                    if (data.SummonSkillConfig == null)
-                    {
-                        Debug.LogError("[NetPlayerCharacter] 보상 데이터에 SummonSkillConfig가 없어 해금을 중단합니다.");
-                        return;
-                    }
-
                     UnlockSkillOwnerRpc(data.SummonSkillConfig.SkillId);
                     Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 도감 해금 지시 완료: {data.RewardName}");
                     break;
 
                 case ERewardType.SummonUpgrade:
-                    // TODO: 소환수 스탯 강화 로직 (추후 스탯 시스템과 연동)
-                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 소환수 강화 적용: {data.RewardName} (Value: {data.UpgradeValue})");
+                    Assert.IsNotNull(base.StatComponent, "[NetPlayerCharacter] StatComponent가 null입니다.");
+                    base.StatComponent.AddModifier(new StatModifier(EStatType.SummonAttackPower, data.UpgradeValue, this));
+                    
+                    if (SummonController != null)
+                    {
+                        SummonController.SyncSummonStats(base.StatComponent);
+                    }
+
+                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 소환수 공통 공격력 강화 적용: {data.RewardName} (+{data.UpgradeValue})");
                     break;
 
                 case ERewardType.PlayerUpgrade:
-                    // TODO: 플레이어 코어 강화 로직 (추후 스탯 시스템과 연동)
-                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 코어 강화 적용: {data.RewardName} (Value: {data.UpgradeValue})");
+                    Assert.IsNotNull(base.StatComponent, "[NetPlayerCharacter] StatComponent가 null입니다.");
+                    base.StatComponent.AddModifier(new StatModifier(EStatType.AttackPower, data.UpgradeValue, this));
+                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 플레이어 공격력 강화 적용: {data.RewardName} (+{data.UpgradeValue})");
                     break;
             }
         }
@@ -179,12 +181,12 @@ namespace ProjectAI.Characters
                 // TODO: 해금 축하 연출 팝업 등 UI 띄우기
             }
 
-            Assert.IsNotNull(SkillComponent, "[NetPlayerCharacter] SkillComponent가 null입니다.");
+            Assert.IsNotNull(base.SkillComponent, "[NetPlayerCharacter] SkillComponent가 null입니다.");
 
             bool isAlreadyEquipped = false;
-            for (int i = 0; i < SkillComponent.OwnedSkills.Count; i++)
+            for (int i = 0; i < base.SkillComponent.OwnedSkills.Count; i++)
             {
-                if (SkillComponent.OwnedSkills[i] != null && SkillComponent.OwnedSkills[i].SkillId == skillId)
+                if (base.SkillComponent.OwnedSkills[i] != null && base.SkillComponent.OwnedSkills[i].SkillId == skillId)
                 {
                     isAlreadyEquipped = true;
                     break;
@@ -193,15 +195,15 @@ namespace ProjectAI.Characters
 
             if (isAlreadyEquipped)
             {
-                Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 현재 장착 중인 스킬({skillId})입니다. 이번 런 한정 스펙 강화 버프로 전환됩니다.");
-                // TODO: 이번 런 한정 스펙 버프 처리 로직 (스탯 연동)
+                Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 현재 장착 중인 스킬({skillId})입니다. 이번 런 한정 스펙 강화 버프(공격력 +5)로 전환됩니다.");
+                RequestAddStatModifierServerRpc(EStatType.AttackPower, 5f);
                 return;
             }
 
             int targetSlot = -1;
             for (int i = (int)ESkillSlot.Summon1; i <= (int)ESkillSlot.Summon3; i++)
             {
-                if (SkillComponent.OwnedSkills.Count <= i || SkillComponent.OwnedSkills[i] == null)
+                if (base.SkillComponent.OwnedSkills.Count <= i || base.SkillComponent.OwnedSkills[i] == null)
                 {
                     targetSlot = i;
                     break;
@@ -211,7 +213,7 @@ namespace ProjectAI.Characters
             if (targetSlot != -1)
             {
                 Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 빈 슬롯({targetSlot}) 발견. 자동 장착을 요청합니다.");
-                SkillComponent.TryEquipSkillServerRpc(skillId, targetSlot);
+                base.SkillComponent.TryEquipSkillServerRpc(skillId, targetSlot);
             }
             else
             {
@@ -219,9 +221,26 @@ namespace ProjectAI.Characters
                 SkillReplacePopup replacePopup = GameStatics.UIManager.ShowPopup<SkillReplacePopup>(EUIPopupType.SkillReplace);
                 if (replacePopup != null)
                 {
-                    replacePopup.Setup(skillId, SkillComponent);
+                    replacePopup.Setup(skillId, base.SkillComponent);
                 }
             }
+        }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        private void RequestAddStatModifierServerRpc(EStatType statType, float value)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetPlayerCharacter] RequestAddStatModifierServerRpc는 서버에서만 실행되어야 합니다.");
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                Debug.LogWarning("[NetPlayerCharacter] RequestAddStatModifierServerRpc: 서버 권한이 없어 거부되었습니다.");
+                return;
+            }
+
+            Assert.IsNotNull(base.StatComponent, "[NetPlayerCharacter] StatComponent가 null입니다.");
+            StatModifier modifier = new StatModifier(statType, value, this);
+            base.StatComponent.AddModifier(modifier);
+            Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 서버에서 스탯 버프 적용 완료 ({statType} +{value})");
         }
     }
 }

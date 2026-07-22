@@ -5,6 +5,8 @@ using ProjectAI.Core.Pooling;
 using ProjectAI.Characters;
 using ProjectAI.Characters.MonsterAI;
 using ProjectAI.Core;
+using ProjectAI.Core.Stats;
+using ProjectAI.Core.Enums;
 using ProjectAI.SOs;
 using ProjectAI.Characters.Summons;
 
@@ -107,6 +109,46 @@ namespace ProjectAI.Core.Skills.Abilities
                 if (followState != null)
                 {
                     followState.SetFollowDistance(followDistance);
+                }
+            }
+
+            // 소환수 스탯 컴포넌트에 주인(캐스터)의 SummonAttackPower / SummonMaxHealth 버프 전파
+            if (!summonNetObj.TryGetComponent(out NetCharacter summonChar))
+            {
+                Debug.LogWarning($"[SummonSkillLogic] 소환수({summonNetObj.name})에서 NetCharacter 컴포넌트를 찾을 수 없어 스탯 버프 적용을 건너뜁니다.");
+            }
+            else if (summonChar.StatComponent == null)
+            {
+                Debug.LogWarning($"[SummonSkillLogic] 소환수({summonChar.name})의 StatComponent가 null이어서 스탯 버프 적용을 건너뜁니다.");
+            }
+            else if (caster.StatComponent == null)
+            {
+                Debug.LogWarning($"[SummonSkillLogic] 캐스터({caster.name})의 StatComponent가 null이어서 스탯 버프 적용을 건너뜁니다.");
+            }
+            else
+            {
+                NetStatComponent summonStatComp = summonChar.StatComponent;
+                summonStatComp.ClearAllModifiers(); // 풀(Pool) 재사용 오브젝트의 이전 라이프사이클 스탯 누적 방지 리셋
+
+                int bonusAttack = caster.StatComponent.SummonAttackPower.Value;
+                int bonusHealth = caster.StatComponent.SummonMaxHealth.Value;
+
+                if (bonusAttack > 0)
+                {
+                    Debug.Log($"<color=cyan>[SummonSkillLogic]</color> 캐스터({caster.name})의 SummonAttackPower {bonusAttack}을 소환수({summonChar.name})에 적용합니다.");
+                    summonStatComp.AddModifier(new StatModifier(EStatType.AttackPower, bonusAttack, caster.StatComponent));
+                }
+
+                if (bonusHealth > 0)
+                {
+                    Debug.Log($"<color=cyan>[SummonSkillLogic]</color> 캐스터({caster.name})의 SummonMaxHealth {bonusHealth}을 소환수({summonChar.name})에 적용합니다.");
+                    summonStatComp.AddModifier(new StatModifier(EStatType.MaxHealth, bonusHealth, caster.StatComponent));
+                }
+
+                if (summonStatComp.HealthComponent != null)
+                {
+                    summonStatComp.HealthComponent.InitializeHealth(summonStatComp.MaxHealth.Value);
+                    Debug.Log($"<color=cyan>[SummonSkillLogic]</color> 소환수({summonChar.name}) 체력 초기화 완료 -> MaxHealth: {summonStatComp.MaxHealth.Value}");
                 }
             }
 
