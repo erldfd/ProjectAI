@@ -22,7 +22,16 @@ namespace ProjectAI.Core.Stats
         [SerializeField]
         private float baseMoveSpeedModifier = 1f;
 
-        private NetHealthComponent healthComponent;
+        [SerializeField]
+        private int baseSummonAttackPower = 0;
+
+        [SerializeField]
+        private int baseSummonMaxHealth = 0;
+
+        /// <summary>
+        /// 이 스탯 컴포넌트가 통제하는 체력 컴포넌트 참조
+        /// </summary>
+        public NetHealthComponent HealthComponent { get; private set; }
         private EntityEvents entityEvents;
         private readonly List<StatModifier> statModifiers = new List<StatModifier>();
 
@@ -54,6 +63,24 @@ namespace ProjectAI.Core.Stats
         );
 
         /// <summary>
+        /// 소환수 공통 추가 공격력 보너스 수치
+        /// </summary>
+        public NetworkVariable<int> SummonAttackPower = new NetworkVariable<int>(
+            0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
+        /// 소환수 공통 추가 체력 보너스 수치
+        /// </summary>
+        public NetworkVariable<int> SummonMaxHealth = new NetworkVariable<int>(
+            0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
         /// 이 스탯 컴포넌트를 소유하고 있는 루트 엔티티 참조
         /// </summary>
         public NetEntity OwnerEntity { get; private set; }
@@ -62,33 +89,33 @@ namespace ProjectAI.Core.Stats
         {
             OwnerEntity = owner;
             
-            if (healthComponent != null)
+            if (HealthComponent != null)
             {
-                healthComponent.SetOwner(owner);
+                HealthComponent.SetOwner(owner);
             }
         }
 
         private void Awake()
         {
-            healthComponent = GetComponentInChildren<NetHealthComponent>();
+            HealthComponent = GetComponentInChildren<NetHealthComponent>();
 
             entityEvents = GetComponentInParent<EntityEvents>();
             Assert.IsNotNull(entityEvents, "[NetStatComponent] entityEvents가 null입니다.");
 
-            if (healthComponent != null)
+            if (HealthComponent != null)
             {
-                healthComponent.OnHit += HandleHit;
-                healthComponent.OnDeath += HandleDeath;
+                HealthComponent.OnHit += HandleHit;
+                HealthComponent.OnDeath += HandleDeath;
             }
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
-            if (healthComponent != null)
+            if (HealthComponent != null)
             {
-                healthComponent.OnHit -= HandleHit;
-                healthComponent.OnDeath -= HandleDeath;
+                HealthComponent.OnHit -= HandleHit;
+                HealthComponent.OnDeath -= HandleDeath;
             }
         }
 
@@ -102,9 +129,9 @@ namespace ProjectAI.Core.Stats
             {
                 RecalculateStats();
 
-                if (healthComponent != null)
+                if (HealthComponent != null)
                 {
-                    healthComponent.InitializeHealth(MaxHealth.Value);
+                    HealthComponent.InitializeHealth(MaxHealth.Value);
                 }
             }
 
@@ -115,6 +142,32 @@ namespace ProjectAI.Core.Stats
         {
             base.OnNetworkDespawn();
             MoveSpeedModifier.OnValueChanged -= HandleMoveSpeedModifierChanged;
+
+            if (GameStatics.IsServerAuthorized)
+            {
+                ClearAllModifiers();
+            }
+        }
+
+        /// <summary>
+        /// 모든 런타임 스탯 변경자를 일괄 제거하고 스탯을 초기화합니다. (오브젝트 풀 재사용 시 필수) (서버 전용)
+        /// </summary>
+        public void ClearAllModifiers()
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetStatComponent] ClearAllModifiers는 서버에서만 호출되어야 합니다.");
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                Debug.LogWarning("[NetStatComponent] ClearAllModifiers: 서버 권한이 없어 거부되었습니다.");
+                return;
+            }
+
+            if (statModifiers.Count > 0)
+            {
+                statModifiers.Clear();
+                RecalculateStats();
+                Debug.Log($"<color=cyan>[NetStatComponent]</color> {gameObject.name}의 모든 스탯 Modifier 초기화 완료 (풀 반환/재사용)");
+            }
         }
 
         /// <summary>
@@ -210,14 +263,19 @@ namespace ProjectAI.Core.Stats
             float finalHealth = baseMaxHealth;
             float finalAttack = baseAttackPower;
             float finalMoveSpeed = baseMoveSpeedModifier;
+            float finalSummonAttack = baseSummonAttackPower;
+            float finalSummonHealth = baseSummonMaxHealth;
 
             for (int i = 0; i < statModifiers.Count; i++)
             {
                 StatModifier mod = statModifiers[i];
                 if (mod == null)
                 {
+                    Debug.LogWarning($"<color=cyan>[NetStatComponent]</color> {gameObject.name}의 statModifiers[{i}]가 null입니다.");
                     continue;
                 }
+
+                Debug.Log($"<color=cyan>[NetStatComponent]</color> {gameObject.name} 스탯 변경자 적용 -> {mod.StatType} +{mod.Value} (출처: {mod.Source})");
 
                 switch (mod.StatType)
                 {
@@ -230,14 +288,22 @@ namespace ProjectAI.Core.Stats
                     case EStatType.MoveSpeed:
                         finalMoveSpeed += mod.Value;
                         break;
+                    case EStatType.SummonAttackPower:
+                        finalSummonAttack += mod.Value;
+                        break;
+                    case EStatType.SummonMaxHealth:
+                        finalSummonHealth += mod.Value;
+                        break;
                 }
             }
 
             MaxHealth.Value = Mathf.Max(1, Mathf.RoundToInt(finalHealth));
             AttackPower.Value = Mathf.Max(0, Mathf.RoundToInt(finalAttack));
             MoveSpeedModifier.Value = Mathf.Max(0.1f, finalMoveSpeed);
+            SummonAttackPower.Value = Mathf.Max(0, Mathf.RoundToInt(finalSummonAttack));
+            SummonMaxHealth.Value = Mathf.Max(0, Mathf.RoundToInt(finalSummonHealth));
 
-            Debug.Log($"<color=cyan>[NetStatComponent]</color> {gameObject.name} 스탯 재계산 완료 -> MaxHealth: {MaxHealth.Value}, AttackPower: {AttackPower.Value}, MoveSpeedModifier: {MoveSpeedModifier.Value}");
+            Debug.Log($"<color=cyan>[NetStatComponent]</color> {gameObject.name} 스탯 재계산 완료 -> MaxHealth: {MaxHealth.Value}, AttackPower: {AttackPower.Value}, MoveSpeedModifier: {MoveSpeedModifier.Value}, SummonAttackPower: {SummonAttackPower.Value}, SummonMaxHealth: {SummonMaxHealth.Value}");
         }
 
         private void HandleHit(int damage, int remainingHealth)

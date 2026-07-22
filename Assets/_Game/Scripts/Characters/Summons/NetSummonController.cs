@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using ProjectAI.Core;
 using ProjectAI.Core.Skills;
+using ProjectAI.Core.Stats;
+using ProjectAI.Core.Enums;
 using ProjectAI.Characters.MonsterAI;
 
 namespace ProjectAI.Characters.Summons
@@ -124,6 +126,65 @@ namespace ProjectAI.Characters.Summons
             {
                 brain.PriorityTarget = CurrentPriorityTarget;
             }
+        }
+
+        /// <summary>
+        /// 활성화된 모든 소환수의 스탯을 주인의 현재 소환수 보너스 스탯 수치로 즉시 동기화합니다. (서버 전용)
+        /// </summary>
+        public void SyncSummonStats(NetStatComponent ownerStatComp)
+        {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSummonController] SyncSummonStats는 서버에서만 호출되어야 합니다.");
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                Debug.LogWarning("[NetSummonController] SyncSummonStats: 서버 권한이 없어 거부되었습니다.");
+                return;
+            }
+
+            Assert.IsNotNull(ownerStatComp, "[NetSummonController] SyncSummonStats: ownerStatComp가 null입니다.");
+            if (ownerStatComp == null)
+            {
+                return;
+            }
+
+            int bonusAttack = ownerStatComp.SummonAttackPower.Value;
+            int bonusHealth = ownerStatComp.SummonMaxHealth.Value;
+
+            for (int i = 0; i < ActiveSummons.Count; i++)
+            {
+                if (!GameStatics.TryGetSpawnedObject(ActiveSummons[i].SummonNetworkObjectId, out NetworkObject summonNetObj))
+                {
+                    Debug.LogWarning($"[NetSummonController] SyncSummonStats: NetworkObjectId({ActiveSummons[i].SummonNetworkObjectId})를 찾을 수 없어 스탯 동기화를 건너뜁니다.");
+                    continue;
+                }
+
+                if (!summonNetObj.TryGetComponent(out NetCharacter summonChar))
+                {
+                    Debug.LogWarning($"[NetSummonController] SyncSummonStats: 소환수({summonNetObj.name})에서 NetCharacter를 찾지 못해 스탯 동기화를 건너뜁니다.");
+                    continue;
+                }
+
+                if (summonChar.StatComponent == null)
+                {
+                    Debug.LogWarning($"[NetSummonController] SyncSummonStats: 소환수({summonChar.name})의 StatComponent가 null이어서 스탯 동기화를 건너뜁니다.");
+                    continue;
+                }
+
+                NetStatComponent summonStatComp = summonChar.StatComponent;
+                summonStatComp.RemoveAllModifiersFromSource(ownerStatComp);
+
+                if (bonusAttack > 0)
+                {
+                    summonStatComp.AddModifier(new StatModifier(EStatType.AttackPower, bonusAttack, ownerStatComp));
+                }
+
+                if (bonusHealth > 0)
+                {
+                    summonStatComp.AddModifier(new StatModifier(EStatType.MaxHealth, bonusHealth, ownerStatComp));
+                }
+            }
+
+            Debug.Log($"<color=cyan>[NetSummonController]</color> 필드 소환수({ActiveSummons.Count}마리) 스탯 실시간 동기화 완료 (BonusAttack: +{bonusAttack}, BonusHealth: +{bonusHealth})");
         }
 
         private void Update()

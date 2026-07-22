@@ -7,6 +7,8 @@ namespace ProjectAI.Core.Enums
     {
         MaxHealth,
         AttackPower,
-        MoveSpeed
+        MoveSpeed,
+        SummonAttackPower,
+        SummonMaxHealth
     }
 }

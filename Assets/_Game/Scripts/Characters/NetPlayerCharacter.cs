@@ -152,10 +152,21 @@ namespace ProjectAI.Characters
                     break;
 
                 case ERewardType.SummonUpgrade:
+                    Assert.IsNotNull(base.StatComponent, "[NetPlayerCharacter] StatComponent가 null입니다.");
+                    base.StatComponent.AddModifier(new StatModifier(EStatType.SummonAttackPower, data.UpgradeValue, this));
+                    
+                    if (SummonController != null)
+                    {
+                        SummonController.SyncSummonStats(base.StatComponent);
+                    }
+
+                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 소환수 공통 공격력 강화 적용: {data.RewardName} (+{data.UpgradeValue})");
+                    break;
+
                 case ERewardType.PlayerUpgrade:
                     Assert.IsNotNull(base.StatComponent, "[NetPlayerCharacter] StatComponent가 null입니다.");
                     base.StatComponent.AddModifier(new StatModifier(EStatType.AttackPower, data.UpgradeValue, this));
-                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 스탯 강화 적용: {data.RewardName} (공격력 +{data.UpgradeValue})");
+                    Debug.Log($"<color=cyan>[NetPlayerCharacter]</color> 플레이어 공격력 강화 적용: {data.RewardName} (+{data.UpgradeValue})");
                     break;
             }
         }
