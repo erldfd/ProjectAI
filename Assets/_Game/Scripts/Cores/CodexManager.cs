@@ -14,6 +14,7 @@ namespace ProjectAI.Core
         
         // 해금된 소환수 스킬 ID 목록 (O(1) 검색을 위해 HashSet 사용)
         private static HashSet<int> unlockedSkillIds = new HashSet<int>();
+        private static List<int> selectedLoadoutMemory = new List<int>();
         private static bool isInitialized = false;
 
         /// <summary>
@@ -112,6 +113,56 @@ namespace ProjectAI.Core
             }
             
             return new List<int>(unlockedSkillIds);
+        }
+
+        /// <summary>
+        /// 선택한 소환수 로드아웃 스킬 ID 목록을 런타임 메모리에 저장합니다. (게임 재시작 시 초기화됨)
+        /// </summary>
+        public static void SaveSelectedLoadout(List<int> skillIds)
+        {
+            Assert.IsNotNull(skillIds, "[CodexManager] SaveSelectedLoadout: skillIds가 null입니다.");
+            
+            if (skillIds == null)
+            {
+                Debug.LogWarning("[CodexManager] SaveSelectedLoadout: skillIds가 null이므로 저장을 취소합니다.");
+                return;
+            }
+
+            selectedLoadoutMemory.Clear();
+            for (int i = 0; i < skillIds.Count; i++)
+            {
+                selectedLoadoutMemory.Add(skillIds[i]);
+            }
+
+            Debug.Log($"[CodexManager] 소환수 로드아웃 선택 정보 런타임 메모리 저장 완료 ({selectedLoadoutMemory.Count}개 스킬)");
+        }
+
+        /// <summary>
+        /// 런타임 메모리에 저장된 소환수 로드아웃 스킬 ID 목록을 불러옵니다.
+        /// </summary>
+        public static List<int> GetSavedLoadout()
+        {
+            return new List<int>(selectedLoadoutMemory);
+        }
+
+        /// <summary>
+        /// 런타임 메모리에 저장된 유효한 소환수 로드아웃 데이터 보유 여부를 확인합니다.
+        /// </summary>
+        public static bool HasSavedLoadout()
+        {
+            return selectedLoadoutMemory.Count > 0;
+        }
+
+        /// <summary>
+        /// 런타임 메모리에 저장된 소환수 로드아웃 선택 정보를 초기화합니다. (로비 상호작용 재선택 시 활용)
+        /// </summary>
+        public static void ClearSelectedLoadout()
+        {
+            if (selectedLoadoutMemory.Count > 0)
+            {
+                selectedLoadoutMemory.Clear();
+                Debug.Log("[CodexManager] 런타임 메모리에 저장된 소환수 로드아웃 정보가 초기화되었습니다.");
+            }
         }
 
         private static void SaveData()

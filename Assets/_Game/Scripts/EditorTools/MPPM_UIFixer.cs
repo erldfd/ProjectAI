@@ -95,14 +95,25 @@ namespace ProjectAI.EditorTools
 
                 doc.enabled = true;
 
+                // [BugFix Note: 2026-07-24]
+                // MPPM_UIFixer가 UIDocument만 강제로 껐다 켤 경우, 해당 UIDocument 내부 시각적 트리가 리빌드되면서
+                // Awake/OnEnable에서 미리 맺어두었던 UI 컨트롤러들의 이벤트 바인딩이 끊어지는(유령 버튼) 치명적인 버그가 있었습니다.
+                // 이를 방지하기 위해 UIDocument를 리셋할 때, 관련된 모든 UI Controller도 반드시 함께 
+                // enabled = false -> true 로 재시동하여 바인딩 훅(OnEnable)을 새 트리에 다시 걸어주어야 합니다.
+
                 MainMenuController mainMenu = doc.GetComponent<MainMenuController>();
-                if (mainMenu == null || !mainMenu.enabled)
+                if (mainMenu != null && mainMenu.enabled)
                 {
-                    continue;
+                    mainMenu.enabled = false;
+                    mainMenu.enabled = true;
                 }
 
-                mainMenu.enabled = false;
-                mainMenu.enabled = true;
+                LobbyUIController lobbyUI = doc.GetComponent<LobbyUIController>();
+                if (lobbyUI != null && lobbyUI.enabled)
+                {
+                    lobbyUI.enabled = false;
+                    lobbyUI.enabled = true;
+                }
             }
 
             Debug.Log("<color=cyan>[MPPM_UIFixer]</color> 강제 리셋 완료. 스크립트를 자폭(Destroy)합니다.");

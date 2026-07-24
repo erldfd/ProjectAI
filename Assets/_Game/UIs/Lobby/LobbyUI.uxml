@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEngine.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="lobby-container" style="flex-grow: 1; width: 100%; height: 100%; position: Absolute;">
+        <ui:Button name="btn-change-summon" text="🐾 소환수 변경" style="position: Absolute; top: 20px; right: 20px; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px; font-size: 14px; background-color: rgba(38, 140, 217, 0.9); color: white; border-top-left-radius: 6px; border-top-right-radius: 6px; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;"/>
+    </ui:VisualElement>
+</ui:UXML>
