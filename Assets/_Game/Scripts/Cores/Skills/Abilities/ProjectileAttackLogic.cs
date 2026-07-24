@@ -24,10 +24,10 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public bool CanExecute(NetCharacter caster, BaseSkillConfig config)
         {
-            // 침묵, 기절, 시전 중 상태면 사용 불가
-            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned) || caster.SkillComponent.HasState(EStateTag.Casting))
+            // 침묵, 기절, 피격경직, 시전 중 상태면 사용 불가
+            if (caster.HasState(EStateTag.Silenced) || caster.HasState(EStateTag.Stunned) || caster.HasState(EStateTag.HitStun) || caster.HasState(EStateTag.Casting))
             {
-                Debug.Log($"[ProjectileAttackLogic] CanExecute 실패: {caster.NetworkObjectId} 상태 이상(침묵/기절/시전중)");
+                Debug.Log($"[ProjectileAttackLogic] CanExecute 실패: {caster.NetworkObjectId} 상태 이상(침묵/기절/피격경직/시전중)");
                 return false;
             }
 

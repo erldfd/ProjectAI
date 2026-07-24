@@ -54,6 +54,35 @@ namespace ProjectAI.Core.Entities
         public event Action<int, int> OnHitTriggered;
 
         /// <summary>
+        /// 피격 애니메이션 상태에 진입했음을 알리는 이벤트
+        /// </summary>
+        public event Action OnHitStateEntered;
+
+        /// <summary>
+        /// 피격 애니메이션 상태에서 탈출했음을 알리는 이벤트
+        /// </summary>
+        public event Action OnHitStateExited;
+
+        private int cachedActiveStates = 0;
+        private event Action<int> onActiveStatesChanged;
+
+        /// <summary>
+        /// 엔티티의 캐스팅/기절 등 상태 비트마스크(ActiveStates)가 변경되었을 때 발생하는 이벤트
+        /// </summary>
+        public event Action<int> OnActiveStatesChanged
+        {
+            add
+            {
+                onActiveStatesChanged += value;
+                value?.Invoke(cachedActiveStates);
+            }
+            remove
+            {
+                onActiveStatesChanged -= value;
+            }
+        }
+
+        /// <summary>
         /// 엔티티가 사망 상태에 진입했음을 알리는 이벤트
         /// </summary>
         public event Action OnDeathTriggered;
@@ -142,6 +171,22 @@ namespace ProjectAI.Core.Entities
         public void InvokeHitTriggered(int damage, int remainingHealth)
         {
             OnHitTriggered?.Invoke(damage, remainingHealth);
+        }
+
+        public void InvokeHitStateEntered()
+        {
+            OnHitStateEntered?.Invoke();
+        }
+
+        public void InvokeHitStateExited()
+        {
+            OnHitStateExited?.Invoke();
+        }
+
+        public void InvokeActiveStatesChanged(int activeStates)
+        {
+            cachedActiveStates = activeStates;
+            onActiveStatesChanged?.Invoke(activeStates);
         }
 
         public void InvokeDeathTriggered()

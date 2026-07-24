@@ -40,6 +40,26 @@
     scale: 1.02;
 }
 
+.reward-content-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.reward-icon {
+    width: 48px;
+    height: 48px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.reward-text-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .reward-type {
     color: rgb(150, 200, 255);
     font-size: 12px;

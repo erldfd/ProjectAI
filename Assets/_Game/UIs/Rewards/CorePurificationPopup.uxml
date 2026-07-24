@@ -11,21 +11,36 @@
         <ui:Label text="코어 정화 보상 선택" class="reward-header" />
 
         <ui:Button name="btn-summon" class="reward-btn">
-            <ui:Label name="reward-type" class="reward-type" text="소환수 계약" />
-            <ui:Label name="reward-title" class="reward-title" text="Unknown" />
-            <ui:Label name="reward-desc" class="reward-desc" text="Description" />
+            <ui:VisualElement class="reward-content-wrapper">
+                <ui:VisualElement name="reward-icon" class="reward-icon" />
+                <ui:VisualElement class="reward-text-container">
+                    <ui:Label name="reward-type" class="reward-type" text="소환수 계약" />
+                    <ui:Label name="reward-title" class="reward-title" text="Unknown" />
+                    <ui:Label name="reward-desc" class="reward-desc" text="Description" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:Button>
 
         <ui:Button name="btn-summon-upgrade" class="reward-btn">
-            <ui:Label name="reward-type" class="reward-type" text="소환수 강화" />
-            <ui:Label name="reward-title" class="reward-title" text="Unknown" />
-            <ui:Label name="reward-desc" class="reward-desc" text="Description" />
+            <ui:VisualElement class="reward-content-wrapper">
+                <ui:VisualElement name="reward-icon" class="reward-icon" />
+                <ui:VisualElement class="reward-text-container">
+                    <ui:Label name="reward-type" class="reward-type" text="소환수 강화" />
+                    <ui:Label name="reward-title" class="reward-title" text="Unknown" />
+                    <ui:Label name="reward-desc" class="reward-desc" text="Description" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:Button>
 
         <ui:Button name="btn-player-upgrade" class="reward-btn">
-            <ui:Label name="reward-type" class="reward-type" text="코어 강화" />
-            <ui:Label name="reward-title" class="reward-title" text="Unknown" />
-            <ui:Label name="reward-desc" class="reward-desc" text="Description" />
+            <ui:VisualElement class="reward-content-wrapper">
+                <ui:VisualElement name="reward-icon" class="reward-icon" />
+                <ui:VisualElement class="reward-text-container">
+                    <ui:Label name="reward-type" class="reward-type" text="코어 강화" />
+                    <ui:Label name="reward-title" class="reward-title" text="Unknown" />
+                    <ui:Label name="reward-desc" class="reward-desc" text="Description" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:Button>
     </ui:VisualElement>
 </ui:UXML>

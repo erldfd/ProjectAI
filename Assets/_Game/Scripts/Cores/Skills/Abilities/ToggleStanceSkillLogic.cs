@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using ProjectAI.Characters;
-using ProjectAI.Core;
+using UnityEngine.Assertions;
 using ProjectAI.SOs;
 
 namespace ProjectAI.Core.Skills.Abilities
@@ -19,7 +19,13 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public bool CanExecute(NetCharacter caster, BaseSkillConfig config)
         {
-            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned))
+            if (caster.HasState(EStateTag.Silenced) || caster.HasState(EStateTag.Stunned))
+            {
+                return false;
+            }
+
+            Assert.IsNotNull(GameStatics.NetworkManager, "[ToggleStanceSkillLogic] NetworkManager is null.");
+            if (GameStatics.NetworkManager == null)
             {
                 return false;
             }
@@ -34,6 +40,8 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public void Execute(NetCharacter caster, BaseSkillConfig config)
         {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[ToggleStanceSkillLogic] Execute는 서버에서만 실행되어야 합니다.");
+
             if (!GameStatics.IsServerAuthorized)
             {
                 return;

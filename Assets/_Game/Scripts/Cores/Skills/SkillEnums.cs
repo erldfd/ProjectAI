@@ -37,6 +37,7 @@ namespace ProjectAI.Core.Skills
         Silenced = 1 << 1,      // 스킬 사용 불가
         Stunned = 1 << 2,       // 이동 및 스킬 불가
         Invincible = 1 << 3,    // 무적
+        HitStun = 1 << 4,       // 피격 경직
         // 최대 32개까지 확장 가능 (1 << 31)
     }
 

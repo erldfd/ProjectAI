@@ -114,6 +114,20 @@ namespace ProjectAI.UIs
             Label typeLabel = btn.Q<Label>("reward-type");
             Assert.IsNotNull(typeLabel, $"[CorePurificationPopup] {type} 버튼 내 reward-type을 찾을 수 없습니다.");
             typeLabel.text = GetTypeName(type);
+
+            VisualElement iconElement = btn.Q<VisualElement>("reward-icon");
+            Assert.IsNotNull(iconElement, $"[CorePurificationPopup] {type} 버튼 내 reward-icon을 찾을 수 없습니다.");
+            
+            if (data.Icon != null)
+            {
+                iconElement.style.backgroundImage = new StyleBackground(data.Icon);
+                iconElement.style.display = DisplayStyle.Flex;
+            }
+            else
+            {
+                iconElement.style.backgroundImage = StyleKeyword.Null;
+                iconElement.style.display = DisplayStyle.None;
+            }
         }
 
         private string GetTypeName(ERewardType type)
