@@ -4,6 +4,7 @@ using Unity.Netcode;
 using System.Collections.Generic;
 using UnityEngine.Assertions;
 using ProjectAI.Core;
+using ProjectAI.Core.Skills;
 
 namespace ProjectAI.Movements
 {
@@ -83,6 +84,8 @@ namespace ProjectAI.Movements
         private ContactFilter2D physicsFilter;
         private RaycastHit2D[] physicsHits = new RaycastHit2D[1];
 
+        private bool canMove = false;
+
         public override Vector2 Velocity => base.Rb.linearVelocity;
 
         #region Unity Lifecycle
@@ -100,11 +103,20 @@ namespace ProjectAI.Movements
         private void OnEnable()
         {
             base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
+            base._entityEvents.OnActiveStatesChanged += HandleActiveStatesChanged;
         }
 
         private void OnDisable()
         {
             base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
+            base._entityEvents.OnActiveStatesChanged -= HandleActiveStatesChanged;
+        }
+
+        private void HandleActiveStatesChanged(int activeStates)
+        {
+            canMove = (activeStates & (int)EStateTag.Casting) == 0 && 
+                                (activeStates & (int)EStateTag.Stunned) == 0 && 
+                                (activeStates & (int)EStateTag.HitStun) == 0;
         }
 
         private void HandleMoveSpeedModifierChanged(float modifier)
@@ -178,6 +190,8 @@ namespace ProjectAI.Movements
         #region Server Logic
         private void HandleServerTick()
         {
+            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetPlayerMovement] HandleServerTick은 서버에서만 실행되어야 합니다.");
+
             int lastProcessedIndex = -1;
             int processedCount = 0;
 
@@ -309,13 +323,24 @@ namespace ProjectAI.Movements
             }
 
             currentMoveInput = input;
-            base.NetAnimVelocity.Value = input * (moveSpeed * currentMoveSpeedModifier);
         }
         #endregion
 
         #region Private Methods
         private void ApplyPhysics(Vector2 inputVector)
         {
+            // 스킬 시전 중(Casting)이거나 기절(Stunned) 상태일 때는 실제 물리 이동 속도를 0으로 차단합니다.
+            if (!canMove)
+            {
+                inputVector = Vector2.zero;
+            }
+
+            // [Review Fix] 애니메이션 속도를 실제 물리 입력(inputVector)과 즉시 연동하여 스킬 해제 후 WASD 지속 누름 시 슬라이딩 결함 원천 방지
+            if (IsOwner)
+            {
+                base.NetAnimVelocity.Value = inputVector * (moveSpeed * currentMoveSpeedModifier);
+            }
+
             // [Review Fix] 악의적인 클라이언트의 스피드핵 패킷 변조 방어
             // TODO: 추후 비정상 패킷 감지 시, 단순히 방어만 하지 말고 즉시 네트워크 연결을 끊고 게임에서 강퇴(Kick) 처리하는 강력한 제재 로직 추가 필요
             Assert.IsTrue(inputVector.sqrMagnitude <= 1.01f, "[Security] 비정상적인 이동 입력(스피드핵 의심)이 감지되었습니다.");

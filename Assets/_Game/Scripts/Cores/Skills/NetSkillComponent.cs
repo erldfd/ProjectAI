@@ -30,18 +30,9 @@ namespace ProjectAI.Core.Skills
         private Collider2D meleeHitbox;
         public Collider2D MeleeHitbox => meleeHitbox;
 
-        /// <summary>
-        /// 캐릭터의 현재 상태를 비트마스크로 동기화합니다.
-        /// </summary>
-        public NetworkVariable<int> ActiveStates = new NetworkVariable<int>(
-            0,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
-
         // 로컬 예측 쿨타임 (UI 및 클라이언트 빠른 검증용)
         private Dictionary<int, double> localActivationTimes = new Dictionary<int, double>();
-        
+
         // 서버 보안 검증 쿨타임 (서버 권한용)
         private Dictionary<int, double> serverActivationTimes = new Dictionary<int, double>();
 
@@ -60,20 +51,40 @@ namespace ProjectAI.Core.Skills
 
         private void OnEnable()
         {
-            if (entityEvents != null)
-            {
-                entityEvents.OnAnimationEventTriggered += HandleAnimationEvent;
-                entityEvents.OnAnimationStateExited += HandleAnimationStateExited;
-            }
+            Assert.IsNotNull(entityEvents);
+            entityEvents.OnAnimationEventTriggered += HandleAnimationEvent;
+            entityEvents.OnAnimationStateExited += HandleAnimationStateExited;
+            entityEvents.OnHitStateEntered += HandleHitStateEntered;
+            entityEvents.OnHitStateExited += HandleHitStateExited;
         }
 
         private void OnDisable()
         {
-            if (entityEvents != null)
+            Assert.IsNotNull(entityEvents);
+            entityEvents.OnAnimationEventTriggered -= HandleAnimationEvent;
+            entityEvents.OnAnimationStateExited -= HandleAnimationStateExited;
+            entityEvents.OnHitStateEntered -= HandleHitStateEntered;
+            entityEvents.OnHitStateExited -= HandleHitStateExited;
+        }
+
+        private void HandleHitStateEntered()
+        {
+            if (!GameStatics.IsServerAuthorized)
             {
-                entityEvents.OnAnimationEventTriggered -= HandleAnimationEvent;
-                entityEvents.OnAnimationStateExited -= HandleAnimationStateExited;
+                return;
             }
+
+            ownerCharacter.AddState(EStateTag.HitStun);
+        }
+
+        private void HandleHitStateExited()
+        {
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            ownerCharacter.RemoveState(EStateTag.HitStun);
         }
 
         private void HandleAnimationEvent(EAnimationEventTag eventTag)
@@ -82,7 +93,7 @@ namespace ProjectAI.Core.Skills
             {
                 return;
             }
-            
+
             if (eventTag == EAnimationEventTag.Action)
             {
                 if (GameStatics.SkillManager != null)
@@ -112,7 +123,7 @@ namespace ProjectAI.Core.Skills
                 }
 
                 currentCastingSkillId = 0;
-                RemoveState(EStateTag.Casting);
+                ownerCharacter.RemoveState(EStateTag.Casting);
             }
         }
 
@@ -120,19 +131,24 @@ namespace ProjectAI.Core.Skills
         {
             base.OnNetworkSpawn();
 
+            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
+
             if (IsOwner)
             {
-                Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
                 entityEvents.OnSkillTriggered += TryActivateSkill;
             }
         }
 
         public override void OnNetworkDespawn()
         {
-            base.OnNetworkDespawn();
+            Assert.IsNotNull(entityEvents);
 
-            Assert.IsNotNull(entityEvents, "EntityEvents component is missing.");
-            entityEvents.OnSkillTriggered -= TryActivateSkill;
+            if (IsOwner)
+            {
+                entityEvents.OnSkillTriggered -= TryActivateSkill;
+            }
+
+            base.OnNetworkDespawn();
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
@@ -164,6 +180,17 @@ namespace ProjectAI.Core.Skills
                 return;
             }
 
+            // 기존 소환수 슬롯(Summon1 ~ Summon3, 인덱스 1~3)을 먼저 null로 초기화하여 이전 잔존 스킬 제거
+            for (int slot = (int)ESkillSlot.Summon1; slot <= (int)ESkillSlot.Summon3; slot++)
+            {
+                while (OwnedSkills.Count <= slot)
+                {
+                    OwnedSkills.Add(null);
+                }
+
+                OwnedSkills[slot] = null;
+            }
+
             // 기획에 따라 Summon1, Summon2, Summon3 슬롯에 소환수 스킬을 주입
             for (int i = 0; i < skillIds.Length; i++)
             {
@@ -177,11 +204,6 @@ namespace ProjectAI.Core.Skills
                     continue;
                 }
 
-                while (OwnedSkills.Count <= slotIndex)
-                {
-                    OwnedSkills.Add(null);
-                }
-                    
                 OwnedSkills[slotIndex] = config;
                 Debug.Log($"[NetSkillComponent] {gameObject.name} 슬롯({slotIndex})에 스킬({config.name}) 장착 완료.");
             }
@@ -276,35 +298,6 @@ namespace ProjectAI.Core.Skills
             serverActivationTimes[skillId] = time;
         }
 
-        public bool HasState(EStateTag tag)
-        {
-            return (ActiveStates.Value & (int)tag) != 0;
-        }
-
-        public void AddState(EStateTag tag)
-        {
-            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] AddState는 서버에서만 실행되어야 합니다.");
-            
-            if (!GameStatics.IsServerAuthorized)
-            {
-                return;
-            }
-            
-            ActiveStates.Value |= (int)tag;
-        }
-
-        public void RemoveState(EStateTag tag)
-        {
-            Assert.IsTrue(GameStatics.IsServerAuthorized, "[NetSkillComponent] RemoveState는 서버에서만 실행되어야 합니다.");
-            
-            if (!GameStatics.IsServerAuthorized)
-            {
-                return;
-            }
-            
-            ActiveStates.Value &= ~(int)tag;
-        }
-
         /// <summary>
         /// 클라이언트(컨트롤러)에서 특정 스킬 사용을 시도합니다.
         /// </summary>
@@ -336,9 +329,9 @@ namespace ProjectAI.Core.Skills
                     return; // 쿨타임 대기 중
                 }
 
-                if (HasState(EStateTag.Silenced) || HasState(EStateTag.Stunned) || HasState(EStateTag.Casting))
+                if (ownerCharacter.HasState(EStateTag.Silenced) || ownerCharacter.HasState(EStateTag.Stunned) || ownerCharacter.HasState(EStateTag.Casting) || ownerCharacter.HasState(EStateTag.HitStun))
                 {
-                    Debug.Log($"[NetSkillComponent] 상태이상(침묵/기절/시전중)으로 인해 스킬 ID {skillId} 시전 불가.");
+                    Debug.Log($"[NetSkillComponent] 상태이상(침묵/기절/피격경직/시전중)으로 인해 스킬 ID {skillId} 시전 불가.");
                     return; // 상태 이상으로 시전 불가
                 }
             }
@@ -359,6 +352,12 @@ namespace ProjectAI.Core.Skills
             
             if (!GameStatics.IsServerAuthorized)
             {
+                return;
+            }
+
+            if (ownerCharacter.HasState(EStateTag.Silenced) || ownerCharacter.HasState(EStateTag.Stunned) || ownerCharacter.HasState(EStateTag.Casting) || ownerCharacter.HasState(EStateTag.HitStun))
+            {
+                Debug.LogWarning($"[NetSkillComponent] 서버 보안 검증 실패: 상태이상(침묵/기절/피격경직/시전중) 상태에서 스킬 ID {skillId} 시도를 보냈습니다!");
                 return;
             }
             
@@ -383,7 +382,7 @@ namespace ProjectAI.Core.Skills
                 if (GameStatics.SkillManager.ExecuteSkill(skillId, ownerCharacter))
                 {
                     currentCastingSkillId = skillId;
-                    AddState(EStateTag.Casting);
+                    ownerCharacter.AddState(EStateTag.Casting);
                 }
                 else
                 {

@@ -27,7 +27,7 @@ namespace ProjectAI.Core.Skills.Abilities
 
         public bool CanExecute(NetCharacter caster, BaseSkillConfig config)
         {
-            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned))
+            if (caster.HasState(EStateTag.Silenced) || caster.HasState(EStateTag.Stunned))
             {
                 return false;
             }

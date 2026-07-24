@@ -3,6 +3,7 @@ using UnityEngine.Assertions;
 using UnityEngine;
 using Unity.Netcode.Components;
 using ProjectAI.Core;
+using ProjectAI.Core.Skills;
 
 namespace ProjectAI.Movements
 {
@@ -20,6 +21,7 @@ namespace ProjectAI.Movements
 
         private Vector2 currentDirection = Vector2.zero;
         private float currentSpeedModifier = 1f;
+        private bool canMove = false;
 
         public override Vector2 Velocity => base.Rb.linearVelocity;
 
@@ -32,11 +34,27 @@ namespace ProjectAI.Movements
         private void OnEnable()
         {
             base._entityEvents.OnMoveSpeedModifierChanged += HandleMoveSpeedModifierChanged;
+            base._entityEvents.OnActiveStatesChanged += HandleActiveStatesChanged;
         }
 
         private void OnDisable()
         {
             base._entityEvents.OnMoveSpeedModifierChanged -= HandleMoveSpeedModifierChanged;
+            base._entityEvents.OnActiveStatesChanged -= HandleActiveStatesChanged;
+        }
+
+        private void HandleActiveStatesChanged(int activeStates)
+        {
+            canMove = (activeStates & (int)EStateTag.Casting) == 0 && 
+                                (activeStates & (int)EStateTag.Stunned) == 0 && 
+                                (activeStates & (int)EStateTag.HitStun) == 0;
+
+            if (!GameStatics.IsServerAuthorized)
+            {
+                return;
+            }
+
+            UpdateVelocity();
         }
 
         private void HandleMoveSpeedModifierChanged(float modifier)
@@ -60,14 +78,17 @@ namespace ProjectAI.Movements
                 return;
             }
 
-            // 좌우 이동에 따른 바라보는 방향 갱신 (위아래 이동 시에는 기존 방향 유지)
-            if (direction.x > 0.01f)
+            // 시전/기절 상태 중에는 바라보는 방향 갱신을 차단합니다.
+            if (canMove)
             {
-                base.NetIsFacingRight.Value = true;
-            }
-            else if (direction.x < -0.01f)
-            {
-                base.NetIsFacingRight.Value = false;
+                if (direction.x > 0.01f)
+                {
+                    base.NetIsFacingRight.Value = true;
+                }
+                else if (direction.x < -0.01f)
+                {
+                    base.NetIsFacingRight.Value = false;
+                }
             }
 
             // 방향 벡터를 무조건 정규화(길이 1)하지 않고, ClampMagnitude를 사용하여 길이가 1 미만일 경우 느린 이동을 허용합니다.
@@ -84,13 +105,15 @@ namespace ProjectAI.Movements
             {
                 return;
             }
+    
+            Vector2 moveDir = canMove ? currentDirection : Vector2.zero;
 
             // 2.5D 벨트스크롤: Y축(깊이) 이동 시 전역 원근법에 맞춰 속도를 보정합니다.
             float currentSpeed = baseSpeed * currentSpeedModifier;
-            base.Rb.linearVelocity = new Vector2(currentDirection.x * currentSpeed, currentDirection.y * currentSpeed * GameStatics.MovementDepthRatio);
+            base.Rb.linearVelocity = new Vector2(moveDir.x * currentSpeed, moveDir.y * currentSpeed * GameStatics.MovementDepthRatio);
             
             // 애니메이션 속도는 Y축 렌더링 스케일에 영향을 받지 않도록(가로/세로 이동 시 다리 움직임 속도 통일) 보정 전 벡터를 넘깁니다.
-            base.NetAnimVelocity.Value = currentDirection * (baseSpeed * currentSpeedModifier);
+            base.NetAnimVelocity.Value = moveDir * (baseSpeed * currentSpeedModifier);
         }
     }
 }

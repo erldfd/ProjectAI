@@ -27,7 +27,7 @@ namespace ProjectAI.Core.Skills.Abilities
         public bool CanExecute(NetCharacter caster, BaseSkillConfig config)
         {
             Debug.Log($"[SummonSkillLogic] CanExecute 호출: CasterID={caster.NetworkObjectId}, SkillID={config.SkillId}");
-            if (caster.SkillComponent.HasState(EStateTag.Silenced) || caster.SkillComponent.HasState(EStateTag.Stunned) || caster.SkillComponent.HasState(EStateTag.Casting))
+            if (caster.HasState(EStateTag.Silenced) || caster.HasState(EStateTag.Stunned) || caster.HasState(EStateTag.HitStun) || caster.HasState(EStateTag.Casting))
             {
                 return false;
             }
