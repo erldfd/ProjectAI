@@ -1,8 +1,9 @@
-using ProjectAI.Core;
-using ProjectAI.Core.Enums;
-using ProjectAI.SOs;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using ProjectAI.Core;
+using ProjectAI.Core.Enums;
+using ProjectAI.Core.Skills;
 
 namespace ProjectAI.UIs.Cores
 {
@@ -11,10 +12,9 @@ namespace ProjectAI.UIs.Cores
     /// UIManager와 동일한 게임 오브젝트에 부착되어야 합니다.
     /// </summary>
     [RequireComponent(typeof(UIManager))]
+
     public class UIEventListener : MonoBehaviour
     {
-
-
         private UIManager uiManager;
 
         private void Awake()
@@ -43,7 +43,47 @@ namespace ProjectAI.UIs.Cores
 
         private void OnLocalPlayerSpawnedEvent(SLocalPlayerSpawnedEvent evt)
         {
-            uiManager.ShowPopup<LoadoutSelectionPopup>(EUIPopupType.LoadoutSelection);
+            if (!CodexManager.HasSavedLoadout())
+            {
+                uiManager.ShowPopup<LoadoutSelectionPopup>(EUIPopupType.LoadoutSelection);
+                return;
+            }
+
+            if (evt.PlayerObject == null)
+            {
+                Debug.LogWarning("[UIEventListener] evt.PlayerObject가 null이어서 선택 팝업을 엽니다.");
+                uiManager.ShowPopup<LoadoutSelectionPopup>(EUIPopupType.LoadoutSelection);
+                return;
+            }
+
+            NetSkillComponent skillComponent = evt.PlayerObject.GetComponentInChildren<NetSkillComponent>();
+            if (skillComponent == null)
+            {
+                Debug.LogWarning("[UIEventListener] evt.PlayerObject에서 NetSkillComponent를 찾지 못해 선택 팝업을 엽니다.");
+                uiManager.ShowPopup<LoadoutSelectionPopup>(EUIPopupType.LoadoutSelection);
+                return;
+            }
+
+            List<int> savedLoadout = CodexManager.GetSavedLoadout();
+            List<int> validLoadout = new List<int>();
+
+            for (int i = 0; i < savedLoadout.Count; i++)
+            {
+                if (CodexManager.IsSkillUnlocked(savedLoadout[i]))
+                {
+                    validLoadout.Add(savedLoadout[i]);
+                }
+            }
+
+            if (validLoadout.Count == 0)
+            {
+                Debug.LogWarning("[UIEventListener] 저장된 로드아웃 중 유효하게 해금된 스킬이 없어 선택 팝업을 엽니다.");
+                uiManager.ShowPopup<LoadoutSelectionPopup>(EUIPopupType.LoadoutSelection);
+                return;
+            }
+
+            skillComponent.EquipLoadoutServerRpc(validLoadout.ToArray());
+            Debug.Log($"[UIEventListener] 이전에 저장된 소환수 로드아웃({validLoadout.Count}개)을 자동 장착합니다.");
         }
     }
 }

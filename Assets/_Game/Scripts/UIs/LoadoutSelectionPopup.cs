@@ -23,9 +23,11 @@ namespace ProjectAI.UIs
         private Button startButton;
 
         private List<int> selectedSkillIds = new List<int>();
+        private NetPlayerController cachedPlayerController;
 
         protected override void OnInitialize()
         {
+            Debug.Log("[LoadoutSelectionPopup] 팝업 초기화 시작...");
             Assert.IsNotNull(base.RootElement, "[LoadoutSelectionPopup] RootElement가 null입니다.");
 
             skillListScrollView = base.RootElement.Q<ScrollView>("SkillListScrollView");
@@ -37,8 +39,6 @@ namespace ProjectAI.UIs
             startButton.RegisterCallback<ClickEvent>(OnStartClicked);
             startButton.SetEnabled(false); // 최소 1개라도 고르면 활성화
         }
-
-        private NetPlayerController cachedPlayerController;
 
         protected override void OnShow()
         {
@@ -74,23 +74,40 @@ namespace ProjectAI.UIs
         {
             selectedSkillIds.Clear();
             skillListScrollView.Clear();
-            startButton.SetEnabled(false);
 
             List<int> unlockedIds = CodexManager.GetUnlockedSkillIds();
 
             if (unlockedIds.Count == 0)
             {
                 Debug.LogWarning("[LoadoutSelectionPopup] 해금된 소환수가 전혀 없습니다! 팝업을 닫고 기본 상태로 시작합니다.");
+                startButton.SetEnabled(false);
                 GameStatics.UIManager.ClosePopup(this);
                 return;
             }
 
-            foreach (int skillId in unlockedIds)
+            List<int> savedLoadout = CodexManager.GetSavedLoadout();
+            for (int i = 0; i < savedLoadout.Count; i++)
             {
+                if (unlockedIds.Contains(savedLoadout[i]) && !selectedSkillIds.Contains(savedLoadout[i]))
+                {
+                    selectedSkillIds.Add(savedLoadout[i]);
+                }
+            }
+
+            startButton.SetEnabled(selectedSkillIds.Count > 0);
+
+            for (int i = 0; i < unlockedIds.Count; i++)
+            {
+                int skillId = unlockedIds[i];
                 Button skillBtn = new Button();
                 // TODO: SkillManager를 통해 실제 스킬 이름을 가져올 수 있음
                 skillBtn.text = $"스킬 ID : {skillId}";
                 skillBtn.style.height = 40;
+
+                if (selectedSkillIds.Contains(skillId))
+                {
+                    skillBtn.style.backgroundColor = new StyleColor(Color.green);
+                }
                 
                 skillBtn.RegisterCallback<ClickEvent>(evt => 
                 {
@@ -147,6 +164,7 @@ namespace ProjectAI.UIs
             }
             
             skillComponent.EquipLoadoutServerRpc(selectedSkillIds.ToArray());
+            CodexManager.SaveSelectedLoadout(selectedSkillIds);
             GameStatics.UIManager.ClosePopup(this);
         }
     }
